@@ -39,6 +39,16 @@ func helpFor(args []string) (string, bool) {
 		return incidentsHelp, true
 	case len(args) == 2 && args[0] == "monitors" && args[1] == "--help":
 		return monitorsHelp, true
+	case len(args) == 3 && args[0] == "incidents" && args[1] == "list" && args[2] == "--help":
+		return incidentsListHelp, true
+	case len(args) == 3 && args[0] == "incidents" && args[1] == "get" && args[2] == "--help":
+		return incidentsGetHelp, true
+	case len(args) == 3 && args[0] == "incidents" && args[1] == "timeline" && args[2] == "--help":
+		return incidentsTimelineHelp, true
+	case len(args) == 3 && args[0] == "monitors" && args[1] == "list" && args[2] == "--help":
+		return monitorsListHelp, true
+	case len(args) == 3 && args[0] == "monitors" && args[1] == "get" && args[2] == "--help":
+		return monitorsGetHelp, true
 	}
 	return "", false
 }

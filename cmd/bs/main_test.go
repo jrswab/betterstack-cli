@@ -96,3 +96,93 @@ func TestResourceHelp(t *testing.T) {
 		})
 	}
 }
+
+// TestCommandHelp covers T5-T9/R4: each per-command help exits 0, carries a
+// usage line, an arguments section, a flags section, and examples, and
+// documents no excluded surface.
+func TestCommandHelp(t *testing.T) {
+	excluded := []string{"--query", "--all", "--pretty", "metadata["}
+
+	cases := []struct {
+		name     string
+		args     []string
+		wants    []string
+		notWants []string
+	}{
+		{
+			name: "incidents list",
+			args: []string{"incidents", "list", "--help"},
+			wants: []string{
+				"bs incidents list", "Arguments:", "Flags:", "Examples:",
+				"--from", "--to", "--monitor-id", "--heartbeat-id",
+				"--resolved", "--acknowledged", "--metadata", "--team-name",
+				"--page", "--per-page", "--timeout", "30 seconds", "Repeatable",
+				"bs incidents list --monitor-id 123 --resolved=false",
+			},
+			notWants: []string{"--url", "--pronounceable-name", "https://"},
+		},
+		{
+			name: "incidents get",
+			args: []string{"incidents", "get", "--help"},
+			wants: []string{
+				"bs incidents get <id-or-url>", "Arguments:", "Flags:", "Examples:",
+				"--timeout", "30 seconds", "bare numeric",
+				"https://incidents.betterstack.com/team/<team-id>/incidents/<incident-id>",
+				"bs incidents get 123 --timeout 60s",
+			},
+			notWants: []string{"--from", "--monitor-id", "--page", "--metadata", "/monitors/"},
+		},
+		{
+			name: "incidents timeline",
+			args: []string{"incidents", "timeline", "--help"},
+			wants: []string{
+				"bs incidents timeline <id-or-url>", "Arguments:", "Flags:", "Examples:",
+				"--timeout", "30 seconds",
+				"https://incidents.betterstack.com/team/<team-id>/incidents/<incident-id>",
+			},
+			notWants: []string{"--from", "--monitor-id", "--page"},
+		},
+		{
+			name: "monitors list",
+			args: []string{"monitors", "list", "--help"},
+			wants: []string{
+				"bs monitors list", "Arguments:", "Flags:", "Examples:",
+				"--url", "--pronounceable-name", "--team-name",
+				"--page", "--per-page", "--timeout", "30 seconds",
+				"bs monitors list --pronounceable-name Example",
+			},
+			notWants: []string{"--from", "--monitor-id", "--metadata", "https://"},
+		},
+		{
+			name: "monitors get",
+			args: []string{"monitors", "get", "--help"},
+			wants: []string{
+				"bs monitors get <id>", "Arguments:", "Flags:", "Examples:",
+				"--timeout", "30 seconds", "bare monitor ID", "bs monitors get 789",
+			},
+			notWants: []string{"--from", "--page", "https://"},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			code, stdout, stderr := invoke(tc.args...)
+			if code != 0 {
+				t.Fatalf("exit code = %d, want 0", code)
+			}
+			if stderr != "" {
+				t.Errorf("stderr = %q, want empty", stderr)
+			}
+			for _, want := range tc.wants {
+				if !strings.Contains(stdout, want) {
+					t.Errorf("stdout missing %q\nstdout:\n%s", want, stdout)
+				}
+			}
+			for _, bad := range append(excluded, tc.notWants...) {
+				if strings.Contains(stdout, bad) {
+					t.Errorf("stdout unexpectedly contains %q\nstdout:\n%s", bad, stdout)
+				}
+			}
+		})
+	}
+}
