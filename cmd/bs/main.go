@@ -20,8 +20,27 @@ func main() {
 // run executes one CLI invocation and returns the process exit code. stdout
 // and stderr are injected so tests observe both channels without a subprocess.
 func run(args []string, stdout, stderr io.Writer) int {
+	if help, ok := helpFor(args); ok {
+		fmt.Fprint(stdout, help)
+		return 0
+	}
 	fmt.Fprint(stderr, usageError(args))
 	return 1
+}
+
+// helpFor returns the help text for exactly the recognized help argument
+// vectors. Every other vector is not a help request. Each token must match
+// exactly; no extra tokens are accepted (spec R5.1).
+func helpFor(args []string) (string, bool) {
+	switch {
+	case len(args) == 1 && args[0] == "--help":
+		return rootHelp, true
+	case len(args) == 2 && args[0] == "incidents" && args[1] == "--help":
+		return incidentsHelp, true
+	case len(args) == 2 && args[0] == "monitors" && args[1] == "--help":
+		return monitorsHelp, true
+	}
+	return "", false
 }
 
 // usageError builds the single readable error for an invalid argument vector.
