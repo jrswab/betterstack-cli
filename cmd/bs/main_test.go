@@ -186,3 +186,41 @@ func TestCommandHelp(t *testing.T) {
 		})
 	}
 }
+
+// TestInvalidUsageMatrix covers T10/R5.2: every non-help vector exits 1 with a
+// readable error on stderr and nothing on stdout.
+func TestInvalidUsageMatrix(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"bare", nil},
+		{"resource without action", []string{"incidents"}},
+		{"monitors without action", []string{"monitors"}},
+		{"unknown resource", []string{"uptime", "list"}},
+		{"unknown action", []string{"incidents", "delete"}},
+		{"help with extra token", []string{"--help", "incidents"}},
+		{"help after positional", []string{"incidents", "get", "123", "--help"}},
+		{"short help flag", []string{"-h"}},
+		{"missing positional", []string{"incidents", "get"}},
+		{"extra positional", []string{"monitors", "get", "1", "2"}},
+		{"non-help command get", []string{"incidents", "get", "123"}},
+		{"non-help command list", []string{"monitors", "list"}},
+		{"unknown resource flag", []string{"--timeout", "30s"}},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			code, stdout, stderr := invoke(tc.args...)
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if strings.TrimSpace(stderr) == "" {
+				t.Error("stderr is empty, want a readable error")
+			}
+		})
+	}
+}
