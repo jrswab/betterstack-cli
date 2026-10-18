@@ -637,3 +637,336 @@ func TestParseMonitorsListArgs(t *testing.T) {
 		}
 	})
 }
+
+// invokeMonitorsList calls monitorsList directly through the same writer
+// contract used by the production route. B1 tests use this before routing is
+// wired in B2.
+func invokeMonitorsList(baseURL string, client *http.Client, args ...string) (code int, stdout, stderr string) {
+	var out, err bytes.Buffer
+	code = monitorsList(args, &out, &err, baseURL, client)
+	return code, out.String(), err.String()
+}
+
+// TestMonitorsListQueryTranslation covers B1 (spec R3): exactly one GET to
+// /api/v2/monitors, each flag maps to one query parameter with its value
+// unchanged, absent flags send nothing, explicit empty values send the
+// parameter, repeated occurrences stay repeated, and stdlib net/url encoding
+// handles adversarial characters.
+func TestMonitorsListQueryTranslation(t *testing.T) {
+	cases := []struct {
+		name    string
+		args    []string
+		wantRaw string
+		wantURL string
+	}{
+		{name: "no flags", args: nil, wantRaw: ""},
+		{name: "page", args: []string{"--page", "2"}, wantRaw: "page=2"},
+		{name: "per page", args: []string{"--per-page", "50"}, wantRaw: "per_page=50"},
+		{name: "url", args: []string{"--url", "https://example.com/x"}, wantRaw: "url=https%3A%2F%2Fexample.com%2Fx", wantURL: "https://example.com/x"},
+		{name: "pronounceable name", args: []string{"--pronounceable-name", "Example Monitor"}, wantRaw: "pronounceable_name=Example+Monitor"},
+		{name: "team name", args: []string{"--team-name", "Acme"}, wantRaw: "team_name=Acme"},
+		{
+			name: "all flags combined",
+			args: []string{
+				"--team-name", "Acme",
+				"--url", "https://example.com/x",
+				"--page", "2",
+				"--pronounceable-name", "Example",
+				"--per-page", "50",
+			},
+			wantRaw: "page=2&per_page=50&pronounceable_name=Example&team_name=Acme&url=https%3A%2F%2Fexample.com%2Fx",
+			wantURL: "https://example.com/x",
+		},
+		{name: "empty explicit value", args: []string{"--url", ""}, wantRaw: "url=", wantURL: ""},
+		{
+			name:    "repeated flags keep every occurrence",
+			args:    []string{"--page", "1", "--page", "2", "--url", "first", "--url", "second"},
+			wantRaw: "page=1&page=2&url=first&url=second",
+		},
+		{
+			name:    "adversarial characters",
+			args:    []string{"--url", "a b&c=d/ü?é+%"},
+			wantRaw: "url=a+b%26c%3Dd%2F%C3%BC%3F%C3%A9%2B%25",
+			wantURL: "a b&c=d/ü?é+%",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests atomic.Int32
+			var gotMethod, gotPath, gotRaw, gotURL, gotAuth string
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				gotMethod = r.Method
+				gotPath = r.URL.EscapedPath()
+				gotRaw = r.URL.RawQuery
+				gotURL = r.URL.Query().Get("url")
+				gotAuth = r.Header.Get("Authorization")
+				w.WriteHeader(http.StatusOK)
+				_, _ = io.WriteString(w, `{"data":[]}`)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeMonitorsList(srv.URL, newHTTPClient(), tc.args...)
+			if code != 0 {
+				t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+			}
+			if got := requests.Load(); got != 1 {
+				t.Errorf("server requests = %d, want 1", got)
+			}
+			if gotMethod != http.MethodGet {
+				t.Errorf("method = %q, want %q", gotMethod, http.MethodGet)
+			}
+			if gotPath != "/api/v2/monitors" {
+				t.Errorf("path = %q, want %q", gotPath, "/api/v2/monitors")
+			}
+			if gotRaw != tc.wantRaw {
+				t.Errorf("raw query = %q, want %q", gotRaw, tc.wantRaw)
+			}
+			if tc.wantURL != "" && gotURL != tc.wantURL {
+				t.Errorf("decoded url = %q, want %q", gotURL, tc.wantURL)
+			}
+			if want := "Bearer " + testToken; gotAuth != want {
+				t.Errorf("Authorization = %q, want %q", gotAuth, want)
+			}
+			if stdout != `{"data":[]}` {
+				t.Errorf("stdout = %q, want raw body", stdout)
+			}
+			if stderr != "" {
+				t.Errorf("stderr = %q, want empty", stderr)
+			}
+		})
+	}
+}
+
+// TestMonitorsListRawSuccessBody covers B1 (spec R4): a 2xx body is written
+// byte-for-byte with no appended newline, including a pagination object, a
+// non-JSON body, and a body carrying its own trailing newline.
+func TestMonitorsListRawSuccessBody(t *testing.T) {
+	cases := []struct {
+		name string
+		body string
+	}{
+		{"pagination object", `{"data":[],"pagination":{"first":"https://x/1","last":"https://x/1","prev":null,"next":null}}`},
+		{"non-json", "not json at all"},
+		{"body with its own trailing newline", "kept\n"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				_, _ = io.WriteString(w, tc.body)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeMonitorsList(srv.URL, newHTTPClient())
+			if code != 0 {
+				t.Fatalf("exit code = %d, want 0", code)
+			}
+			if stdout != tc.body {
+				t.Errorf("stdout = %q, want %q", stdout, tc.body)
+			}
+			if stderr != "" {
+				t.Errorf("stderr = %q, want empty", stderr)
+			}
+		})
+	}
+}
+
+// TestMonitorsListNon2xxPassthrough covers B1 (spec R5.1): every non-2xx,
+// 3xx included, prints the raw body to stderr, writes nothing to stdout,
+// exits 1, and reaches only the requested endpoint even when the redirect
+// target is another local path.
+func TestMonitorsListNon2xxPassthrough(t *testing.T) {
+	cases := []struct {
+		name   string
+		status int
+		body   string
+	}{
+		{"moved permanently", http.StatusMovedPermanently, "redirect body"},
+		{"found", http.StatusFound, `{"errors":"moved"}`},
+		{"temporary redirect", http.StatusTemporaryRedirect, "temporary"},
+		{"unauthorized", http.StatusUnauthorized, `{"errors":"unauthorized"}`},
+		{"not found", http.StatusNotFound, `{"errors":"not found"}`},
+		{"too many requests", http.StatusTooManyRequests, "slow down"},
+		{"server error", http.StatusInternalServerError, "boom"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests, redirectTarget atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path == "/redirect-target" {
+					redirectTarget.Add(1)
+					w.WriteHeader(http.StatusOK)
+					return
+				}
+				requests.Add(1)
+				w.Header().Set("Location", "/redirect-target")
+				w.WriteHeader(tc.status)
+				_, _ = io.WriteString(w, tc.body)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeMonitorsList(srv.URL, newHTTPClient())
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if stderr != tc.body {
+				t.Errorf("stderr = %q, want %q", stderr, tc.body)
+			}
+			if got := requests.Load(); got != 1 {
+				t.Errorf("endpoint requests = %d, want 1", got)
+			}
+			if got := redirectTarget.Load(); got != 0 {
+				t.Errorf("redirect target requests = %d, want 0", got)
+			}
+		})
+	}
+}
+
+// TestMonitorsListNeverDrainsPagination covers B1 (spec R4.2, R7): a 2xx body
+// with a pagination.next pointing at another local path is printed unchanged
+// and never followed, even when the target is on the mock host.
+func TestMonitorsListNeverDrainsPagination(t *testing.T) {
+	var requests, nextRequests atomic.Int32
+	var nextURL string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/v2/monitors" && r.URL.Query().Get("page") == "2" {
+			nextRequests.Add(1)
+			w.WriteHeader(http.StatusOK)
+			_, _ = io.WriteString(w, `{"data":["second page"]}`)
+			return
+		}
+		requests.Add(1)
+		body := `{"data":[],"pagination":{"next":"` + nextURL + `"}}`
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.WriteString(w, body)
+	}))
+	defer srv.Close()
+	nextURL = srv.URL + "/api/v2/monitors?page=2"
+
+	t.Setenv(tokenEnvVar, testToken)
+
+	code, stdout, stderr := invokeMonitorsList(srv.URL, newHTTPClient())
+	if code != 0 {
+		t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+	}
+	want := `{"data":[],"pagination":{"next":"` + nextURL + `"}}`
+	if stdout != want {
+		t.Errorf("stdout = %q, want %q", stdout, want)
+	}
+	if stderr != "" {
+		t.Errorf("stderr = %q, want empty", stderr)
+	}
+	if got := requests.Load(); got != 1 {
+		t.Errorf("first-page requests = %d, want 1", got)
+	}
+	if got := nextRequests.Load(); got != 0 {
+		t.Errorf("pagination.next requests = %d, want 0", got)
+	}
+}
+
+// TestMonitorsListTimeoutOverride covers B1 (spec R6.1): a short --timeout
+// fails a slower server with exit 1, token-free stderr, empty stdout, and one
+// request; the same server responding inside a longer override succeeds.
+func TestMonitorsListTimeoutOverride(t *testing.T) {
+	t.Run("expires", func(t *testing.T) {
+		var requests atomic.Int32
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requests.Add(1)
+			time.Sleep(150 * time.Millisecond)
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeMonitorsList(srv.URL, newHTTPClient(), "--timeout", "10ms")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		if stdout != "" {
+			t.Errorf("stdout = %q, want empty", stdout)
+		}
+		if strings.TrimSpace(stderr) == "" {
+			t.Error("stderr is empty, want a readable error")
+		}
+		if strings.Contains(stderr, testToken) {
+			t.Errorf("stderr leaks the token: %q", stderr)
+		}
+		if got := requests.Load(); got != 1 {
+			t.Errorf("server requests = %d, want 1", got)
+		}
+	})
+
+	t.Run("within override", func(t *testing.T) {
+		const body = "ok body"
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			_, _ = io.WriteString(w, body)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeMonitorsList(srv.URL, newHTTPClient(), "--timeout", "5s")
+		if code != 0 {
+			t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+		}
+		if stdout != body {
+			t.Errorf("stdout = %q, want %q", stdout, body)
+		}
+		if stderr != "" {
+			t.Errorf("stderr = %q, want empty", stderr)
+		}
+	})
+}
+
+// TestMonitorsListInvalidTimeout covers B1 (spec R6.1): a non-positive,
+// unparseable, or missing --timeout value is invalid usage with zero requests.
+func TestMonitorsListInvalidTimeout(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"zero", []string{"--timeout", "0s"}},
+		{"negative", []string{"--timeout", "-5s"}},
+		{"not a duration", []string{"--timeout", "nonsense"}},
+		{"missing value", []string{"--timeout"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeMonitorsList(srv.URL, newHTTPClient(), tc.args...)
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if strings.TrimSpace(stderr) == "" {
+				t.Error("stderr is empty, want a readable error")
+			}
+			if got := requests.Load(); got != 0 {
+				t.Errorf("server requests = %d, want 0", got)
+			}
+		})
+	}
+}

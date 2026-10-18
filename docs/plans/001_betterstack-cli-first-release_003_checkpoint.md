@@ -37,10 +37,10 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 ## State
 
 - Current phase: `execute` — Phases 1 (spec) and 2 (implementation checklist) gates passed 2026-10-18; planning evidence repaired 2026-10-18; Phase 3 (execution) is the next action
-- Current task: `B1` — next action
-- Task states: A1 implemented with focused tests green, review pending (checkbox unchecked); B1, B2, B3, C1 unchecked
+- Current task: `B2` — next action
+- Task states: A1 and B1 implemented with focused tests green, review pending (checkboxes unchecked); B2, B3, C1 unchecked
 - Milestone checkbox: `unchecked` (source entry `- [ ] 003`)
-- Last completed phase/task/gate and timestamp: task A1 implementation 2026-10-18 (review pending; see Gate evidence)
+- Last completed phase/task/gate and timestamp: task B1 implementation 2026-10-18 (review pending; see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -112,3 +112,14 @@ One entry per passed gate (review, lint, verification, completion):
   - `HEAD` commit SHA: `9a8f8d43ea18f96cbfcc1b9c451e5d0c5605f4b2` (work committed after this gate)
   - `git status --porcelain`: ` M cmd/bs/monitors.go` / ` M cmd/bs/monitors_test.go` plus the preserved baseline `.wayfinder/` entries, `verify-incident-id.sh`, and the three `??` 003 artifacts (the checkpoint already reflects this entry after the commit)
   - Relevant work: `uncommitted` — stash ref `de678381f36772c97e2e05a0cb183c173326d6cb` (staged-only snapshot: three 003 artifacts, `cmd/bs/monitors.go`, `cmd/bs/monitors_test.go`; `git show --stat` shows 5 files, 403 insertions)
+
+- Gate: task B1 — `monitorsList`, shared request executor, and `net/url` query builder (spec R2.2, R3, R4, R5.1, R6)
+  - Command(s) and actual result(s):
+    - Red: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./cmd/bs -run 'TestMonitorsList'` → build failed with `undefined: monitorsList` (exit 1)
+    - Green after `cmd/bs/monitors.go` gained `monitorsList`, `monitorsListArgs.query` using `url.Values`, and `doMonitorsRequest` (extracted from `monitorsGet` with identical headers, redirect suppression, body reads, and messages; `monitorsGet` now calls it and its observable behavior is unchanged): focused list tests → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.328s` (exit 0) when run with `TestMonitorsGet` and `TestParseMonitorsListArgs`
+    - Coverage proven: exactly one GET `/api/v2/monitors` with `Authorization: Bearer dummy-token-for-tests`; no-flags raw query empty; each flag alone; all flags combined; explicit empty `url=`; repeated `page=1&page=2&url=first&url=second`; adversarial `url=a+b%26c%3Dd%2F%C3%BC%3F%C3%A9%2B%25` (decoded value equals the input); raw bodies for pagination JSON, non-JSON, and trailing-newline bodies; 301/302/307/401/404/429/500 raw stderr with exit 1, one endpoint request, zero redirect-target requests; a local `pagination.next` target received zero requests; 10ms timeout expiry failed with one request, 5s override succeeded; zero/invalid/missing timeout values made zero requests
+    - `gofmt -l cmd/bs` → no output; `GOTOOLCHAIN=go1.26.9 GOPROXY=off go vet ./cmd/...` → exit 0; `TestMonitorsGet*` regression run → `ok` (exit 0)
+    - Checkbox left unchecked: independent review is pending and was neither dispatched nor self-claimed, per instruction
+  - `HEAD` commit SHA: `4e19d69` (work committed after this gate)
+  - `git status --porcelain`: ` M cmd/bs/monitors.go` / ` M cmd/bs/monitors_test.go` plus the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh` (checkpoint committed with A1; this B1 entry is added before the B1 commit)
+  - Relevant work: `uncommitted` — stash ref `32cb40ed1801aa46bea2ed7acdfad4adb14dbec3` (staged-only snapshot: `cmd/bs/monitors.go`, `cmd/bs/monitors_test.go`; `git show --stat` shows 2 files, 389 insertions)

@@ -43,6 +43,39 @@ func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client
 	}
 
 	endpoint := strings.TrimRight(baseURL, "/") + "/api/v2/monitors/" + url.PathEscape(target)
+	return doMonitorsRequest(endpoint, token, timeout, stdout, stderr, client)
+}
+
+// monitorsList implements `bs monitors list [flags]`: exactly one
+// bearer-authenticated GET, the parsed flags encoded as query parameters,
+// raw success body on stdout, raw non-2xx body on stderr, and token-free
+// local failure messages. The CLI never follows pagination links.
+func monitorsList(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
+	token := os.Getenv(tokenEnvVar)
+
+	parsed, err := parseMonitorsListArgs(args)
+	if err != nil {
+		fmt.Fprintf(stderr, "bs: %s; run 'bs monitors list --help' for usage.\n", redactToken(err.Error(), token))
+		return 1
+	}
+
+	if token == "" {
+		fmt.Fprintf(stderr, "bs: %s is not set; set it to a Better Stack API token and try again.\n", tokenEnvVar)
+		return 1
+	}
+
+	endpoint := strings.TrimRight(baseURL, "/") + "/api/v2/monitors"
+	if query := parsed.query().Encode(); query != "" {
+		endpoint += "?" + query
+	}
+	return doMonitorsRequest(endpoint, token, parsed.timeout, stdout, stderr, client)
+}
+
+// doMonitorsRequest performs exactly one bearer-authenticated GET and applies
+// the shared 002 response contract used by both monitor commands: raw 2xx body
+// to stdout, raw non-2xx body to stderr, redirects not followed, and
+// token-free local diagnostics.
+func doMonitorsRequest(endpoint, token string, timeout time.Duration, stdout, stderr io.Writer, client *http.Client) int {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -173,4 +206,27 @@ func parseMonitorsListArgs(args []string) (monitorsListArgs, error) {
 		}
 	}
 	return parsed, nil
+}
+
+// query maps every present flag occurrence onto its API parameter. The
+// stdlib url.Values builder performs the encoding (spec R3.2). An absent flag
+// adds nothing; an explicit empty value adds the parameter with an empty value.
+func (a monitorsListArgs) query() url.Values {
+	query := url.Values{}
+	for _, value := range a.pages {
+		query.Add("page", value)
+	}
+	for _, value := range a.perPages {
+		query.Add("per_page", value)
+	}
+	for _, value := range a.urls {
+		query.Add("url", value)
+	}
+	for _, value := range a.pronounceableNames {
+		query.Add("pronounceable_name", value)
+	}
+	for _, value := range a.teamNames {
+		query.Add("team_name", value)
+	}
+	return query
 }
