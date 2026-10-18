@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"reflect"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -511,4 +512,128 @@ func TestMonitorsGetCredentialFailures(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestParseMonitorsListArgs covers A1 (spec R1, R6.1, R7): the parser accepts
+// the six list flags in any order, records every occurrence of a repeated
+// flag, distinguishes an absent flag (nil) from an explicitly empty value
+// ([]string{""}), and rejects unknown options, positionals, missing values,
+// and invalid timeouts. No server is involved.
+func TestParseMonitorsListArgs(t *testing.T) {
+	t.Run("no flags keeps every field absent", func(t *testing.T) {
+		got, err := parseMonitorsListArgs(nil)
+		if err != nil {
+			t.Fatalf("parse error: %v", err)
+		}
+		want := monitorsListArgs{timeout: defaultTimeout}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
+
+	t.Run("each flag alone", func(t *testing.T) {
+		cases := []struct {
+			name string
+			args []string
+			want monitorsListArgs
+		}{
+			{"page", []string{"--page", "2"}, monitorsListArgs{pages: []string{"2"}, timeout: defaultTimeout}},
+			{"per-page", []string{"--per-page", "50"}, monitorsListArgs{perPages: []string{"50"}, timeout: defaultTimeout}},
+			{"url", []string{"--url", "https://example.com/x"}, monitorsListArgs{urls: []string{"https://example.com/x"}, timeout: defaultTimeout}},
+			{"pronounceable-name", []string{"--pronounceable-name", "Example Monitor"}, monitorsListArgs{pronounceableNames: []string{"Example Monitor"}, timeout: defaultTimeout}},
+			{"team-name", []string{"--team-name", "Acme"}, monitorsListArgs{teamNames: []string{"Acme"}, timeout: defaultTimeout}},
+			{"timeout", []string{"--timeout", "5s"}, monitorsListArgs{timeout: 5 * time.Second}},
+		}
+		for _, tc := range cases {
+			t.Run(tc.name, func(t *testing.T) {
+				got, err := parseMonitorsListArgs(tc.args)
+				if err != nil {
+					t.Fatalf("parse error: %v", err)
+				}
+				if !reflect.DeepEqual(got, tc.want) {
+					t.Errorf("got %+v, want %+v", got, tc.want)
+				}
+			})
+		}
+	})
+
+	t.Run("all flags in any order", func(t *testing.T) {
+		args := []string{
+			"--team-name", "Acme",
+			"--url", "https://example.com/x",
+			"--page", "2",
+			"--pronounceable-name", "Example",
+			"--per-page", "50",
+			"--timeout", "5s",
+		}
+		got, err := parseMonitorsListArgs(args)
+		if err != nil {
+			t.Fatalf("parse error: %v", err)
+		}
+		want := monitorsListArgs{
+			pages:              []string{"2"},
+			perPages:           []string{"50"},
+			urls:               []string{"https://example.com/x"},
+			pronounceableNames: []string{"Example"},
+			teamNames:          []string{"Acme"},
+			timeout:            5 * time.Second,
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
+
+	t.Run("repeated flag keeps each occurrence", func(t *testing.T) {
+		got, err := parseMonitorsListArgs([]string{"--page", "1", "--page", "2", "--url", "first", "--url", "second"})
+		if err != nil {
+			t.Fatalf("parse error: %v", err)
+		}
+		want := monitorsListArgs{
+			pages:   []string{"1", "2"},
+			urls:    []string{"first", "second"},
+			timeout: defaultTimeout,
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
+
+	t.Run("empty explicit value stays present", func(t *testing.T) {
+		got, err := parseMonitorsListArgs([]string{"--url", ""})
+		if err != nil {
+			t.Fatalf("parse error: %v", err)
+		}
+		want := monitorsListArgs{urls: []string{""}, timeout: defaultTimeout}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
+
+	t.Run("errors", func(t *testing.T) {
+		cases := []struct {
+			name string
+			args []string
+		}{
+			{"unknown --all", []string{"--all"}},
+			{"unknown --pretty", []string{"--pretty"}},
+			{"unknown --query", []string{"--query", "x"}},
+			{"unknown short help", []string{"-h"}},
+			{"help in flag position", []string{"--help"}},
+			{"unknown option", []string{"--bogus"}},
+			{"positional", []string{"extra"}},
+			{"page missing value", []string{"--page"}},
+			{"url missing value", []string{"--url"}},
+			{"timeout missing value", []string{"--timeout"}},
+			{"timeout zero", []string{"--timeout", "0s"}},
+			{"timeout negative", []string{"--timeout", "-5s"}},
+			{"timeout not a duration", []string{"--timeout", "nonsense"}},
+		}
+		for _, tc := range cases {
+			t.Run(tc.name, func(t *testing.T) {
+				if _, err := parseMonitorsListArgs(tc.args); err == nil {
+					t.Fatalf("parseMonitorsListArgs(%q) = nil error, want error", tc.args)
+				}
+			})
+		}
+	})
 }

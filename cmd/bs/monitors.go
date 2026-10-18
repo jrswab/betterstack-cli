@@ -119,3 +119,58 @@ func parseMonitorsGetArgs(args []string) (string, time.Duration, error) {
 	}
 	return target, timeout, nil
 }
+
+// monitorsListArgs holds one parsed `bs monitors list` invocation. A nil
+// slice means the flag was absent. A slice containing "" means the flag was
+// present with an explicitly empty value. Repeated flags keep every
+// occurrence in order so each value reaches upstream unchanged (spec R1.4).
+type monitorsListArgs struct {
+	pages              []string
+	perPages           []string
+	urls               []string
+	pronounceableNames []string
+	teamNames          []string
+	timeout            time.Duration
+}
+
+// parseMonitorsListArgs parses the flags accepted by `bs monitors list`.
+// Every flag consumes the following argument as its value. The timeout uses
+// the same duration grammar and invalid-value handling as monitors get; every
+// other value passes through unchanged for upstream validation.
+func parseMonitorsListArgs(args []string) (monitorsListArgs, error) {
+	parsed := monitorsListArgs{timeout: defaultTimeout}
+	for i := 0; i < len(args); i++ {
+		flag := args[i]
+		switch {
+		case flag == "--page" || flag == "--per-page" || flag == "--url" || flag == "--pronounceable-name" || flag == "--team-name" || flag == "--timeout":
+			if i+1 >= len(args) {
+				return monitorsListArgs{}, fmt.Errorf("%s needs a value", flag)
+			}
+			i++
+			value := args[i]
+			switch flag {
+			case "--page":
+				parsed.pages = append(parsed.pages, value)
+			case "--per-page":
+				parsed.perPages = append(parsed.perPages, value)
+			case "--url":
+				parsed.urls = append(parsed.urls, value)
+			case "--pronounceable-name":
+				parsed.pronounceableNames = append(parsed.pronounceableNames, value)
+			case "--team-name":
+				parsed.teamNames = append(parsed.teamNames, value)
+			case "--timeout":
+				d, err := time.ParseDuration(value)
+				if err != nil || d <= 0 {
+					return monitorsListArgs{}, fmt.Errorf("invalid --timeout value %q", value)
+				}
+				parsed.timeout = d
+			}
+		case strings.HasPrefix(flag, "-"):
+			return monitorsListArgs{}, fmt.Errorf("unknown option %q", flag)
+		default:
+			return monitorsListArgs{}, fmt.Errorf("unexpected argument %q", flag)
+		}
+	}
+	return parsed, nil
+}
