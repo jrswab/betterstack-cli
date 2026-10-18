@@ -44,6 +44,9 @@ func runWithAPI(args []string, stdout, stderr io.Writer, baseURL string, client 
 	if len(args) >= 2 && args[0] == "incidents" && args[1] == "timeline" {
 		return incidentsTimeline(args[2:], stdout, stderr, baseURL, client)
 	}
+	if len(args) >= 2 && args[0] == "incidents" && args[1] == "list" {
+		return incidentsList(args[2:], stdout, stderr, baseURL, client)
+	}
 	fmt.Fprint(stderr, usageError(args))
 	return 1
 }
@@ -125,11 +128,9 @@ func resourceUsageError(resource string, rest []string) string {
 		if len(rest) > 1 {
 			return fmt.Sprintf("bs: unexpected argument %q for %q; %s.\n", rest[1], command, commandHint)
 		}
-		if resource == "incidents" {
-			return fmt.Sprintf("bs: %q is not implemented in this milestone; %s.\n", command, commandHint)
-		}
-		// A bare `monitors list` is routed before this function; report a
-		// defensive error rather than claiming the implemented command is not.
+		// A bare `monitors list` or `incidents list` is routed before this
+		// function; report a defensive error rather than claiming the
+		// implemented command is not.
 		return fmt.Sprintf("bs: unexpected argument vector for %q; %s.\n", command, commandHint)
 	}
 

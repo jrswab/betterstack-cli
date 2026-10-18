@@ -2134,3 +2134,81 @@ func TestIncidentsListLocalFailureIsTokenFree(t *testing.T) {
 		t.Errorf("stderr leaks the token: %q", stderr)
 	}
 }
+
+// TestIncidentsListRoutesThroughRunWithAPI covers B2 (spec R1.1, R8.1): the
+// routed vector reaches the injected mock once at the v3 incidents path,
+// proving main's incidents list branch is wired ahead of the old
+// not-implemented fallthrough.
+func TestIncidentsListRoutesThroughRunWithAPI(t *testing.T) {
+	var requests atomic.Int32
+	var gotPath string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		gotPath = r.URL.EscapedPath()
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.WriteString(w, `{"data":[]}`)
+	}))
+	defer srv.Close()
+
+	t.Setenv(tokenEnvVar, testToken)
+
+	code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "list")
+	if code != 0 {
+		t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+	}
+	if stdout != `{"data":[]}` {
+		t.Errorf("stdout = %q, want the raw body", stdout)
+	}
+	if stderr != "" {
+		t.Errorf("stderr = %q, want empty", stderr)
+	}
+	if got := requests.Load(); got != 1 {
+		t.Fatalf("server requests = %d, want 1", got)
+	}
+	if want := "/api/v3/incidents"; gotPath != want {
+		t.Errorf("path = %q, want %q", gotPath, want)
+	}
+}
+
+// TestIncidentsListUsageFailuresThroughRouting covers B2 (spec R1.1, R1.7):
+// positional and unknown-option vectors exit 1 with a readable error and zero
+// requests through the new command's parser, replacing the old shared list
+// rejection.
+func TestIncidentsListUsageFailuresThroughRouting(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"positional", []string{"incidents", "list", "extra"}},
+		{"unknown option", []string{"incidents", "list", "--bogus"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), tc.args...)
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if strings.TrimSpace(stderr) == "" {
+				t.Error("stderr is empty, want a readable error")
+			}
+			if strings.Contains(stderr, testToken) {
+				t.Errorf("stderr leaks the token: %q", stderr)
+			}
+			if got := requests.Load(); got != 0 {
+				t.Errorf("server requests = %d, want 0", got)
+			}
+		})
+	}
+}

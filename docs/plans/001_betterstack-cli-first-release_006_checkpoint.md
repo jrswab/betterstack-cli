@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `phase-3-executing` — the Phase 3 task loop is running; A1 and B1 have passed
-- Current task: `B1 complete; next B2`
-- Task states: A1, B1 passed; B2, B3, C1 planned and unchecked
+- Current phase: `phase-3-executing` — the Phase 3 task loop is running; A1, B1, and B2 have passed
+- Current task: `B2 complete; next B3`
+- Task states: A1, B1, B2 passed; B3, C1 planned and unchecked
 - Milestone checkbox: `unchecked` (source entry `- [ ] 006`, never edited by this run)
-- Last completed phase/task/gate and timestamp: B1 verification 2026-10-18; A1 verification 2026-10-18; 006 committed planning gate recorded 2026-10-18; Phase 2 (implementation checklist) gate passed 2026-10-18; Phase 1 (spec) gate passed 2026-10-18; 006 setup gate 2026-10-18 (see Gate evidence)
+- Last completed phase/task/gate and timestamp: B2 verification 2026-10-18; B1 verification 2026-10-18; A1 verification 2026-10-18; 006 committed planning gate recorded 2026-10-18; Phase 2 (implementation checklist) gate passed 2026-10-18; Phase 1 (spec) gate passed 2026-10-18; 006 setup gate 2026-10-18 (see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -136,6 +136,16 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - `git status --porcelain`: the verbatim baseline above plus ` M cmd/bs/incidents.go`, ` M cmd/bs/incidents_test.go`, ` M docs/plans/001_betterstack-cli-first-release_006_checkpoint.md`, ` M docs/plans/001_betterstack-cli-first-release_006_implement.md`
   - Relevant work: `uncommitted` — stash ref `5d9a31c6ab92b86e6d69e02db35d9e77305ed2ba` (created with `git stash create "006 B1 gate snapshot"`; inspectable with `git show --stat`, never applied); the scoped B1 commit that follows is the authoritative record
 
+- Gate: 006 Phase 3 task B2 — incidents list routing
+  - Command(s) and actual result(s):
+    - Red: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test -run 'TestIncidentsListRoutesThroughRunWithAPI|TestIncidentsListUsageFailuresThroughRouting' ./cmd/bs/` → `--- FAIL: TestIncidentsListRoutesThroughRunWithAPI` with `exit code = 1, want 0; stderr = "bs: \"incidents list\" is not implemented in this milestone; ..."`, proving the old fallthrough was reached (no request)
+    - Green after adding the `incidents list` routing branch in `cmd/bs/main.go`, removing the unreachable `incidents` not-implemented sub-branch inside `resourceUsageError`'s list branch (the branch stays as a defensive fallback), and dropping the stale `incidents list` entry from `TestUnimplementedCommandsMakeNoRequest` in `cmd/bs/monitors_test.go`: `go test -run 'TestIncidentsListRoutesThroughRunWithAPI|TestIncidentsListUsageFailuresThroughRouting|TestUnimplementedCommandsMakeNoRequest|TestInvalidUsageMatrix|TestCommandHelp' ./cmd/bs/` → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.011s`
+    - `gofmt -w cmd/bs/`, then `gofmt -l cmd/bs/` → empty; `go vet ./...` → exit 0; full package `go test ./...` → `ok github.com/jrswab/betterstack-cli/cmd/bs 1.927s`
+    - Coverage: the routed bare vector reaches the mock once at `/api/v3/incidents` with the raw body and empty stderr; routed positional and unknown-option vectors exit 1 with a readable token-free error and zero requests; the remaining `TestUnimplementedCommandsMakeNoRequest` cases and the help/invalid-usage matrices stay green
+  - `HEAD` commit SHA: `f06130b` (the B1 commit; this task ran against it)
+  - `git status --porcelain`: the verbatim baseline above plus ` M cmd/bs/incidents_test.go`, ` M cmd/bs/main.go`, ` M cmd/bs/monitors_test.go`, ` M docs/plans/001_betterstack-cli-first-release_006_checkpoint.md`, ` M docs/plans/001_betterstack-cli-first-release_006_implement.md`
+  - Relevant work: `uncommitted` — stash ref `8d6c5c123b65bb91dcfa3eec1ff40b4f4add21a2` (created with `git stash create "006 B2 gate snapshot"`; inspectable with `git show --stat`, never applied); the scoped B2 commit that follows is the authoritative record
+
 ## Limitations & blockers
 
 - Limitations:
@@ -143,4 +153,4 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - The credential-safety regime and the `safety_test.go` guard limits (covers only clients using `http.DefaultTransport` or `testHTTPClient()`; cannot stop a test that injects its own transport or dials `net.Conn` directly) carry forward from 004/005 and are documented in `cmd/bs/safety_test.go`.
   - All work stays local: no push, tag, release, deploy, live API call, or external modification. Tests use only dummy tokens and mock loopback servers.
 - Blockers: none.
-- Next action (the single next safe action): begin 006 Phase 3 task B2 — wire the `incidents list` routing in `cmd/bs/main.go`, adjust `resourceUsageError`, and drop the stale `incidents list` case from `TestUnimplementedCommandsMakeNoRequest`, then B3, C1, and the completion gate.
+- Next action (the single next safe action): begin 006 Phase 3 task B3 — add the routed end-to-end spec coverage in `cmd/bs/incidents_test.go`, then C1 and the completion gate.
