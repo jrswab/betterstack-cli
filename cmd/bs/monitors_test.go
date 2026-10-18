@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -77,6 +78,43 @@ func TestMonitorsGetSendsBearerToken(t *testing.T) {
 	}
 	if want := "/api/v2/monitors/a%20b"; gotPath != want {
 		t.Errorf("path = %q, want %q", gotPath, want)
+	}
+}
+
+// TestMonitorsGetPrintsRawBodyOnSuccess covers A3 (spec R3): a 2xx body is
+// written to stdout byte-for-byte with nothing appended or removed, stderr is
+// empty, and the exit code is 0. Non-JSON bodies print raw too.
+func TestMonitorsGetPrintsRawBodyOnSuccess(t *testing.T) {
+	cases := []struct {
+		name string
+		body string
+	}{
+		{"json without trailing newline", `{"data":{"id":"789"}}`},
+		{"non-json", "not json at all"},
+		{"body with its own trailing newline", "kept\n"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				_, _ = io.WriteString(w, tc.body)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "get", "789")
+			if code != 0 {
+				t.Fatalf("exit code = %d, want 0", code)
+			}
+			if stdout != tc.body {
+				t.Errorf("stdout = %q, want %q", stdout, tc.body)
+			}
+			if stderr != "" {
+				t.Errorf("stderr = %q, want empty", stderr)
+			}
+		})
 	}
 }
 

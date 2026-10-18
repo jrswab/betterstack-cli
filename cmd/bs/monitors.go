@@ -60,7 +60,16 @@ func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client
 	}
 	defer resp.Body.Close()
 
-	_, _ = io.Copy(io.Discard, resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Fprintf(stderr, "bs: could not read the API response: %s\n", err)
+		return 1
+	}
+
+	if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
+		_, _ = stdout.Write(body)
+		return 0
+	}
 	return 0
 }
 
