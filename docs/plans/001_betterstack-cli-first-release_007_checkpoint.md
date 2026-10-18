@@ -30,16 +30,16 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 ## Artifacts
 
 - Spec: `docs/plans/001_betterstack-cli-first-release_007_spec.md` (written and Phase-1-gate-passed)
-- Implementation checklist: `docs/plans/001_betterstack-cli-first-release_007_implement.md` (not yet written — Phase 2 has not run)
+- Implementation checklist: `docs/plans/001_betterstack-cli-first-release_007_implement.md` (written and Phase-2-gate-passed)
 - Checkpoint: `docs/plans/001_betterstack-cli-first-release_007_checkpoint.md` (this file, written by atomic rename at setup)
 
 ## State
 
-- Current phase: `spec` — Phase 1 (specification) passed its gate; Phase 2 (implementation checklist) is the next phase
-- Current task: none yet (the implementation checklist does not exist; task checkboxes will render from this checkpoint once Phase 2 writes them)
+- Current phase: `implement` — Phase 2 (implementation checklist) passed its gate; Phase 3 (execution, tasks A1 → B1 → C1 → D1) is the next phase
+- Current task: none started (A1 is the first Phase 3 task)
 - Task states: none yet
 - Milestone checkbox: `unchecked` (source entry `- [ ] 007`, unchanged — 007 is checked only at its own passing completion gate)
-- Last completed phase/gate: Phase 1 — specification (gate evidence below)
+- Last completed phase/gate: Phase 2 — implementation checklist (gate evidence below)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -84,7 +84,17 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
     - Every in-scope outcome, boundary, and failure mode maps to R1 (sweep + contract mapping), R2 (verification battery), R3 (clean-checkout smoke test with isolated GOBIN), R4 (release restraint + deferred record), R5 (durable artifact + accounting); no unresolved questions remain
   - `HEAD` commit SHA: `3b41a27` (the 007 setup commit; this gate ran against it)
   - `git status --porcelain`: the verbatim baseline above plus `?? docs/plans/001_betterstack-cli-first-release_007_spec.md`
-  - Relevant work: `uncommitted` at gate time — the spec is the durable on-disk artifact; the scoped docs commit that follows this gate records it and this checkpoint edit
+  - Relevant work: `uncommitted` at gate time — stash ref `f79dcb23fbf5352947505cdcdd374786b200a9fe` (created with `git stash create "007 Phase 1 gate snapshot"` before the commit; captures the tracked checkpoint gate edit only — untracked files are not in the ref and remain on disk as durable artifacts). The scoped docs commit `20d0747` that follows this gate is the authoritative record of the spec and this checkpoint edit
+
+- Gate: 007 Phase 2 — implementation checklist (this gate)
+  - Command(s) and actual result(s):
+    - The implement skill (factory Phase 2 override) was applied against the completed Phase 1 spec; the checklist was written to `docs/plans/001_betterstack-cli-first-release_007_implement.md` with Section 1 (context summary) and Section 2 (tasks A1, B1, C1, D1 in four slices, each naming exact commands, test groups, and checkpoint-recording duties)
+    - Inspection against the complete spec (grep-verified this session): every requirement maps to tasks — R1.1–R1.9 → A1 (sweep run, focused per-command groups, and the complete contract→test mapping with the product source audit); R2.1–R2.4 → B1 (race suite, vet, gofmt, `git diff --check`, `go mod verify`, help/invalid-usage regression confirmation); R3.1–R3.4 → C1 (`git archive` clean checkout, isolated `GOBIN` install, help smoke with unset credentials, cleanup, status confirmation); R4.1–R4.3 → D1 (verbatim deferred record with prerequisites, release restraint confirmed by the completion-gate status accounting); R5.1–R5.3 → D1 (checkpoint as durable record, change accounting, completion-gate-only checkbox render)
+    - Dependency order verified: A1 → B1 → C1 → D1, sequential (single verification thread; each task consumes prior evidence); no parallelizable pair claimed
+    - Scope-boundary check: no task writes product source, help text, or test behavior; no task touches `README.md`, `LICENSE`, `.gitignore`, `verify-incident-id.sh`, or `.wayfinder/`; no task executes a tag, push, publication, live API call, or any deferred release action; all four checkboxes render `- [ ]` (none pre-rendered)
+  - `HEAD` commit SHA: `20d0747` (the 007 Phase 1 planning commit; this gate ran against it)
+  - `git status --porcelain`: the preserved untracked baseline (`.wayfinder/`, `verify-incident-id.sh`) plus `?? docs/plans/001_betterstack-cli-first-release_007_implement.md` and the modified checkpoint
+  - Relevant work: `uncommitted` at gate time — stash ref recorded below; the scoped docs commit that follows this gate records the checklist and this checkpoint edit
 
 ## Limitations & blockers
 
@@ -94,4 +104,4 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - The credential-safety regime and the `safety_test.go` guard limits (covers only clients using `http.DefaultTransport` or `testHTTPClient()`; cannot stop a test that injects its own transport or dials `net.Conn` directly) carry forward and are documented in `cmd/bs/safety_test.go`.
   - All work stays local: no push, tag, release, deploy, live API call, or external modification. Tests use only dummy tokens and mock loopback servers.
 - Blockers: none.
-- Next action (the single next safe action): begin 007 Phase 2 — apply the implement skill with the factory override to write `docs/plans/001_betterstack-cli-first-release_007_implement.md` from the completed spec.
+- Next action (the single next safe action): begin 007 Phase 3 task A1 — run the mock-API acceptance sweep and record the per-command contract→test mapping in the checkpoint.
