@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched (now displayed 
 
 ## State
 
-- Current phase: `execute` — Phase 3 (exec) loaded 2026-10-18; A1–A3 and B1 verified and committed
-- Current task: B1 complete; B2 is next
-- Task states: A1, A2, A3, B1 verified; B2, B3, C1, C2 unchecked
+- Current phase: `execute` — Phase 3 (exec) loaded 2026-10-18; A1–A3, B1, B2 verified and committed
+- Current task: B2 complete; B3 is next
+- Task states: A1, A2, A3, B1, B2 verified; B3, C1, C2 unchecked
 - Milestone checkbox: `unchecked` (source entry `- [ ] 002`)
-- Last completed phase/task/gate and timestamp: B1 verified 2026-10-18 (see Gate evidence)
+- Last completed phase/task/gate and timestamp: B2 verified 2026-10-18 (see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -106,6 +106,13 @@ One entry per passed gate (review, lint, verification, completion).
   - `HEAD` commit SHA: `8297739f2f24e97693eba248c46a9b4d73daec85` (work committed after this gate)
   - `git status --porcelain`: ` M cmd/bs/monitors.go` / ` M cmd/bs/monitors_test.go` / ` M docs/plans/001_betterstack-cli-first-release_002_checkpoint.md` plus the preserved baseline and planning artifacts
   - Relevant work: `uncommitted` — stash ref `0a831413780da1d0346bd2b85977e5bbdf779858`
+- Gate: task B2 — `--timeout` override and default (spec R5, R8)
+  - Command(s) and actual result(s):
+    - Red: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./cmd/... -run 'TestMonitorsGetTimeoutOverride|TestMonitorsGetInvalidTimeout'` → `expires` recorded 0 requests and `within override` exited 1 with `unknown option "--timeout"` (exit 1)
+    - Green after `cmd/bs/monitors.go` replaced `parseMonitorsGetTarget` with `parseMonitorsGetArgs` (default `defaultTimeout` = 30s, `--timeout` parsed by `time.ParseDuration`, non-positive or unparseable rejected, missing value rejected) and fed the parsed value into `context.WithTimeout`: full `go test ./...` → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.165s` (exit 0); the delayed server failed at 10ms with exit 1, token-free stderr, empty stdout, one request; the same server succeeded under a 5s override; `0s`, `-5s`, `nonsense`, and a missing value each exited 1 with readable stderr and zero requests; `gofmt -l cmd/bs` no output; `go vet ./cmd/...` exit 0
+  - `HEAD` commit SHA: `af50f77d7ff7d31d6c872a4e3113f23c550685dd` (work committed after this gate)
+  - `git status --porcelain`: ` M cmd/bs/monitors.go` / ` M cmd/bs/monitors_test.go` / ` M docs/plans/001_betterstack-cli-first-release_002_checkpoint.md` plus the preserved baseline and planning artifacts
+  - Relevant work: `uncommitted` — stash ref `e1507598e83a1b097f7ac598acdc19fe5c56a6b8`
 
 ## Limitations & blockers
 
@@ -114,4 +121,4 @@ One entry per passed gate (review, lint, verification, completion).
   - Planning scope only: no implementation work, no code, and no test has been written for 002. Phase 3 (exec skill) has not been loaded; A1–C2 are all unchecked.
   - Credential-safety regime carried forward from the 001 run (see Identity); the exposed `BETTERSTACK_UPTIME_API_TOKEN` value was never read by any session and its rotation remains Jaron's deferred user action.
   - The stash refs `cca382c4…` and `45e9de0…` are unreachable Git objects once recorded; they are inspectable with `git show`/`git stash show` (never applied) and may be pruned by `git gc`.
-- Next action (the single next safe action): begin checklist task B2 (`--timeout` parsing with the 30-second default and invalid-value rejection) with its red tests, then implement to green.
+- Next action (the single next safe action): begin checklist task B3 (token-free local/network failure output with redaction of locally generated diagnostics) with its red tests, then implement to green.

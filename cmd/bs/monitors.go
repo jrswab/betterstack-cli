@@ -26,7 +26,7 @@ func newHTTPClient() *http.Client { return &http.Client{} }
 // here; credential handling, output passthrough, and timeout parsing follow in
 // later checklist tasks.
 func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
-	target, err := parseMonitorsGetTarget(args)
+	target, timeout, err := parseMonitorsGetArgs(args)
 	if err != nil {
 		fmt.Fprintf(stderr, "bs: %s; run 'bs monitors get --help' for usage.\n", err)
 		return 1
@@ -39,7 +39,7 @@ func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client
 	}
 
 	endpoint := strings.TrimRight(baseURL, "/") + "/api/v2/monitors/" + url.PathEscape(target)
-	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
@@ -74,20 +74,32 @@ func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client
 	return 1
 }
 
-func parseMonitorsGetTarget(args []string) (string, error) {
+func parseMonitorsGetArgs(args []string) (string, time.Duration, error) {
 	var target string
-	for _, arg := range args {
+	timeout := defaultTimeout
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
 		switch {
+		case arg == "--timeout":
+			if i+1 >= len(args) {
+				return "", 0, errors.New("--timeout needs a duration value")
+			}
+			i++
+			d, err := time.ParseDuration(args[i])
+			if err != nil || d <= 0 {
+				return "", 0, fmt.Errorf("invalid --timeout value %q", args[i])
+			}
+			timeout = d
 		case strings.HasPrefix(arg, "-"):
-			return "", fmt.Errorf("unknown option %q", arg)
+			return "", 0, fmt.Errorf("unknown option %q", arg)
 		case target == "":
 			target = arg
 		default:
-			return "", errors.New("too many arguments")
+			return "", 0, errors.New("too many arguments")
 		}
 	}
 	if target == "" {
-		return "", errors.New("missing <id>")
+		return "", 0, errors.New("missing <id>")
 	}
-	return target, nil
+	return target, timeout, nil
 }
