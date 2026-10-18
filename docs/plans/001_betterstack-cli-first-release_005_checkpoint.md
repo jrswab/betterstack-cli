@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `execute` — Phase 3 (execution) is underway; task A1 passed its focused gates and is committed, and the next task is B1
-- Current task: `B1` — routing `incidents timeline` in `cmd/bs/main.go` plus the regression-case update
-- Task states: A1 `implemented, reported pass, review pending`; B1 `unchecked`, B2 `unchecked`, C1 `unchecked` (all task boxes stay unchecked; the independent boundary review is pending)
+- Current phase: `execute` — Phase 3 (execution) is underway; tasks A1 and B1 passed their focused gates and are committed, and the next task is B2
+- Current task: `B2` — end-to-end routed coverage for the whole spec in `cmd/bs/incidents_test.go`
+- Task states: A1 `implemented, reported pass, review pending`; B1 `implemented, reported pass, review pending`; B2 `unchecked`, C1 `unchecked` (all task boxes stay unchecked; the independent boundary review is pending)
 - Milestone checkbox: `unchecked` (source entry `- [ ] 005`, never edited by this run)
-- Last completed phase/task/gate and timestamp: task A1 gate passed 2026-10-18 (see Gate evidence); Phase 2 (implementation checklist) gate passed 2026-10-18; Phase 1 (spec) gate passed 2026-10-18
+- Last completed phase/task/gate and timestamp: task B1 gate passed 2026-10-18 (see Gate evidence); task A1 gate passed 2026-10-18; Phase 2 (implementation checklist) gate passed 2026-10-18; Phase 1 (spec) gate passed 2026-10-18
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -112,11 +112,22 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - `git status --porcelain`: the verbatim baseline above plus ` M cmd/bs/incidents.go`, ` M cmd/bs/incidents_test.go`, and ` M docs/plans/001_betterstack-cli-first-release_005_checkpoint.md`
   - Relevant work: `uncommitted` — stash ref `5f17a46fd04ad7f799ede5a3b48d7855169af674` (staged-only snapshot of exactly the 005 checkpoint plus `cmd/bs/incidents.go` and `cmd/bs/incidents_test.go`; `git show --stat` shows 3 files). The snapshot predates the substitution of its own ref at this line; the A1 commit that follows is the authoritative record of the same paths
 
+- Gate: task B1 — `incidents timeline` routing and regression-case update (spec R1.1, R9.1, R9.2)
+  - Command(s) and actual result(s):
+    - TDD red: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./cmd/bs/ -run 'TestIncidentsTimelineRoutesThroughRunWithAPI' -count=1` → `--- FAIL: TestIncidentsTimelineRoutesThroughRunWithAPI ... exit code = 1, want 0; stderr = "bs: \"incidents timeline\" is not implemented in this milestone; ..."` — the routed vector still hit the not-implemented fallthrough
+    - TDD green: after adding the `incidents timeline` branch in `cmd/bs/main.go` and removing the two stale not-implemented cases (the `incidents timeline` entry in `TestUnimplementedCommandsMakeNoRequest` in `cmd/bs/monitors_test.go` and the `timeline still unimplemented` entry in `TestIncidentsGetUsageFailuresThroughRouting` in `cmd/bs/incidents_test.go`), the focused batch `-run 'TestIncidentsTimelineRoutesThroughRunWithAPI|TestIncidentsGetRoutesThroughRunWithAPI|TestIncidentsGetUsageFailuresThroughRouting|TestUnimplementedCommandsMakeNoRequest|TestCommandHelp|TestInvalidUsageMatrix' -count=1` → `ok ... 0.015s`, all subtests PASS
+    - Regression: `-run 'TestIncidents|TestMonitors|TestParseIncidentsGetArgs|TestResolveIncidentTarget' -count=1` → `ok ... 0.815s`; `gofmt -l cmd/bs/` → no output; `GOTOOLCHAIN=go1.26.9 GOPROXY=off go vet ./cmd/...` → exit 0
+    - `incidents get` behavior frozen: `TestIncidentsGetRoutesThroughRunWithAPI` still reaches `/api/v3/incidents/123`; missing/extra targets still exit 1 through the shared `resourceUsageError`; `incidents list` stays not-implemented with zero requests; `TestInvalidUsageMatrix` holds no formerly-valid case; the `incidents timeline --help` text is unchanged
+    - Task checkbox left unchecked: the independent boundary review is pending and was neither dispatched nor self-claimed
+  - `HEAD` commit SHA: `c213b1e` (the A1 commit; work committed after this gate)
+  - `git status --porcelain`: the verbatim baseline above plus ` M cmd/bs/main.go`, ` M cmd/bs/monitors_test.go`, ` M cmd/bs/incidents_test.go`, and ` M docs/plans/001_betterstack-cli-first-release_005_checkpoint.md`
+  - Relevant work: `uncommitted` — stash ref `afb03004137b20a476eb676aacda1c74ff28c3e0` (staged-only snapshot of exactly the 005 checkpoint plus `cmd/bs/main.go`, `cmd/bs/monitors_test.go`, and `cmd/bs/incidents_test.go`; `git show --stat` shows 4 files). The snapshot predates the substitution of its own ref at this line; the B1 commit that follows is the authoritative record of the same paths
+
 ## Limitations & blockers
 
 - Limitations:
-  - The 005 spec and implementation checklist exist and have passed their gates; task A1 is implemented and committed. The remaining tasks B1, B2, and C1 are not yet implemented.
+  - The 005 spec and implementation checklist exist and have passed their gates; tasks A1 and B1 are implemented and committed. The remaining tasks B2 and C1 are not yet implemented.
   - The credential-safety regime and the `safety_test.go` guard limits (covers only clients using `http.DefaultTransport` or `testHTTPClient()`; cannot stop a test that injects its own transport or dials `net.Conn` directly) carry forward from 004 and are documented in `cmd/bs/safety_test.go`.
   - All work stays local: no push, tag, release, deploy, live API call, or external modification. Tests use only dummy tokens and mock loopback servers.
 - Blockers: none.
-- Next action (the single next safe action): task B1 — write the failing routed-timeline test, then wire the `incidents timeline` branch in `cmd/bs/main.go` and remove the stale `incidents timeline` not-implemented cases in `cmd/bs/monitors_test.go` and `cmd/bs/incidents_test.go`, under the pinned toolchain.
+- Next action (the single next safe action): task B2 — add the routed end-to-end coverage in `cmd/bs/incidents_test.go` (help, unknown options, rejected URL shapes, credential failures, token-absence sweep, `incidents list` regression), then run its focused gates under the pinned toolchain.

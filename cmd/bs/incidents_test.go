@@ -598,8 +598,8 @@ func TestIncidentsGetRoutesThroughRunWithAPI(t *testing.T) {
 }
 
 // TestIncidentsGetUsageFailuresThroughRouting covers B2 (spec R1.1, R9.1):
-// missing and extra positional targets fail with zero requests, while
-// incidents timeline stays not implemented.
+// missing and extra positional targets for incidents get fail with zero
+// requests through the shared resourceUsageError branch.
 func TestIncidentsGetUsageFailuresThroughRouting(t *testing.T) {
 	cases := []struct {
 		name string
@@ -607,7 +607,6 @@ func TestIncidentsGetUsageFailuresThroughRouting(t *testing.T) {
 	}{
 		{"missing target", []string{"incidents", "get"}},
 		{"extra target", []string{"incidents", "get", "1", "2"}},
-		{"timeline still unimplemented", []string{"incidents", "timeline", "123"}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -1353,5 +1352,40 @@ func TestIncidentsTimelineCredentialFailures(t *testing.T) {
 				t.Errorf("server requests = %d, want 0", got)
 			}
 		})
+	}
+}
+
+// TestIncidentsTimelineRoutesThroughRunWithAPI covers B1 (spec R1, R9.1): the
+// routed `incidents timeline` vector reaches the injected mock once at the v3
+// timeline path, proving main's timeline branch is wired ahead of the old
+// not-implemented fallthrough.
+func TestIncidentsTimelineRoutesThroughRunWithAPI(t *testing.T) {
+	var requests atomic.Int32
+	var gotPath string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		gotPath = r.URL.EscapedPath()
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.WriteString(w, `{"data":[]}`)
+	}))
+	defer srv.Close()
+
+	t.Setenv(tokenEnvVar, testToken)
+
+	code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "timeline", "123")
+	if code != 0 {
+		t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+	}
+	if stdout != `{"data":[]}` {
+		t.Errorf("stdout = %q, want the raw body", stdout)
+	}
+	if stderr != "" {
+		t.Errorf("stderr = %q, want empty", stderr)
+	}
+	if got := requests.Load(); got != 1 {
+		t.Fatalf("server requests = %d, want 1", got)
+	}
+	if want := "/api/v3/incidents/123/timeline"; gotPath != want {
+		t.Errorf("path = %q, want %q", gotPath, want)
 	}
 }

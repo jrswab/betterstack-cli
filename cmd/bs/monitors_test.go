@@ -390,7 +390,6 @@ func TestUnimplementedCommandsMakeNoRequest(t *testing.T) {
 		args []string
 	}{
 		{"incidents list", []string{"incidents", "list"}},
-		{"incidents timeline", []string{"incidents", "timeline", "123"}},
 		{"monitors get missing id", []string{"monitors", "get"}},
 		{"monitors get extra positional", []string{"monitors", "get", "1", "2"}},
 	}
