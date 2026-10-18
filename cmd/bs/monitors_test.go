@@ -310,6 +310,146 @@ func TestMonitorsGetLocalFailureIsTokenFree(t *testing.T) {
 	})
 }
 
+// assertNoToken fails when the dummy token appears on either output channel.
+func assertNoToken(t *testing.T, stdout, stderr string) {
+	t.Helper()
+	if strings.Contains(stdout, testToken) || strings.Contains(stderr, testToken) {
+		t.Errorf("token leaked; stdout = %q, stderr = %q", stdout, stderr)
+	}
+}
+
+// TestMonitorsGetNeverPrintsToken covers C1 (spec R7): with the dummy token in
+// the environment and in the bearer header the mock observed, the value never
+// appears on stdout or stderr on the success, non-2xx, and local-failure paths.
+func TestMonitorsGetNeverPrintsToken(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		var gotAuth string
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			gotAuth = r.Header.Get("Authorization")
+			w.WriteHeader(http.StatusOK)
+			_, _ = io.WriteString(w, `{"data":{}}`)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "get", "789")
+		if code != 0 {
+			t.Fatalf("exit code = %d, want 0", code)
+		}
+		if want := "Bearer " + testToken; gotAuth != want {
+			t.Errorf("Authorization = %q, want %q", gotAuth, want)
+		}
+		assertNoToken(t, stdout, stderr)
+	})
+
+	t.Run("non-2xx", func(t *testing.T) {
+		var gotAuth string
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			gotAuth = r.Header.Get("Authorization")
+			w.WriteHeader(http.StatusNotFound)
+			_, _ = io.WriteString(w, `{"errors":"not found"}`)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "get", "789")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		if want := "Bearer " + testToken; gotAuth != want {
+			t.Errorf("Authorization = %q, want %q", gotAuth, want)
+		}
+		assertNoToken(t, stdout, stderr)
+	})
+
+	t.Run("local failure", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+		closedURL := srv.URL
+		srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(closedURL, newHTTPClient(), "monitors", "get", "789")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		assertNoToken(t, stdout, stderr)
+	})
+}
+
+// TestUnimplementedCommandsMakeNoRequest covers C1 (spec R8): the 001
+// invalid-usage vectors and the not-implemented commands keep exit 1 with a
+// readable error, empty stdout, and zero mock requests.
+func TestUnimplementedCommandsMakeNoRequest(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"monitors list", []string{"monitors", "list"}},
+		{"incidents list", []string{"incidents", "list"}},
+		{"incidents get", []string{"incidents", "get", "123"}},
+		{"incidents timeline", []string{"incidents", "timeline", "123"}},
+		{"monitors get missing id", []string{"monitors", "get"}},
+		{"monitors get extra positional", []string{"monitors", "get", "1", "2"}},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), tc.args...)
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if strings.TrimSpace(stderr) == "" {
+				t.Error("stderr is empty, want a readable error")
+			}
+			if got := requests.Load(); got != 0 {
+				t.Errorf("server requests = %d, want 0", got)
+			}
+		})
+	}
+}
+
+// TestMonitorsGetHelpStillExitsZero covers C1 (spec R8): `bs monitors get
+// --help` still exits 0 with empty stderr and makes no request.
+func TestMonitorsGetHelpStillExitsZero(t *testing.T) {
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	t.Setenv(tokenEnvVar, testToken)
+
+	code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "get", "--help")
+	if code != 0 {
+		t.Fatalf("exit code = %d, want 0", code)
+	}
+	if stderr != "" {
+		t.Errorf("stderr = %q, want empty", stderr)
+	}
+	if !strings.Contains(stdout, "bs monitors get <id>") {
+		t.Errorf("stdout missing usage line:\n%s", stdout)
+	}
+	if got := requests.Load(); got != 0 {
+		t.Errorf("server requests = %d, want 0", got)
+	}
+}
+
 // TestMonitorsGetCredentialFailures covers A2 (spec R2): an unset or empty
 // token, and the former `BETTERSTACK_API_TOKEN` name set alone, each fail
 // before any request with a message naming `BETTERSTACK_UPTIME_API_TOKEN`.

@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched (now displayed 
 
 ## State
 
-- Current phase: `execute` — Phase 3 (exec) loaded 2026-10-18; A1–A3, B1–B3 verified and committed
-- Current task: B3 complete; C1 is next
-- Task states: A1, A2, A3, B1, B2, B3 verified; C1, C2 unchecked
+- Current phase: `execute` — Phase 3 (exec) loaded 2026-10-18; A1–A3, B1–B3, C1 verified and committed
+- Current task: C1 complete; C2 is next
+- Task states: A1, A2, A3, B1, B2, B3, C1 verified; C2 unchecked
 - Milestone checkbox: `unchecked` (source entry `- [ ] 002`)
-- Last completed phase/task/gate and timestamp: B3 verified 2026-10-18 (see Gate evidence)
+- Last completed phase/task/gate and timestamp: C1 verified 2026-10-18 (see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -120,6 +120,14 @@ One entry per passed gate (review, lint, verification, completion).
   - `HEAD` commit SHA: `ff30897f2db1df26990cf34aced29b0536856edf` (work committed after this gate)
   - `git status --porcelain`: ` M cmd/bs/monitors.go` / ` M cmd/bs/monitors_test.go` / ` M docs/plans/001_betterstack-cli-first-release_002_checkpoint.md` plus the preserved baseline and planning artifacts
   - Relevant work: `uncommitted` — stash ref `10c90fa1c807c4912a6fe178c3cf03db71403afd`
+- Gate: task C1 — token-leak sweep and 001 regression (spec R7, R8)
+  - Command(s) and actual result(s):
+    - Focused: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./cmd/... -run 'TestMonitorsGetNeverPrintsToken|TestUnimplementedCommandsMakeNoRequest|TestMonitorsGetHelpStillExitsZero' -v` → all pass (exit 0). These are acceptance-sweep tests over behavior already implemented in A1–B3; they passed on first run because the slice already satisfies them, so no new production code was needed for C1
+    - Coverage: dummy token absent from stdout and stderr on the success, non-2xx, and local-failure paths while the mock observed `Authorization: Bearer <dummy>`; `monitors list`, `incidents list`, `incidents get 123`, `incidents timeline 123`, `monitors get` (missing id), and `monitors get 1 2` each exited 1 with readable stderr, empty stdout, and zero mock requests; `monitors get --help` exited 0 with empty stderr and zero requests
+    - `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./...` → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.171s` (exit 0); `go vet ./...` exit 0; `gofmt -l cmd/bs` no output; `git diff --check` exit 0
+  - `HEAD` commit SHA: `bbba17673f58a47aeaeb7bdff80eef6b3ce6c198` (work committed after this gate)
+  - `git status --porcelain`: ` M cmd/bs/monitors_test.go` / ` M docs/plans/001_betterstack-cli-first-release_002_checkpoint.md` plus the preserved baseline and planning artifacts
+  - Relevant work: `uncommitted` — stash ref `d1724620ba9404f60fa7f44454d9576a1031492a`
 
 ## Limitations & blockers
 
@@ -128,4 +136,4 @@ One entry per passed gate (review, lint, verification, completion).
   - Planning scope only: no implementation work, no code, and no test has been written for 002. Phase 3 (exec skill) has not been loaded; A1–C2 are all unchecked.
   - Credential-safety regime carried forward from the 001 run (see Identity); the exposed `BETTERSTACK_UPTIME_API_TOKEN` value was never read by any session and its rotation remains Jaron's deferred user action.
   - The stash refs `cca382c4…` and `45e9de0…` are unreachable Git objects once recorded; they are inspectable with `git show`/`git stash show` (never applied) and may be pruned by `git gc`.
-- Next action (the single next safe action): begin checklist task C1 (token-leak sweep across success/non-2xx/local paths plus the 001 invalid-usage and not-implemented regression with zero mock requests) with its red tests, then implement to green.
+- Next action (the single next safe action): run checklist task C2 (whole-spec verification gate: full `go vet ./...` and `go test ./...` on a clean tree, `git diff --check`, and inspect against R1–R9 and the milestone 002 acceptance line), then hand off to the orchestrator for the one milestone-boundary review.
