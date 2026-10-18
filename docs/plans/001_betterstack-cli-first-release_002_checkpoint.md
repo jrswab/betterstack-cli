@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched (now displayed 
 
 ## State
 
-- Current phase: `execute` — Phase 3 (exec) loaded 2026-10-18; A1–A3, B1–B3, C1 verified and committed
-- Current task: C1 complete; C2 is next
-- Task states: A1, A2, A3, B1, B2, B3, C1 verified; C2 unchecked
-- Milestone checkbox: `unchecked` (source entry `- [ ] 002`)
-- Last completed phase/task/gate and timestamp: C1 verified 2026-10-18 (see Gate evidence)
+- Current phase: `execute` — Phase 3 (exec) loaded 2026-10-18; A1–A3, B1–B3, C1, C2 verified and committed
+- Current task: C2 complete; implementation and focused verification done, independent milestone-boundary review pending
+- Task states: A1, A2, A3, B1, B2, B3, C1, C2 verified; none left unchecked in this milestone
+- Milestone checkbox: `unchecked` (source entry `- [ ] 002`) — Factory completion gate and independent boundary review are the orchestrator's to run
+- Last completed phase/task/gate and timestamp: C2 verified 2026-10-18 (see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -128,12 +128,22 @@ One entry per passed gate (review, lint, verification, completion).
   - `HEAD` commit SHA: `bbba17673f58a47aeaeb7bdff80eef6b3ce6c198` (work committed after this gate)
   - `git status --porcelain`: ` M cmd/bs/monitors_test.go` / ` M docs/plans/001_betterstack-cli-first-release_002_checkpoint.md` plus the preserved baseline and planning artifacts
   - Relevant work: `uncommitted` — stash ref `d1724620ba9404f60fa7f44454d9576a1031492a`
+- Gate: task C2 — whole-spec verification (spec R1–R9; milestone 002 acceptance line)
+  - Command(s) and actual result(s):
+    - `GOTOOLCHAIN=go1.26.9 GOPROXY=off go vet ./...` → exit 0
+    - `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./...` → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.171s` (exit 0), run on the clean committed tree
+    - `git diff --check` → exit 0; `git status --porcelain=v1 -uall` → only this checkpoint plus the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh`; every other working-tree change is committed
+    - Inspection against every requirement: R1 one `GET <base>/api/v2/monitors/<escaped target>` with `Authorization: Bearer <token>` (tests A1/A2); R2 token read only from `BETTERSTACK_UPTIME_API_TOKEN`, unset/empty/former-name-only each exit 1 before any request (A2); R3 raw 2xx body byte-for-byte on stdout with no appended newline, non-JSON included (A3); R4 every non-2xx including 3xx raw body on stderr with exit 1 and exactly one request via `http.ErrUseLastResponse` (B1); R5 `defaultTimeout` 30s single source, `--timeout` parsed by `time.ParseDuration` and rejected when non-positive/unparseable/missing with no request (B2); R6 one concise token-free stderr message with exit 1 and empty stdout for local/network failure (B3); R7 token never on either channel across success, non-2xx, and local failure, with `redactToken` on local diagnostics only (B3, C1); R8 001 invalid-usage matrix unchanged (`cmd/bs/main_test.go` untouched), not-implemented commands make zero requests, `monitors get --help` exits 0 (C1); R9 seam is `runWithAPI` with injected base URL and client, no flag/env/file channel (A1). Milestone 002 acceptance line covered: success passthrough, each failure class, timeout override, missing-token, never-printed-token, exit codes 0/1 only
+    - Deliberate verification boundary: the 30-second default is confirmed by review of the single timeout source (`defaultTimeout`) rather than a 30-second test, per spec R5
+  - `HEAD` commit SHA: `d0eef8a3ec7c5a91420f2858c6c80e2eba81438f` (checkpoint committed after this gate)
+  - `git status --porcelain`: ` M docs/plans/001_betterstack-cli-first-release_002_checkpoint.md` plus the preserved baseline and planning artifacts
+  - Relevant work: `uncommitted` — stash ref `0a105707438800b51b290faf87d0c07d380dccf3`
 
 ## Limitations & blockers
 
-- Blockers: none.
 - Limitations:
-  - Planning scope only: no implementation work, no code, and no test has been written for 002. Phase 3 (exec skill) has not been loaded; A1–C2 are all unchecked.
+  - Implementation and focused verification are complete and committed; the independent milestone-boundary review and the Factory completion gate are not run in this session (the orchestrator owns both). The milestone checkbox stays `unchecked` until that gate passes.
   - Credential-safety regime carried forward from the 001 run (see Identity); the exposed `BETTERSTACK_UPTIME_API_TOKEN` value was never read by any session and its rotation remains Jaron's deferred user action.
-  - The stash refs `cca382c4…` and `45e9de0…` are unreachable Git objects once recorded; they are inspectable with `git show`/`git stash show` (never applied) and may be pruned by `git gc`.
-- Next action (the single next safe action): run checklist task C2 (whole-spec verification gate: full `go vet ./...` and `go test ./...` on a clean tree, `git diff --check`, and inspect against R1–R9 and the milestone 002 acceptance line), then hand off to the orchestrator for the one milestone-boundary review.
+  - The per-task stash refs recorded above are unreachable Git objects; they are inspectable with `git show`/`git stash show` (never applied) and may be pruned by `git gc`.
+- Blockers: none.
+- Next action (the single next safe action): hand off to the orchestrator to run the one independent milestone-boundary review of the A1–C2 slice at HEAD `d0eef8a3ec7c5a91420f2858c6c80e2eba81438f`, then the Factory completion gate; do not check the source milestone checkbox here.
