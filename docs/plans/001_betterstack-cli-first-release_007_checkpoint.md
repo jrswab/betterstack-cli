@@ -35,10 +35,10 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `phase-3-executing` — the independent targeted review of the artifact-repair range `eda2982..4eba0b4` returned verdict PASS (findings B1 and B2 confirmed fixed); the four task boxes render `[x]` from the review-PASS gate below; the true completion gate (run only after this review PASS) is the single next action
-- Current task: `independent targeted review PASS recorded at the current actual HEAD/status; true completion gate pending`
-- Task states: A1, B1, C1, D1 executed and verified, committed; task checkboxes `[x]` rendered from the review-PASS gate (this render, not the reverted premature one)
-- Milestone checkbox: `unchecked` (source entry `- [ ] 007`; renders `[x]` only at the passing true completion gate)
+- Current phase: `complete` — the true completion gate passed (recorded 2026-10-18, explicitly superseding the PREMISE INVALID render); milestone 007 is complete and the outer loop has no remaining unchecked milestone
+- Current task: `none` — all Phase 3 tasks executed, reviewed PASS, completion gate passed
+- Task states: A1, B1, C1, D1 executed, verified, committed, and reviewed PASS; all four task checkboxes render `[x]`
+- Milestone checkbox: `checked` (source entry `- [x] 007`, rendered from the passing TRUE completion gate)
 - Last completed phase/task/gate and timestamp: 007 artifact repair B2 (monitors get absent-feature coverage + A1 mapping completion) 2026-10-18; 007 artifact repair B1 (premature completion corrected) 2026-10-18; Phase 3 task D1 gate + 007 completion gate 2026-10-18 (render later annotated PREMISE INVALID at the B1 repair gate); task C1 2026-10-18; task B1 2026-10-18; task A1 2026-10-18 (see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
@@ -212,4 +212,23 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - Jaron's deferred token rotation stays a user action; the preserved unauthorized live-GET record and first-token-exposure warning stay preserved.
   - All work stayed local: no push, tag, release, deploy, live API call, or external modification. Tests used only dummy tokens and mock loopback servers.
 - Blockers: none.
-- Next action (the single next safe action): run the true completion gate (full suite once with `-count=1`, race suite, vet, gofmt, `git diff --check`, `go mod verify`, temp build, clean `git archive HEAD` checkout, isolated-GOBIN `go install`, and the root/resource/all-five-command help smoke), record it in this checkpoint explicitly superseding the PREMISE INVALID render, and only then render the source entry `- [x] 007`.
+- Next action: none. The true completion gate passed and milestone 007 is complete; the outer factory loop has no remaining unchecked milestone.
+
+- Gate: 007 TRUE completion — PASS (recorded this session, explicitly SUPERSEDES the earlier PREMISE INVALID D1 completion render of 2026-10-18)
+  - Supersession: the earlier D1 completion render (annotated PREMISE INVALID above) ran before the independent targeted review and is not a passing completion gate. This gate runs only after the review-PASS gate above (verdict PASS over `eda2982..4eba0b4`), satisfies every spec requirement R1–R5, and is the sole valid completion gate for milestone 007.
+  - Command(s) and actual results (every shell began with `unset BETTERSTACK_UPTIME_API_TOKEN` and `unset BETTERSTACK_API_TOKEN`; pinned `GOTOOLCHAIN=go1.26.9 GOPROXY=off`; no env dump, no xtrace, no `.env` read, no live request; suite run exactly once with `-count=1`):
+    - Full suite `go test -count=1 ./...` → `ok github.com/jrswab/betterstack-cli/cmd/bs 2.040s`, exit 0
+    - Race suite `go test -race -count=1 ./...` → `ok github.com/jrswab/betterstack-cli/cmd/bs 3.165s`, exit 0
+    - `go vet ./...` → no output, exit 0; `gofmt -l .` → empty, exit 0; `git diff --check` → clean, exit 0; `go mod verify` → `all modules verified`, exit 0
+    - Temp build `go build -o /tmp/bs007build ./cmd/bs` → exit 0; `test ! -e bs` → `ROOT_BS_ABSENT`; temp binary removed
+    - Clean checkout `git archive HEAD | tar -x -C /tmp/tmp.wlJmrP88Ei` → extracted; isolated install `GOBIN=/tmp/tmp.wlJmrP88Ei/go-bin go install ./cmd/bs` → exit 0, `BS_BINARY_PRESENT`
+    - Help smoke with both credential variables unset: `bs --help` → exit 0, human-readable help on stdout, `STDERR_SIZE=0`; `go run ./cmd/bs` for `incidents --help`, `monitors --help`, `incidents list --help`, `incidents get --help`, `incidents timeline --help`, `monitors list --help`, `monitors get --help` → all exit 0 with 0-byte stderr (root + both resource levels + all five command helps)
+    - No HTTP production command: `grep -rn "http.ListenAndServe\|http.Server\|ListenAndServe" cmd/bs --include='*.go'` excluding `_test.go` → no match (exit 1); the CLI only issues outbound bearer-authenticated GET requests via `doMonitorsRequest`
+    - Cleanup: temp dir and stderr logs removed (`CLEANUP_DONE`); `git status --porcelain=v1 -uall` → exactly the twelve preserved pre-existing untracked entries, 0 tracked modifications, 0 staged
+  - Spec comparison: R1 (sweep + per-command mapping incl. the B2-added `TestMonitorsGetRejectsAbsentFeatures`) satisfied by the A1 gate + review PASS; R2 (battery) satisfied by this gate's full/race/vet/gofmt/diff-check/mod-verify results; R3 (clean-checkout isolated-GOBIN smoke) satisfied by this gate's archive/install/help results; R4 (verbatim deferred record + release restraint) satisfied by the D1 gate record and this session's no-push/no-tag/no-live-call regime; R5 (durable record + accounting) satisfied by this checkpoint and the change accounting below.
+  - Change accounting: `git diff 3b41a27..HEAD --stat` → `cmd/bs/monitors_test.go` (+48, the B2-authorized acceptance test), the three 007 docs, and nothing else; no product source (`*.go` excluding tests) changed since 3b41a27; the twelve pre-existing untracked entries are preserved and untouched; `git stash list` → 0 entries
+  - `HEAD` commit SHA: `f1ae8e8` at gate time (the review-PASS record commit)
+  - Checkbox render (executed only after all checks above passed): the milestone source entry `- [ ] 007:` renders `- [x] 007:` in `docs/plans/001_betterstack-cli-first-release_milestones.md`, recorded in the same scoped docs-only completion commit that follows this gate
+  - Relevant work: `uncommitted` at gate time — snapshot ref `911f2be34bf6df3eb4063440e0248c88a319ca45` (created with `git stash create "007 completion gate snapshot"`; inspectable, never applied). The scoped docs commit that follows is the authoritative record
+
+## Limitations & blockers
