@@ -37,10 +37,10 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 ## State
 
 - Current phase: `execute` — Phases 1 (spec) and 2 (implementation checklist) gates passed 2026-10-18; planning evidence repaired 2026-10-18; Phase 3 (execution) is the next action
-- Current task: `B2` — next action
-- Task states: A1 and B1 implemented with focused tests green, review pending (checkboxes unchecked); B2, B3, C1 unchecked
+- Current task: `B3` — next action
+- Task states: A1, B1, and B2 implemented with focused tests green, review pending (checkboxes unchecked); B3 and C1 unchecked
 - Milestone checkbox: `unchecked` (source entry `- [ ] 003`)
-- Last completed phase/task/gate and timestamp: task B1 implementation 2026-10-18 (review pending; see Gate evidence)
+- Last completed phase/task/gate and timestamp: task B2 implementation 2026-10-18 (review pending; see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -123,3 +123,14 @@ One entry per passed gate (review, lint, verification, completion):
   - `HEAD` commit SHA: `4e19d69` (work committed after this gate)
   - `git status --porcelain`: ` M cmd/bs/monitors.go` / ` M cmd/bs/monitors_test.go` plus the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh` (checkpoint committed with A1; this B1 entry is added before the B1 commit)
   - Relevant work: `uncommitted` — stash ref `32cb40ed1801aa46bea2ed7acdfad4adb14dbec3` (staged-only snapshot: `cmd/bs/monitors.go`, `cmd/bs/monitors_test.go`; `git show --stat` shows 2 files, 389 insertions)
+
+- Gate: task B2 — `monitors list` routing and not-implemented regression update (spec R1.1, R8.1)
+  - Command(s) and actual result(s):
+    - Red: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./cmd/bs -run 'TestMonitorsListRouting|TestUnimplementedCommandsMakeNoRequest'` → valid route exited 1 with `bs: unexpected argument "--page" for "monitors list"` (exit 1), so the command was not wired
+    - Green after `cmd/bs/main.go` routed `monitors list` to `monitorsList` ahead of the `monitors get` route and `resourceUsageError` stopped claiming `monitors list` is unimplemented (it now reserves that branch for `incidents list` and keeps unexpected-argument reporting): focused routing plus regression/help/invalid-matrix run → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.010s` (exit 0)
+    - `TestUnimplementedCommandsMakeNoRequest` had its `monitors list` vector removed; the remaining `incidents list`, `incidents get`, `incidents timeline`, missing monitor id, and extra monitor positional vectors still exit 1 with zero requests. `bs monitors list extra` exits 1 with readable stderr and zero requests. `TestCommandHelp`, `TestInvalidUsageMatrix`, and the full suite still pass.
+    - `gofmt -l cmd/bs` → no output; `GOTOOLCHAIN=go1.26.9 GOPROXY=off go vet ./cmd/...` → exit 0; `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./...` → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.326s` (exit 0)
+    - Checkbox left unchecked: independent review is pending and was neither dispatched nor self-claimed, per instruction
+  - `HEAD` commit SHA: `c7af649` (work committed after this gate)
+  - `git status --porcelain`: ` M cmd/bs/main.go` / ` M cmd/bs/monitors_test.go` plus the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh` (this B2 checkpoint entry is added before the B2 commit)
+  - Relevant work: `uncommitted` — stash ref `e3f0c484f7afa56052fcbffa7036c02824fa79f3` (staged-only snapshot: `cmd/bs/main.go`, `cmd/bs/monitors_test.go`; `git show --stat` shows 2 files, 74 insertions, 2 deletions)

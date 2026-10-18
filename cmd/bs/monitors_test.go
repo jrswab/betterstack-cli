@@ -388,7 +388,6 @@ func TestUnimplementedCommandsMakeNoRequest(t *testing.T) {
 		name string
 		args []string
 	}{
-		{"monitors list", []string{"monitors", "list"}},
 		{"incidents list", []string{"incidents", "list"}},
 		{"incidents get", []string{"incidents", "get", "123"}},
 		{"incidents timeline", []string{"incidents", "timeline", "123"}},
@@ -969,4 +968,69 @@ func TestMonitorsListInvalidTimeout(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestMonitorsListRouting covers B2 (spec R1.1, R8.1): `runWithAPI` routes the
+// now-working `monitors list` command to its implementation, while a
+// positional argument after `list` stays invalid usage with zero requests.
+func TestMonitorsListRouting(t *testing.T) {
+	t.Run("valid command reaches server", func(t *testing.T) {
+		var requests atomic.Int32
+		var gotPath, gotRaw string
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requests.Add(1)
+			gotPath = r.URL.EscapedPath()
+			gotRaw = r.URL.RawQuery
+			w.WriteHeader(http.StatusOK)
+			_, _ = io.WriteString(w, `{"data":[]}`)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "list", "--page", "2")
+		if code != 0 {
+			t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+		}
+		if got := requests.Load(); got != 1 {
+			t.Errorf("server requests = %d, want 1", got)
+		}
+		if gotPath != "/api/v2/monitors" {
+			t.Errorf("path = %q, want %q", gotPath, "/api/v2/monitors")
+		}
+		if gotRaw != "page=2" {
+			t.Errorf("raw query = %q, want %q", gotRaw, "page=2")
+		}
+		if stdout != `{"data":[]}` {
+			t.Errorf("stdout = %q, want raw body", stdout)
+		}
+		if stderr != "" {
+			t.Errorf("stderr = %q, want empty", stderr)
+		}
+	})
+
+	t.Run("positional argument is invalid usage", func(t *testing.T) {
+		var requests atomic.Int32
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requests.Add(1)
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "list", "extra")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		if stdout != "" {
+			t.Errorf("stdout = %q, want empty", stdout)
+		}
+		if strings.TrimSpace(stderr) == "" {
+			t.Error("stderr is empty, want a readable error")
+		}
+		if got := requests.Load(); got != 0 {
+			t.Errorf("server requests = %d, want 0", got)
+		}
+	})
 }

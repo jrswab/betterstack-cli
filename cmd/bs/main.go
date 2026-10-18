@@ -32,6 +32,9 @@ func runWithAPI(args []string, stdout, stderr io.Writer, baseURL string, client 
 		fmt.Fprint(stdout, help)
 		return 0
 	}
+	if len(args) >= 2 && args[0] == "monitors" && args[1] == "list" {
+		return monitorsList(args[2:], stdout, stderr, baseURL, client)
+	}
 	if len(args) >= 2 && args[0] == "monitors" && args[1] == "get" {
 		return monitorsGet(args[2:], stdout, stderr, baseURL, client)
 	}
@@ -116,7 +119,12 @@ func resourceUsageError(resource string, rest []string) string {
 		if len(rest) > 1 {
 			return fmt.Sprintf("bs: unexpected argument %q for %q; %s.\n", rest[1], command, commandHint)
 		}
-		return fmt.Sprintf("bs: %q is not implemented in this milestone; %s.\n", command, commandHint)
+		if resource == "incidents" {
+			return fmt.Sprintf("bs: %q is not implemented in this milestone; %s.\n", command, commandHint)
+		}
+		// A bare `monitors list` is routed before this function; report a
+		// defensive error rather than claiming the implemented command is not.
+		return fmt.Sprintf("bs: unexpected argument vector for %q; %s.\n", command, commandHint)
 	}
 
 	// get and timeline take exactly one positional target.
