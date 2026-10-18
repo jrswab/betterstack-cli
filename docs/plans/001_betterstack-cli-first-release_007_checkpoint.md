@@ -114,7 +114,7 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - Product source audit (R1.7 grounding, run this session against `cmd/bs/{main,monitors,incidents,help}.go`): `grep -n '"log"' ...` → no match (exit 1); `grep -nE 'os.Open|os.Create|os.WriteFile|ioutil.|os.CreateTemp' ...` → no match (exit 1); `grep -n 'BETTERSTACK_API_TOKEN' ...` → no match (exit 1), so the product never reads the former env name and never logs or writes the token; `tokenEnvVar = "BETTERSTACK_UPTIME_API_TOKEN"` confirmed at `cmd/bs/monitors.go` line 18; `redactToken` is applied only to locally generated diagnostics, never to a raw upstream body (source read this session)
   - `HEAD` commit SHA: `27fd4ee` at gate time (unchanged throughout the sweep)
   - `git status --porcelain`: the preserved untracked baseline (`.wayfinder/` tree, `verify-incident-id.sh`) plus this checkpoint edit; `git diff --check` exit 0 (whitespace-clean)
-  - Relevant work: `uncommitted` at gate time — stash ref recorded below in the A1 commit gate; the scoped docs commit that follows this gate is the authoritative record
+  - Relevant work: `uncommitted` at gate time — stash ref `09ec8463920ac6038480b9f83e219725b46fc687` (created with `git stash create "007 Phase 3 task A1 gate snapshot"`; captures the tracked checkpoint gate edit only — untracked files are not in the ref and remain on disk). The scoped docs commit `137a888` that follows this gate is the authoritative record and matches the pre-edit worktree exactly
 
 ## Limitations & blockers
 
