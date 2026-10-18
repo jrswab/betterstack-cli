@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `execute` — Phase 3 (execution) is underway; tasks A1, B1, and B2 passed their focused gates and are committed, and the next task is C1
-- Current task: `C1` — the whole-spec verification (full suite, vet, build, git diff check)
-- Task states: A1 `implemented, reported pass, review pending`; B1 `implemented, reported pass, review pending`; B2 `implemented, reported pass, review pending`; C1 `unchecked` (all task boxes stay unchecked; the independent boundary review is pending)
+- Current phase: `execute` — all four tasks A1, B1, B2, and C1 passed their focused gates and are committed; the independent boundary review is the next action
+- Current task: `none` — the task loop is complete; the next action is outside this execution scope (independent boundary review)
+- Task states: A1 `implemented, reported pass, review pending`; B1 `implemented, reported pass, review pending`; B2 `implemented, reported pass, review pending`; C1 `implemented, reported pass, review pending` (all task boxes stay unchecked; the independent boundary review is pending)
 - Milestone checkbox: `unchecked` (source entry `- [ ] 005`, never edited by this run)
-- Last completed phase/task/gate and timestamp: task B2 gate passed 2026-10-18 (see Gate evidence); task B1 gate passed 2026-10-18; task A1 gate passed 2026-10-18; Phase 2 (implementation checklist) gate passed 2026-10-18; Phase 1 (spec) gate passed 2026-10-18
+- Last completed phase/task/gate and timestamp: task C1 gate passed 2026-10-18 (see Gate evidence); task B2 gate passed 2026-10-18; task B1 gate passed 2026-10-18; task A1 gate passed 2026-10-18; Phase 2 (implementation checklist) gate passed 2026-10-18; Phase 1 (spec) gate passed 2026-10-18
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -134,11 +134,24 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - `git status --porcelain`: the verbatim baseline above plus ` M cmd/bs/incidents_test.go` and ` M docs/plans/001_betterstack-cli-first-release_005_checkpoint.md`
   - Relevant work: `uncommitted` — stash ref `b41f963fb776cd280ed16c263d898c3b7e400050` (staged-only snapshot of exactly the 005 checkpoint plus `cmd/bs/incidents_test.go`; `git show --stat` shows 2 files). The snapshot predates the substitution of its own ref at this line; the B2 commit that follows is the authoritative record of the same paths
 
+- Gate: task C1 — whole-spec verification (spec R1–R9; milestone 005 acceptance line)
+  - Command(s) and actual result(s):
+    - Full suite: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./... -count=1` → `ok github.com/jrswab/betterstack-cli/cmd/bs 1.715s`
+    - Race suite: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./... -race -count=1` → `ok ... 2.755s`
+    - `GOTOOLCHAIN=go1.26.9 GOPROXY=off go vet ./...` → exit 0; `go list ./...` → the single module package; `go build -o <temp> ./cmd/bs` → build ok; `gofmt -l .` → no output; `git diff --check` → clean
+    - Help smoke on the built binary (no HTTP, no token): `bs --help` and `bs incidents timeline --help` → exit 0; the temp binary and its directory were removed
+    - Git accounting: `git status --porcelain=v1 -uall` → the verbatim baseline only (12 untracked entries, 0 tracked modifications, 0 staged); `git diff --stat 38ddb7b..HEAD` → exactly `cmd/bs/incidents.go`, `cmd/bs/incidents_test.go`, `cmd/bs/main.go`, `cmd/bs/monitors_test.go`, and the 005 checkpoint; `git diff --quiet 38ddb7b..HEAD -- cmd/bs/safety_test.go cmd/bs/help.go cmd/bs/monitors.go .wayfinder verify-incident-id.sh README.md .gitignore LICENSE` → clean (all untouched)
+    - Spec mapping: R1.1/R1.2/R7.1 → A1 parser reuse plus `TestIncidentsTimelineReachesInjectedServer`, `TestIncidentsTimelineInvalidTimeout`, `TestIncidentsTimelineTimeoutOverride`; R1.3 → B2 `TestIncidentsTimelineHelpExitsZeroThroughRouting`, `TestIncidentsTimelineRejectsAbsentFeatures`; R2.1–R2.4 → A1 `TestIncidentsTimelineReachesInjectedServer`, `TestIncidentsTimelineWrongExtractedIDPassthrough` and B2 `TestIncidentsTimelineRejectedURLShapesThroughRouting`; R3.1/R3.2 → A1 `TestIncidentsTimelineCredentialFailures` and B2 `TestIncidentsTimelineCredentialFailuresThroughRouting`; R4.1/R4.2 → A1 `TestIncidentsTimelineReachesInjectedServer`; R5.1–R5.3 → A1 `TestIncidentsTimelineRawSuccessBody`, `TestIncidentsTimelineTruncatedPassthroughIsSilent`; R6.1–R6.3 → A1 `TestIncidentsTimelineNon2xxPassthrough`, `TestIncidentsTimelineLocalFailureIsTokenFree`, `TestIncidentsTimelineNeverPrintsToken` and B2 `TestIncidentsTimelineNeverPrintsTokenThroughRouting`; R8 → B2 `TestIncidentsTimelineRejectsAbsentFeatures`, `TestIncidentsTimelineRejectedURLShapesThroughRouting` plus the source audit showing the single request path; R9.1/R9.2 → B1 routing and stale-case removal, `TestIncidentsGetRoutesThroughRunWithAPI`, `TestIncidentsGetUsageFailuresThroughRouting`, `TestUnimplementedCommandsMakeNoRequest`, and the full suite with all `TestMonitorsGet*`/`TestMonitorsList*` unchanged and passing
+    - Task checkbox left unchecked: the independent boundary review is pending and was neither dispatched nor self-claimed; the source `- [ ] 005` milestone checkbox is untouched
+  - `HEAD` commit SHA: `b0707b8` (the B2 commit; the C1 verification ran against this HEAD)
+  - `git status --porcelain`: the verbatim baseline only (12 untracked entries, 0 tracked modifications, 0 staged)
+  - Relevant work: `uncommitted` — stash ref `ee84d196436ff90227801697c9749a98d9897d46` (staged-only snapshot of exactly the 005 checkpoint; `git show --stat` shows 1 file). The snapshot predates the substitution of its own ref at this line; the C1 commit that follows is the authoritative record of the same path
+
 ## Limitations & blockers
 
 - Limitations:
-  - The 005 spec and implementation checklist exist and have passed their gates; tasks A1, B1, and B2 are implemented and committed. Task C1 (whole-spec verification) is not yet recorded.
+  - The 005 spec and implementation checklist exist and have passed their gates; tasks A1, B1, B2, and C1 are implemented and committed. The task boxes and the source `- [ ] 005` milestone checkbox stay unchecked pending the independent boundary review.
   - The credential-safety regime and the `safety_test.go` guard limits (covers only clients using `http.DefaultTransport` or `testHTTPClient()`; cannot stop a test that injects its own transport or dials `net.Conn` directly) carry forward from 004 and are documented in `cmd/bs/safety_test.go`.
   - All work stays local: no push, tag, release, deploy, live API call, or external modification. Tests use only dummy tokens and mock loopback servers.
 - Blockers: none.
-- Next action (the single next safe action): task C1 — run the full verification under the pinned toolchain (`go test ./... -count=1`, `-race`, `go vet ./...`, `go build -o <temp> ./cmd/bs`, `git diff --check`), confirm only the expected 005 paths changed, map every spec requirement R1–R9 to a passing test, then record the C1 gate.
+- Next action (the single next safe action): run the independent milestone-boundary review over the range `38ddb7b..b0707b8`; only after it passes may the task boxes be rendered checked and the Factory completion gate run. Task boxes and the source 005 checkbox remain unchecked until then.
