@@ -37,10 +37,10 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 ## State
 
 - Current phase: `execute` — Phases 1 (spec) and 2 (implementation checklist) gates passed 2026-10-18; planning evidence repaired 2026-10-18; Phase 3 (execution) is the next action
-- Current task: `B3` — next action
-- Task states: A1, B1, and B2 implemented with focused tests green, review pending (checkboxes unchecked); B3 and C1 unchecked
+- Current task: `C1` — next action
+- Task states: A1, B1, B2, and B3 implemented with focused tests green, review pending (checkboxes unchecked); C1 unchecked
 - Milestone checkbox: `unchecked` (source entry `- [ ] 003`)
-- Last completed phase/task/gate and timestamp: task B2 implementation 2026-10-18 (review pending; see Gate evidence)
+- Last completed phase/task/gate and timestamp: task B3 implementation 2026-10-18 (review pending; see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -134,3 +134,13 @@ One entry per passed gate (review, lint, verification, completion):
   - `HEAD` commit SHA: `c7af649` (work committed after this gate)
   - `git status --porcelain`: ` M cmd/bs/main.go` / ` M cmd/bs/monitors_test.go` plus the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh` (this B2 checkpoint entry is added before the B2 commit)
   - Relevant work: `uncommitted` — stash ref `e3f0c484f7afa56052fcbffa7036c02824fa79f3` (staged-only snapshot: `cmd/bs/main.go`, `cmd/bs/monitors_test.go`; `git show --stat` shows 2 files, 74 insertions, 2 deletions)
+
+- Gate: task B3 — end-to-end mock-API coverage (spec R1.3, R2.1, R3.1, R5.2, R5.3, R6.1, R7, R8.2)
+  - Command(s) and actual result(s):
+    - Acceptance sweep added in `cmd/bs/monitors_test.go`; the tests passed on their first focused run → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.164s` (exit 0). No production code was needed because B1/B2 already implement the behavior; this is the same acceptance-sweep pattern used by 002 C1, recorded honestly rather than presented as a red→green cycle.
+    - Coverage proven through `invokeAPI`/`runWithAPI`: valid list sends `Authorization: Bearer dummy-token-for-tests` with exactly one request; unset, empty, and former-name-only credentials each exit 1 with a message naming `BETTERSTACK_UPTIME_API_TOKEN` and zero requests; the dummy token is absent from stdout and stderr on success, non-2xx, and local-failure paths; 10ms timeout expiry exits 1 with one request and token-free stderr while 5s succeeds; `monitors list --help` exits 0 with exactly `monitorsListHelp`, empty stderr, and zero requests; `--all`, `--pretty`, `--query`, `-h`, and `--bogus` each exit 1 with readable token-free stderr and zero requests; a closed local port exits 1 with token-free stderr and empty stdout
+    - `gofmt -l cmd/bs` → no output; `GOTOOLCHAIN=go1.26.9 GOPROXY=off go vet ./cmd/...` → exit 0; `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./...` → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.482s` (exit 0), so `TestMonitorsGet*` still passes unchanged
+    - Checkbox left unchecked: independent review is pending and was neither dispatched nor self-claimed, per instruction
+  - `HEAD` commit SHA: `9054d29` (work committed after this gate)
+  - `git status --porcelain`: ` M cmd/bs/monitors_test.go` plus the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh` (this B3 checkpoint entry is added before the B3 commit)
+  - Relevant work: `uncommitted` — stash ref `981e50dba2cc49a5494a2343a77738aa6ec6a7b6` (staged-only snapshot: `cmd/bs/monitors_test.go`; `git show --stat` shows 1 file, 294 insertions)

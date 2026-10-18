@@ -1034,3 +1034,297 @@ func TestMonitorsListRouting(t *testing.T) {
 		}
 	})
 }
+
+// TestMonitorsListSendsBearerToken covers B3 (spec R3.1) through the routing
+// seam: one authenticated GET reaches the mock for a valid list command.
+func TestMonitorsListSendsBearerToken(t *testing.T) {
+	var requests int
+	var gotAuth string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		gotAuth = r.Header.Get("Authorization")
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	t.Setenv(tokenEnvVar, testToken)
+
+	code, _, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "list")
+	if code != 0 {
+		t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+	}
+	if want := "Bearer " + testToken; gotAuth != want {
+		t.Errorf("Authorization = %q, want %q", gotAuth, want)
+	}
+	if requests != 1 {
+		t.Errorf("server requests = %d, want 1", requests)
+	}
+}
+
+// TestMonitorsListCredentialFailures covers B3 (spec R2.1): unset, empty, and
+// former-name-only each fail before any request with a message naming
+// BETTERSTACK_UPTIME_API_TOKEN.
+func TestMonitorsListCredentialFailures(t *testing.T) {
+	cases := []struct {
+		name  string
+		setup func(t *testing.T)
+	}{
+		{
+			name: "unset",
+			setup: func(t *testing.T) {
+				t.Setenv(tokenEnvVar, "placeholder")
+				if err := os.Unsetenv(tokenEnvVar); err != nil {
+					t.Fatalf("Unsetenv: %v", err)
+				}
+			},
+		},
+		{
+			name: "empty",
+			setup: func(t *testing.T) {
+				t.Setenv(tokenEnvVar, "")
+			},
+		},
+		{
+			name: "former name only",
+			setup: func(t *testing.T) {
+				t.Setenv("BETTERSTACK_API_TOKEN", testToken)
+				t.Setenv(tokenEnvVar, "placeholder")
+				if err := os.Unsetenv(tokenEnvVar); err != nil {
+					t.Fatalf("Unsetenv: %v", err)
+				}
+			},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			tc.setup(t)
+
+			code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "list")
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if !strings.Contains(stderr, tokenEnvVar) {
+				t.Errorf("stderr = %q, want it to name %s", stderr, tokenEnvVar)
+			}
+			if got := requests.Load(); got != 0 {
+				t.Errorf("server requests = %d, want 0", got)
+			}
+		})
+	}
+}
+
+// TestMonitorsListNeverPrintsToken covers B3 (spec R5.3): the dummy token is
+// absent from both output channels on success, non-2xx, and local failure.
+func TestMonitorsListNeverPrintsToken(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		var gotAuth string
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			gotAuth = r.Header.Get("Authorization")
+			w.WriteHeader(http.StatusOK)
+			_, _ = io.WriteString(w, `{"data":[]}`)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "list")
+		if code != 0 {
+			t.Fatalf("exit code = %d, want 0", code)
+		}
+		if want := "Bearer " + testToken; gotAuth != want {
+			t.Errorf("Authorization = %q, want %q", gotAuth, want)
+		}
+		assertNoToken(t, stdout, stderr)
+	})
+
+	t.Run("non-2xx", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusNotFound)
+			_, _ = io.WriteString(w, `{"errors":"not found"}`)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "list")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		assertNoToken(t, stdout, stderr)
+	})
+
+	t.Run("local failure", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+		closedURL := srv.URL
+		srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(closedURL, newHTTPClient(), "monitors", "list")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		assertNoToken(t, stdout, stderr)
+	})
+}
+
+// TestMonitorsListTimeoutEndToEnd covers B3 (spec R6.1) through the routing
+// seam: a short override expires with one request; a longer override succeeds.
+func TestMonitorsListTimeoutEndToEnd(t *testing.T) {
+	t.Run("expires", func(t *testing.T) {
+		var requests atomic.Int32
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requests.Add(1)
+			time.Sleep(150 * time.Millisecond)
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "list", "--timeout", "10ms")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		if stdout != "" {
+			t.Errorf("stdout = %q, want empty", stdout)
+		}
+		if strings.TrimSpace(stderr) == "" {
+			t.Error("stderr is empty, want a readable error")
+		}
+		if strings.Contains(stderr, testToken) {
+			t.Errorf("stderr leaks the token: %q", stderr)
+		}
+		if got := requests.Load(); got != 1 {
+			t.Errorf("server requests = %d, want 1", got)
+		}
+	})
+
+	t.Run("within override", func(t *testing.T) {
+		const body = "ok body"
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			_, _ = io.WriteString(w, body)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "list", "--timeout", "5s")
+		if code != 0 {
+			t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+		}
+		if stdout != body {
+			t.Errorf("stdout = %q, want %q", stdout, body)
+		}
+		if stderr != "" {
+			t.Errorf("stderr = %q, want empty", stderr)
+		}
+	})
+}
+
+// TestMonitorsListHelpExitsZero covers B3 (spec R1.3): the existing
+// monitorsListHelp text exits 0 with empty stderr and zero requests.
+func TestMonitorsListHelpExitsZero(t *testing.T) {
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	t.Setenv(tokenEnvVar, testToken)
+
+	code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "list", "--help")
+	if code != 0 {
+		t.Fatalf("exit code = %d, want 0", code)
+	}
+	if stderr != "" {
+		t.Errorf("stderr = %q, want empty", stderr)
+	}
+	if stdout != monitorsListHelp {
+		t.Errorf("stdout = %q, want monitorsListHelp", stdout)
+	}
+	if got := requests.Load(); got != 0 {
+		t.Errorf("server requests = %d, want 0", got)
+	}
+}
+
+// TestMonitorsListRejectsAbsentFeatures covers B3 (spec R1.3, R7): --all,
+// --pretty, --query, and any unknown option are invalid usage with zero
+// requests; no unsupported flag is accepted.
+func TestMonitorsListRejectsAbsentFeatures(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"--all", []string{"monitors", "list", "--all"}},
+		{"--pretty", []string{"monitors", "list", "--pretty"}},
+		{"--query", []string{"monitors", "list", "--query", "x"}},
+		{"short help", []string{"monitors", "list", "-h"}},
+		{"unknown flag", []string{"monitors", "list", "--bogus"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), tc.args...)
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if strings.TrimSpace(stderr) == "" {
+				t.Error("stderr is empty, want a readable error")
+			}
+			if strings.Contains(stderr, testToken) {
+				t.Errorf("stderr leaks the token: %q", stderr)
+			}
+			if got := requests.Load(); got != 0 {
+				t.Errorf("server requests = %d, want 0", got)
+			}
+		})
+	}
+}
+
+// TestMonitorsListLocalFailure covers B3 (spec R5.2): a local connection
+// failure exits 1 with a concise token-free message and empty stdout.
+func TestMonitorsListLocalFailure(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	closedURL := srv.URL
+	srv.Close()
+
+	t.Setenv(tokenEnvVar, testToken)
+
+	code, stdout, stderr := invokeAPI(closedURL, newHTTPClient(), "monitors", "list")
+	if code != 1 {
+		t.Fatalf("exit code = %d, want 1", code)
+	}
+	if stdout != "" {
+		t.Errorf("stdout = %q, want empty", stdout)
+	}
+	if strings.TrimSpace(stderr) == "" {
+		t.Error("stderr is empty, want a readable error")
+	}
+	if strings.Contains(stderr, testToken) {
+		t.Errorf("stderr leaks the token: %q", stderr)
+	}
+}
