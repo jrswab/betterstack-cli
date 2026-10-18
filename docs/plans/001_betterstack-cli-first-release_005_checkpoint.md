@@ -29,17 +29,18 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## Artifacts
 
-- Spec: `docs/plans/001_betterstack-cli-first-release_005_spec.md` (not yet written — Phase 1 is the next phase)
-- Implementation checklist: `docs/plans/001_betterstack-cli-first-release_005_implement.md` (not yet written — Phase 2)
+- Spec: `docs/plans/001_betterstack-cli-first-release_005_spec.md` (written and Phase-1-gate-passed)
+- Implementation checklist: `docs/plans/001_betterstack-cli-first-release_005_implement.md` (written and Phase-2-gate-passed)
 - Checkpoint: `docs/plans/001_betterstack-cli-first-release_005_checkpoint.md` (this file, written by atomic rename at setup)
 
 ## State
 
-- Current phase: `setup` — the outer loop validated the 004 handoff and selected 005; no 005 artifact exists yet
-- Current task: `none` — Phase 1 (spec) is the next action; no 005 skill load has happened and no product code has been touched for 005
+- Current phase: `implement` — Phase 2 (implementation checklist) is complete; Phase 3 (execution) is the next phase
+- Current task: `A1` — the first unchecked checklist task; no product code has been touched for 005
+- Task states: A1 `unchecked`, B1 `unchecked`, B2 `unchecked`, C1 `unchecked` (checkboxes render from this)
 - Task states: none yet (the 005 checklist does not exist; checkboxes will render from it in Phase 2)
 - Milestone checkbox: `unchecked` (source entry `- [ ] 005`, never edited by this run)
-- Last completed phase/task/gate and timestamp: 004 completion gate passed 2026-10-18 at commit `a1baf30` (recorded in `docs/plans/001_betterstack-cli-first-release_004_checkpoint.md`); this 005 setup follows it
+- Last completed phase/task/gate and timestamp: Phase 2 (implementation checklist) gate passed 2026-10-18 (see the Phase 2 gate below); Phase 1 (spec) gate passed 2026-10-18
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -74,9 +75,31 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
       - Toolchain: `GOTOOLCHAIN=go1.26.9 GOPROXY=off` from the local module cache remains the verified verification environment; local default `go` is 1.22.2
     - Approval boundaries: Jaron's "yes" approval stands for local work only; no live API call, push, tag, deploy, publication, external write, or deletion is authorized; the 005 work is local commits scoped to 005 artifacts, checkpoint, and (at completion) product code
     - This checkpoint was written by replacing a temporary file with an atomic rename (factory setup step 2)
-  - `HEAD` commit SHA: `a1baf30641fe2d988d6a1f6108d597173c37f200` (setup; the checkpoint file itself is untracked until the first 005 commit)
-  - `git status --porcelain`: the verbatim baseline above plus `?? docs/plans/001_betterstack-cli-first-release_005_checkpoint.md` once written
-  - Relevant work: `uncommitted` — stash ref `none` (the run-created checkpoint file is the only new path; the standing Phase-1-gate snapshot procedure covers it when the spec exists)
+  - `HEAD` commit SHA: `a1baf30641fe2d988d6a1f6108d597173c37f200` (setup; the checkpoint file itself was committed unmodified in the 005 setup commit — see the Phase 1 gate for the current HEAD)
+  - `git status --porcelain`: the verbatim baseline above
+  - Relevant work: `committed` — the setup gate work is committed as `99f91b8` ("005: set up milestone checkpoint after 004 completion", the current HEAD); the checkpoint file content is byte-identical to what this gate recorded
+
+- Gate: 005 Phase 1 — specification (this gate)
+  - Command(s) and actual result(s):
+    - The spec skill (factory Phase 1 override) was applied with the checkpoint's grounded research as context; the spec was written to `docs/plans/001_betterstack-cli-first-release_005_spec.md` covering milestone 005 only, with Section 1 (context, settled decisions with sources, constraints) before Section 2 (requirements R1–R9, each with acceptance)
+    - Inspection against the milestone entry phrase by phrase (grep-verified this session): command `bs incidents timeline <id-or-url>` (title + R1.1); endpoint `GET /api/v3/incidents/{incident_id}/timeline` (R4.1); "same positional target rule as `bs incidents get`" (Section 1 decision + R2.1–R2.4, delegating to 004's narrow rule); "no pagination" (Section 1 decision + R4.2 no query parameters + R8 no `--page`/`--per-page`); "body passed through raw including any `timeline_truncated` items" (Section 1 + R5.1–R5.2 byte-for-byte, heterogeneous item shapes untouched); "no completeness promise" (Section 1 + R5.3 no message/flag/behavior claims completeness); acceptance coverage — URL-form and ID-form targets (R2 acceptance a), heterogeneous item shapes untouched (R5 acceptance), error passthrough (R2 acceptance c, R6 acceptance)
+    - Scope-boundary check: nothing outside 005 is required — `incidents list` is named only as out-of-scope (006), no help-text change is required (`incidentsTimelineHelp` already documents the command), and R9 freezes `incidents get`, `incidents list`, and monitor behavior
+    - Every in-scope outcome, boundary, failure mode, and edge case maps to R1 (argument parsing/help), R2 (target resolution), R3 (credential), R4 (request construction), R5 (success envelope + truncation silence), R6 (error behavior + token safety), R7 (timeout), R8 (absent features), R9 (regression preservation); no unresolved questions remain (all decisions are settled research)
+  - `HEAD` commit SHA: `99f91b8a98d5ff70aa78e08b0a1964805bf58b65`
+  - `git status --porcelain`: the verbatim baseline above plus `?? docs/plans/001_betterstack-cli-first-release_005_spec.md` and ` M docs/plans/001_betterstack-cli-first-release_005_checkpoint.md`
+  - Relevant work: `uncommitted` — stash ref `8a8fa44891c6757f2705f44ff20725112f58df59` (created with `git stash create "005 Phase 1 gate snapshot"`; inspectable with `git show`). Limitation: `git stash create` captures tracked modifications only — this ref holds the checkpoint gate edit; the untracked spec file is not in the ref and remains on disk as the durable artifact
+
+- Gate: 005 Phase 2 — implementation checklist (this gate)
+  - Command(s) and actual result(s):
+    - The implement skill (factory Phase 2 override) was applied against the completed spec; the checklist was written to `docs/plans/001_betterstack-cli-first-release_005_implement.md` with Section 1 (context summary) and Section 2 (tasks A1, B1, B2, C1 in three slices, each naming exact files and functions)
+    - Inspection against the complete spec (grep-verified this session): every requirement maps to tasks — R1.1/R1.2/R7.1 → A1; R2.1–R2.4 → A1 (shared `resolveIncidentTarget`/`parseIncidentsGetArgs` unchanged) + B2; R3 → A1 + B2; R4.1/R4.2 → A1; R5.1–R5.3 → A1; R6.1–R6.3 → A1 + B2; R8 → B2; R9 → B1 + B2 + C1; each acceptance clause of the spec (URL-form and ID-form targets, heterogeneous item shapes untouched including `timeline_truncated` and object-valued `comment` content, error passthrough matrix, empty query string, no completeness notice) has a named test in A1 or B2
+    - Dependency order verified: A1 → B1 → B2 → C1, sequential (single package, shared seam); no parallelizable pair claimed
+    - Source surfaces verified current this session: `cmd/bs/incidents.go` (the insertion point for `incidentsTimeline`), `cmd/bs/main.go` `runWithAPI` (routing insert point after the `incidents get` branch), `cmd/bs/monitors_test.go` line ~393 (`TestUnimplementedCommandsMakeNoRequest` holds exactly one `incidents timeline` case to remove), `cmd/bs/help.go` `incidentsTimelineHelp` (unchanged)
+    - Scope-boundary check: no task touches help text, `incidents get` behavior, monitors, `.wayfinder/`, or `verify-incident-id.sh`; no speculative or out-of-scope task exists
+    - A corrupted intermediate write of this file (wrong truncated filename with placeholder content) was deleted in the same session before any commit; the committed tree never contained it
+  - `HEAD` commit SHA: `99f91b8a98d5ff70aa78e08b0a1964805bf58b65`
+  - `git status --porcelain`: the verbatim baseline plus `?? docs/plans/001_betterstack-cli-first-release_005_spec.md`, `?? docs/plans/001_betterstack-cli-first-release_005_implement.md`, and ` M docs/plans/001_betterstack-cli-first-release_005_checkpoint.md`
+  - Relevant work: `uncommitted` — stash ref `41a9ae8cd00a2da2b13d80384a66e0d8615c61aa` (created with `git stash create "005 Phase 2 gate snapshot"`; inspectable with `git show`). Same `git stash create` limitation as the Phase 1 gate: the ref holds the tracked checkpoint edit; the untracked spec and implement files remain on disk as durable artifacts
 
 ## Limitations & blockers
 
@@ -85,4 +108,4 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - The credential-safety regime and the `safety_test.go` guard limits (covers only clients using `http.DefaultTransport` or `testHTTPClient()`; cannot stop a test that injects its own transport or dials `net.Conn` directly) carry forward from 004 and are documented in `cmd/bs/safety_test.go`.
   - All work stays local: no push, tag, release, deploy, live API call, or external modification. Tests use only dummy tokens and mock loopback servers.
 - Blockers: none.
-- Next action (the single next safe action): Phase 1 — write `docs/plans/001_betterstack-cli-first-release_005_spec.md` from the 005 milestone entry and the research above, inspect it against the entry phrase by phrase, and record the Phase 1 gate here. No product code changes before the Phase 2 checklist passes.
+- Next action (the single next safe action): Phase 3 — load the exec skill and begin checklist task A1 (add `incidentsTimeline` to `cmd/bs/incidents.go` with its focused tests), writing the failing test first under the pinned toolchain. No product code may precede this checklist, which has now passed its gate.
