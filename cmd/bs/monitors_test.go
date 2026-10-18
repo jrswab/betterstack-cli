@@ -512,6 +512,54 @@ func TestMonitorsGetCredentialFailures(t *testing.T) {
 	}
 }
 
+// TestMonitorsGetRejectsAbsentFeatures covers A1 (spec R1.9): every excluded
+// `monitors get` flag vector exits 1 with empty stdout, a readable token-free
+// error on stderr, and zero requests to the mock server. The vectors are the
+// absent-feature flags `--all`, `--pretty`, and `--query`, an unknown flag, the
+// short help form, and a `--help` placed after the target.
+func TestMonitorsGetRejectsAbsentFeatures(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"--all", []string{"monitors", "get", "789", "--all"}},
+		{"--pretty", []string{"monitors", "get", "789", "--pretty"}},
+		{"--query", []string{"monitors", "get", "789", "--query", "x"}},
+		{"unknown flag", []string{"monitors", "get", "789", "--bogus"}},
+		{"short help", []string{"monitors", "get", "-h"}},
+		{"help after target", []string{"monitors", "get", "789", "--help"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), tc.args...)
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if strings.TrimSpace(stderr) == "" {
+				t.Error("stderr is empty, want a readable error")
+			}
+			if strings.Contains(stderr, testToken) {
+				t.Errorf("stderr leaks the token: %q", stderr)
+			}
+			if got := requests.Load(); got != 0 {
+				t.Errorf("server requests = %d, want 0", got)
+			}
+		})
+	}
+}
+
 // TestParseMonitorsListArgs covers A1 (spec R1, R6.1, R7): the parser accepts
 // the six list flags in any order, records every occurrence of a repeated
 // flag, distinguishes an absent flag (nil) from an explicitly empty value
