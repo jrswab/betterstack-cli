@@ -28,5 +28,5 @@ All tasks live in package `main` (`cmd/bs`). Dependencies are sequential: A1 →
 
 ### Slice C — full verification (the acceptance slice: proves the milestone meets its checkpoint gate)
 
-- [ ] C1: Run the complete verification: `unset BETTERSTACK_UPTIME_API_TOKEN; unset BETTERSTACK_API_TOKEN; GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./...` (full suite, all packages), plus `go vet ./...` and `GOTOOLCHAIN=go1.26.9 GOPROXY=off go build ./...` under the pinned toolchain. Confirm `git status --porcelain` shows only the expected planning artifacts plus the touched `cmd/bs` files, `verify-incident-id.sh` and `.wayfinder/` untouched, and every spec requirement R1–R8 has a passing test mapping.
+- [x] C1: Run the complete verification: `unset BETTERSTACK_UPTIME_API_TOKEN; unset BETTERSTACK_API_TOKEN; GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./...` (full suite, all packages), plus `go vet ./...` and `GOTOOLCHAIN=go1.26.9 GOPROXY=off go build ./...` under the pinned toolchain. Confirm `git status --porcelain` shows only the expected planning artifacts plus the touched `cmd/bs` files, `verify-incident-id.sh` and `.wayfinder/` untouched, and every spec requirement R1–R8 has a passing test mapping.
 - Depends on: B3.

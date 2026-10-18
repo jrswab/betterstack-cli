@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `phase-3-executing` — the Phase 3 task loop is running; A1, B1, B2, and B3 have passed
-- Current task: `B3 complete; next C1`
-- Task states: A1, B1, B2, B3 passed; C1 next
-- Milestone checkbox: `unchecked` (source entry `- [ ] 006`, never edited by this run)
-- Last completed phase/task/gate and timestamp: B3 verification 2026-10-18; B2 verification 2026-10-18; B1 verification 2026-10-18; A1 verification 2026-10-18; 006 committed planning gate recorded 2026-10-18; Phase 2 (implementation checklist) gate passed 2026-10-18; Phase 1 (spec) gate passed 2026-10-18; 006 setup gate 2026-10-18 (see Gate evidence)
+- Current phase: `phase-3-executing` — the Phase 3 task loop is complete through C1; the independent boundary review and completion gate are pending
+- Current task: `C1 complete; boundary review pending`
+- Task states: A1, B1, B2, B3, C1 passed; independent boundary review pending (milestone checkbox not rendered)
+- Milestone checkbox: `unchecked` (source entry `- [ ] 006`, deliberately left unchanged pending the independent boundary review, per the run constraint)
+- Last completed phase/task/gate and timestamp: C1 verification and completion-gate checks 2026-10-18; B3 verification 2026-10-18; B2 verification 2026-10-18; B1 verification 2026-10-18; A1 verification 2026-10-18; 006 committed planning gate recorded 2026-10-18; Phase 2 (implementation checklist) gate passed 2026-10-18; Phase 1 (spec) gate passed 2026-10-18; 006 setup gate 2026-10-18 (see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -156,11 +156,24 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - `git status --porcelain`: the verbatim baseline above plus ` M cmd/bs/incidents_test.go`, ` M docs/plans/001_betterstack-cli-first-release_006_checkpoint.md`, ` M docs/plans/001_betterstack-cli-first-release_006_implement.md` (the transient `bs` build artifact was removed before this record)
   - Relevant work: `uncommitted` — stash ref `45601ba2a886780c2f553560fa55488b35c0ba71` (created with `git stash create "006 B3 gate snapshot"`; inspectable with `git show --stat`, never applied); the scoped B3 commit that follows is the authoritative record
 
+- Gate: 006 Phase 3 task C1 — full verification battery and completion-gate checks
+  - Command(s) and actual result(s):
+    - `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test -count=1 ./...` → `ok github.com/jrswab/betterstack-cli/cmd/bs 1.996s`
+    - `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test -race -count=1 ./...` → `ok github.com/jrswab/betterstack-cli/cmd/bs 3.113s`
+    - `go vet ./...` → exit 0; `go mod verify` → `all modules verified`; `gofmt -l .` → empty; `git diff --check` → clean
+    - `go build -o "$tmpdir/bs" ./cmd/bs` → exit 0; help smoke `bs --help` and `bs incidents list --help` → both exit 0 with no network; the temp dir was removed
+    - Spec mapping (R1–R8), every requirement has a passing test: R1 parser/routing (`TestParseIncidentsListArgs`, `TestIncidentsListUsageFailuresThroughRouting`); R2 credentials (`TestIncidentsListCredentialFailuresThroughRouting`); R3 request construction (`TestIncidentsListQueryTranslation`, `TestIncidentsListMetadataBracketEncoding`, `TestIncidentsListRoutesBearerTokenThroughRunWithAPI`); R4 envelope (`TestIncidentsListRawSuccessBody`); R5 errors/token safety (`TestIncidentsListNon2xxPassthrough`, `TestIncidentsListLocalFailureIsTokenFree`, `TestIncidentsListNeverPrintsTokenThroughRouting`); R6 timeout (`TestIncidentsListTimeoutOverride`, `TestIncidentsListInvalidTimeout`, `TestIncidentsListTimeoutThroughRouting`); R7 absent features (source audit: no `[type]`/`[email]` and no product `--all`/`--pretty`/`--query`; `TestIncidentsListRejectsAbsentFeaturesThroughRouting`); R8 regression (full suite green, `TestUnimplementedCommandsMakeNoRequest` updated, help/invalid matrices green)
+    - Change accounting: `git diff --stat 5be380a..HEAD` → only `cmd/bs/incidents.go`, `cmd/bs/incidents_test.go`, `cmd/bs/main.go`, `cmd/bs/monitors_test.go`, the 006 checkpoint, and the 006 implement checklist; `git diff --stat 5be380a..HEAD -- .wayfinder verify-incident-id.sh cmd/bs/safety_test.go` → empty (untouched); milestone source `- [ ] 006` unchanged
+  - `HEAD` commit SHA: `ff4ad3e` (the B3 commit; this gate ran against it)
+  - `git status --porcelain`: the verbatim baseline above plus ` M docs/plans/001_betterstack-cli-first-release_006_checkpoint.md` and ` M docs/plans/001_betterstack-cli-first-release_006_implement.md`
+  - Relevant work: `uncommitted` — stash ref `95ab135535daed21d464a2672148c99d5c5bf333` (created with `git stash create "006 C1 gate snapshot"`; inspectable with `git show --stat`, never applied); the scoped C1 commit that follows is the authoritative record
+
 ## Limitations & blockers
 
 - Limitations:
-  - The 006 spec and implementation checklist exist and passed their phase gates; Phase 3 (the task loop over A1, B1, B2, B3, C1), the independent boundary review, and the completion gate are all pending and remain the only authorized next work. No task checkbox is rendered and no product code, test, or source checkbox changed in Phases 1–2.
+  - The 006 spec and implementation checklist passed their phase gates; Phase 3 tasks A1–C1 are implemented, verified, and committed. The independent boundary review (exec review gates) and the milestone completion checkbox remain pending and are the only authorized next work. The milestone source entry is deliberately left `- [ ] 006`.
+  - The independent boundary review could not run in this environment: no sub-agent tool is available to spawn the `auto-review`/`design-review` gates, so those gates are recorded as pending rather than passed. The completion-gate checks that could run (full suite, spec mapping, change accounting) passed.
   - The credential-safety regime and the `safety_test.go` guard limits (covers only clients using `http.DefaultTransport` or `testHTTPClient()`; cannot stop a test that injects its own transport or dials `net.Conn` directly) carry forward from 004/005 and are documented in `cmd/bs/safety_test.go`.
   - All work stays local: no push, tag, release, deploy, live API call, or external modification. Tests use only dummy tokens and mock loopback servers.
 - Blockers: none.
-- Next action (the single next safe action): begin 006 Phase 3 task C1 — run the complete verification battery (full suite, race, vet, build-to-temp, module parse, `git diff --check`) and the milestone completion gate.
+- Next action (the single next safe action): run the independent boundary review (auto-review and design-review against the 006 spec and the A1–C1 commits); on a passing review, run the completion gate and render the milestone entry to `- [x] 006`.
