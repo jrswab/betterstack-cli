@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `execute` — Phase 3 in progress; A1, B1, and B2 implementations are complete and their focused verification passed, independent boundary review pending
-- Current task: `B3` — B2 is recorded; the next task is B3
-- Task states: A1 `implemented, independent review pending`; B1 `implemented, independent review pending`; B2 `implemented, independent review pending`; B3 `unchecked`, C1 `unchecked` (task boxes stay unchecked until the independent boundary review passes)
+- Current phase: `execute` — Phase 3 implementation is complete through B3; C1 full verification is the next task, independent boundary review pending
+- Current task: `C1` — B3 is recorded; the next task is C1
+- Task states: A1 `implemented, independent review pending`; B1 `implemented, independent review pending`; B2 `implemented, independent review pending`; B3 `implemented, independent review pending`; C1 `unchecked` (task boxes stay unchecked until the independent boundary review passes)
 - Milestone checkbox: `unchecked` (source entry `- [ ] 004`, never edited by Phase 3)
-- Last completed phase/task/gate and timestamp: task B2 focused verification 2026-10-18 (see Gate evidence); no task checked pending independent review
+- Last completed phase/task/gate and timestamp: task B3 focused verification 2026-10-18 (see Gate evidence); no task checked pending independent review
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -121,6 +121,17 @@ One entry per passed gate (review, lint, verification, completion):
   - `git status --porcelain`: `M docs/plans/001_betterstack-cli-first-release_004_checkpoint.md`, `M cmd/bs/main.go`, `M cmd/bs/incidents_test.go`, `M cmd/bs/monitors_test.go`, `M cmd/bs/main_test.go` plus the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh`
   - Relevant work: `uncommitted` — stash ref `56dea3baeced05d669cd5ce19c9dd096dcb11cd3` (staged-only snapshot of exactly the 004 checkpoint plus `cmd/bs/main.go`, `cmd/bs/incidents_test.go`, `cmd/bs/monitors_test.go`, and `cmd/bs/main_test.go`; `git show --stat` shows 5 files). The snapshot predates the substitution of its own ref at this line; the B2 commit that follows is the authoritative record of the same paths
 
+- Gate: task B3 — end-to-end acceptance sweep through the routing seam (spec R1.3, R2.2, R3.1, R6.3, R8, R9.1)
+  - Command(s) and actual result(s):
+    - TDD note: B3 adds no production behavior; it is the acceptance sweep over the A1/B1/B2 implementation. The new tests compiled and passed on their first run — there was no red step to record truthfully
+    - First pass: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test -run 'TestIncidentsGet' ./cmd/bs` → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.172s`; the wider focused set including `TestMonitorsGet|TestMonitorsList|TestParseMonitorsListArgs|TestUnimplementedCommandsMakeNoRequest|TestCommandHelp|TestInvalidUsageMatrix|TestIncidents` → `ok ... 0.649s` (exit 0)
+    - Coverage proven through `invokeAPI`: `incidents get --help` exits 0 with the exact `incidentsGetHelp` text, empty stderr, zero requests; `--all`, `--pretty`, `--query x`, `-h`, `--help` after a target, and `--bogus` exit 1 with readable token-free stderr and zero requests; all 35 rejected URL shapes (schemes, hosts/ports/userinfo, query and fragment markers, trailing slash, segment counts, empty team, non-numeric/Unicode/fullwidth terminals, scheme-ful opaque, encoded `/ ? # \ ..`, malformed escapes) exit 1 with zero requests; unset/empty/former-name-only credentials name `BETTERSTACK_UPTIME_API_TOKEN` with zero requests; the token stays off stdout and stderr on success, non-2xx, and local failure; `incidents timeline` remains not-implemented with zero requests (B2 usage test)
+    - `gofmt -l cmd/bs` → no output; `GOTOOLCHAIN=go1.26.9 GOPROXY=off go vet ./cmd/...` → exit 0
+    - Task checkbox left unchecked: the independent boundary review is pending and was neither dispatched nor self-claimed
+  - `HEAD` commit SHA: `b25448d` (work committed after this gate)
+  - `git status --porcelain`: `M docs/plans/001_betterstack-cli-first-release_004_checkpoint.md`, `M cmd/bs/incidents_test.go` plus the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh`
+  - Relevant work: `uncommitted` — stash ref `e6d16d4561614e14fb9b690386affe91cb97508d` (staged-only snapshot of exactly the 004 checkpoint plus `cmd/bs/incidents_test.go`; `git show --stat` shows 2 files). The snapshot predates the substitution of its own ref at this line; the B3 commit that follows is the authoritative record of the same paths
+
 ## Limitations & blockers
 
 - Limitations:
@@ -130,4 +141,4 @@ One entry per passed gate (review, lint, verification, completion):
   - All work stays local: no push, tag, release, deploy, live API call, or external modification. Tests use only dummy tokens and mock loopback servers.
   - The 004 planning artifacts are staged and uncommitted (real stash snapshots recorded above); the Phase 3 flow owns the product and planning commits as in 001–003.
 - Blockers: none.
-- Next action (the single next safe action): implement task B3 (the end-to-end acceptance sweep through the `invokeAPI` routing seam), then run the focused gate.
+- Next action (the single next safe action): run task C1 (full suite, race, vet, build, formatting, diff check, and preservation audit), then record the C1 gate and hand off for the independent boundary review.
