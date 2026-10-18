@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 )
@@ -31,6 +32,12 @@ func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client
 		return 1
 	}
 
+	token := os.Getenv(tokenEnvVar)
+	if token == "" {
+		fmt.Fprintf(stderr, "bs: %s is not set; set it to a Better Stack API token and try again.\n", tokenEnvVar)
+		return 1
+	}
+
 	endpoint := strings.TrimRight(baseURL, "/") + "/api/v2/monitors/" + url.PathEscape(target)
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
@@ -40,6 +47,7 @@ func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client
 		fmt.Fprintf(stderr, "bs: could not build request: %s\n", err)
 		return 1
 	}
+	req.Header.Set("Authorization", "Bearer "+token)
 
 	c := *client
 	c.CheckRedirect = func(*http.Request, []*http.Request) error {

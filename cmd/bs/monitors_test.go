@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"strings"
 	"testing"
 )
 
@@ -49,5 +51,94 @@ func TestMonitorsGetReachesInjectedServer(t *testing.T) {
 	}
 	if gotPath != "/api/v2/monitors/789" {
 		t.Errorf("path = %q, want %q", gotPath, "/api/v2/monitors/789")
+	}
+}
+
+// TestMonitorsGetSendsBearerToken covers A2 (spec R1): the request carries the
+// `Authorization: Bearer <token>` header built from the environment value, and
+// the target is passed through as one escaped path segment.
+func TestMonitorsGetSendsBearerToken(t *testing.T) {
+	var gotAuth, gotPath string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotAuth = r.Header.Get("Authorization")
+		gotPath = r.URL.EscapedPath()
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	t.Setenv(tokenEnvVar, testToken)
+
+	code, _, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "get", "a b")
+	if code != 0 {
+		t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+	}
+	if want := "Bearer " + testToken; gotAuth != want {
+		t.Errorf("Authorization = %q, want %q", gotAuth, want)
+	}
+	if want := "/api/v2/monitors/a%20b"; gotPath != want {
+		t.Errorf("path = %q, want %q", gotPath, want)
+	}
+}
+
+// TestMonitorsGetCredentialFailures covers A2 (spec R2): an unset or empty
+// token, and the former `BETTERSTACK_API_TOKEN` name set alone, each fail
+// before any request with a message naming `BETTERSTACK_UPTIME_API_TOKEN`.
+func TestMonitorsGetCredentialFailures(t *testing.T) {
+	cases := []struct {
+		name  string
+		setup func(t *testing.T)
+	}{
+		{
+			name: "unset",
+			setup: func(t *testing.T) {
+				t.Setenv(tokenEnvVar, "placeholder")
+				if err := os.Unsetenv(tokenEnvVar); err != nil {
+					t.Fatalf("Unsetenv: %v", err)
+				}
+			},
+		},
+		{
+			name: "empty",
+			setup: func(t *testing.T) {
+				t.Setenv(tokenEnvVar, "")
+			},
+		},
+		{
+			name: "former name only",
+			setup: func(t *testing.T) {
+				t.Setenv("BETTERSTACK_API_TOKEN", testToken)
+				t.Setenv(tokenEnvVar, "placeholder")
+				if err := os.Unsetenv(tokenEnvVar); err != nil {
+					t.Fatalf("Unsetenv: %v", err)
+				}
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests int
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests++
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			tc.setup(t)
+
+			code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "get", "789")
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if !strings.Contains(stderr, tokenEnvVar) {
+				t.Errorf("stderr = %q, want it to name %s", stderr, tokenEnvVar)
+			}
+			if requests != 0 {
+				t.Errorf("server requests = %d, want 0", requests)
+			}
+		})
 	}
 }

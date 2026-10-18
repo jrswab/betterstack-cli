@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched (now displayed 
 
 ## State
 
-- Current phase: `execute` — Phase 3 (exec) loaded 2026-10-18; A1 verified and committed
-- Current task: A1 complete; A2 is next
-- Task states: A1 verified; A2, A3, B1, B2, B3, C1, C2 unchecked
+- Current phase: `execute` — Phase 3 (exec) loaded 2026-10-18; A1 and A2 verified and committed
+- Current task: A2 complete; A3 is next
+- Task states: A1, A2 verified; A3, B1, B2, B3, C1, C2 unchecked
 - Milestone checkbox: `unchecked` (source entry `- [ ] 002`)
-- Last completed phase/task/gate and timestamp: A1 verified 2026-10-18 (see Gate evidence)
+- Last completed phase/task/gate and timestamp: A2 verified 2026-10-18 (see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -85,6 +85,13 @@ One entry per passed gate (review, lint, verification, completion).
   - `HEAD` commit SHA: `b2c90314cbd99362c2ecacabe45ff92895373b1c` (work committed after this gate)
   - `git status --porcelain`: ` M cmd/bs/main.go` / ` M docs/plans/001_betterstack-cli-first-release_002_checkpoint.md` / `?? cmd/bs/monitors.go` / `?? cmd/bs/monitors_test.go` plus the preserved baseline `.wayfinder/` entries, `verify-incident-id.sh`, and the planning artifacts
   - Relevant work: `uncommitted` — stash ref `af57aade5ce8cdf94cfae2eb12159ecc11ceb6d2`
+- Gate: task A2 — credential channel and bearer request (spec R1, R2)
+  - Command(s) and actual result(s):
+    - Red: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./cmd/... -run 'TestMonitorsGetSendsBearerToken|TestMonitorsGetCredentialFailures'` → `Authorization = "", want "Bearer dummy-token-for-tests"` and all three credential cases exited 0 instead of 1 (exit 1)
+    - Green after `cmd/bs/monitors.go` read `os.Getenv(tokenEnvVar)` only, returned exit 1 with a message naming `BETTERSTACK_UPTIME_API_TOKEN` for unset/empty, and set `Authorization: Bearer <token>`: focused run → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.009s` (exit 0); full `go test ./...` → `ok ... 0.007s` (exit 0); `gofmt -l cmd/bs` no output; `go vet ./cmd/...` exit 0
+  - `HEAD` commit SHA: `cdf8246bb7b6e400f35ecfecf9491fa94ca8a95b` (work committed after this gate)
+  - `git status --porcelain`: ` M cmd/bs/monitors.go` / ` M cmd/bs/monitors_test.go` / ` M docs/plans/001_betterstack-cli-first-release_002_checkpoint.md` plus the preserved baseline and planning artifacts
+  - Relevant work: `uncommitted` — stash ref `e3fc1d67f4f7e887a3cd31d1470dffb1eb479926`
 
 ## Limitations & blockers
 
@@ -93,4 +100,4 @@ One entry per passed gate (review, lint, verification, completion).
   - Planning scope only: no implementation work, no code, and no test has been written for 002. Phase 3 (exec skill) has not been loaded; A1–C2 are all unchecked.
   - Credential-safety regime carried forward from the 001 run (see Identity); the exposed `BETTERSTACK_UPTIME_API_TOKEN` value was never read by any session and its rotation remains Jaron's deferred user action.
   - The stash refs `cca382c4…` and `45e9de0…` are unreachable Git objects once recorded; they are inspectable with `git show`/`git stash show` (never applied) and may be pruned by `git gc`.
-- Next action (the single next safe action): begin checklist task A2 (credential channel reading only `BETTERSTACK_UPTIME_API_TOKEN` plus the bearer header and the missing/empty-token failure) with its red test, then implement to green.
+- Next action (the single next safe action): begin checklist task A3 (raw 2xx body passthrough to stdout with no appended newline) with its red test, then implement to green.
