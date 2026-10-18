@@ -118,6 +118,55 @@ func TestMonitorsGetPrintsRawBodyOnSuccess(t *testing.T) {
 	}
 }
 
+// TestMonitorsGetNon2xxPassthrough covers B1 (spec R4): every non-2xx
+// response, 3xx included, writes the raw body to stderr byte-for-byte, writes
+// nothing to stdout, exits 1, and reaches the server exactly once (no redirect
+// following, no retry).
+func TestMonitorsGetNon2xxPassthrough(t *testing.T) {
+	cases := []struct {
+		name   string
+		status int
+		body   string
+	}{
+		{"moved permanently", http.StatusMovedPermanently, "redirect body"},
+		{"found", http.StatusFound, `{"errors":"moved"}`},
+		{"temporary redirect", http.StatusTemporaryRedirect, "temporary"},
+		{"unauthorized", http.StatusUnauthorized, `{"errors":"unauthorized"}`},
+		{"not found", http.StatusNotFound, `{"errors":"not found"}`},
+		{"too many requests", http.StatusTooManyRequests, "slow down"},
+		{"server error", http.StatusInternalServerError, "boom"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests int
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests++
+				w.Header().Set("Location", "/redirect-target")
+				w.WriteHeader(tc.status)
+				_, _ = io.WriteString(w, tc.body)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "get", "789")
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if stderr != tc.body {
+				t.Errorf("stderr = %q, want %q", stderr, tc.body)
+			}
+			if requests != 1 {
+				t.Errorf("server requests = %d, want 1", requests)
+			}
+		})
+	}
+}
+
 // TestMonitorsGetCredentialFailures covers A2 (spec R2): an unset or empty
 // token, and the former `BETTERSTACK_API_TOKEN` name set alone, each fail
 // before any request with a message naming `BETTERSTACK_UPTIME_API_TOKEN`.

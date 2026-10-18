@@ -70,7 +70,8 @@ func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client
 		_, _ = stdout.Write(body)
 		return 0
 	}
-	return 0
+	_, _ = stderr.Write(body)
+	return 1
 }
 
 func parseMonitorsGetTarget(args []string) (string, error) {
