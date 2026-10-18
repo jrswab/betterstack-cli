@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `execute` — Phase 3 (tasks A1 → B1 → C1 → D1); tasks A1, B1, and C1 passed their gates, D1 is next
-- Current task: D1 (next)
-- Task states: A1 `pass`, B1 `pass`, C1 `pass` (gate evidence below, committed); D1 not started
-- Milestone checkbox: `unchecked` (source entry `- [ ] 007`, unchanged — 007 is checked only at its own passing completion gate)
-- Last completed phase/task/gate: Phase 3 task C1 gate
+- Current phase: `complete` — Phase 3 passed all four task gates and the completion gate; the milestone checkbox renders checked from this evidence
+- Current task: none (all tasks passed)
+- Task states: A1 `pass`, B1 `pass`, C1 `pass`, D1 `pass` (each gate's evidence is in this file, committed)
+- Milestone checkbox: `checked` (source entry rendered `- [x] 007` at this passing completion gate)
+- Last completed phase/task/gate: Phase 3 task D1 gate + 007 completion gate
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -141,12 +141,28 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - `git status --porcelain`: the preserved untracked baseline plus this checkpoint edit; `git diff --check` exit 0
   - Relevant work: `uncommitted` at gate time — stash ref `49f0755277a82e762407008e5d2fa2dca6007f97` (created with `git stash create "007 Phase 3 task C1 gate snapshot"`; captures the tracked checkpoint gate edit only — untracked files are not in the ref and remain on disk). The scoped docs commit that follows this gate is the authoritative record and matches the pre-edit worktree exactly
 
+- Gate: 007 Phase 3 — task D1, deferred-action record and completion gate (this gate)
+  - Deferred-action record (verbatim, per spec R4.2/R4.3 and the milestone source entry — neither action is executed by milestone 007; both require separate future user authorization):
+    - (a) The conditional post-tag remote version check — `go install github.com/jrswab/betterstack-cli/cmd/bs@v0.1.0` with `GOPRIVATE=github.com/jrswab/betterstack-cli` and preconfigured authenticated Git access, after a tag exists on the private origin, requiring separate future user authorization to commit/tag/push.
+    - (b) The real-account check — Jaron runs the installed `bs` against the live Better Stack Uptime API with his own token in his own environment; no token is shared and no automated step touches the real account.
+    - Documented user prerequisites for (a) (from `.wayfinder/tickets/06-installation-distribution-acceptance.md` Decision 3): `GOPRIVATE=github.com/jrswab/betterstack-cli` bypasses the module proxy and checksum database but does not grant Git authentication; `go install module@version` resolves over HTTPS Git by default, so authenticated HTTPS Git access is needed — user-configured credentials or SSH `insteadOf` rewriting (whose scope applies to the whole environment, not only this repository); a toolchain auto-download from the public Go toolchain source is independent of `GOPRIVATE`.
+  - Completion-gate commands and results (every shell began with `unset BETTERSTACK_UPTIME_API_TOKEN` and `unset BETTERSTACK_API_TOKEN`; pinned `GOTOOLCHAIN=go1.26.9 GOPROXY=off`; no env dump, no xtrace, no `.env` read, no live request):
+    - Full suite `go test -count=1 ./...` → `ok github.com/jrswab/betterstack-cli/cmd/bs 2.031s`, exit 0
+    - Race suite `go test -race -count=1 ./...` → `ok ... 3.122s`, exit 0
+    - `go vet ./...` → exit 0; `gofmt -l .` → empty; `git diff --check` → clean; `go mod verify` → `all modules verified`
+    - Spec comparison: R1 (sweep + complete mapping) satisfied by the A1 gate; R2 (battery) satisfied by the B1 gate; R3 (clean-checkout smoke) satisfied by the C1 gate; R4 (deferred record, this gate) satisfied by the record above; R5.1 (durable record) satisfied by this checkpoint; R5.2 verified below; R5.3 executed below from this evidence
+  - Change accounting (R5.2): `git diff 27fd4ee..HEAD --stat` covers only the three 007 docs (spec and checklist were already committed before this session's tasks; this session added only checkpoint and checklist edits); `git diff 27fd4ee..HEAD -- cmd/bs` is empty, so `cmd/bs` is unchanged; the twelve pre-existing untracked entries (`.wayfinder/` tree and `verify-incident-id.sh`) remain preserved and untouched; `git stash list` → 0 entries; no README, LICENSE, `.gitignore`, `.wayfinder/`, or `verify-incident-id.sh` change exists
+  - `HEAD` commit SHA: `4a8fa3e` at gate time (unchanged throughout the completion-gate checks)
+  - `git status --porcelain`: the preserved untracked baseline plus this checkpoint edit (and, after the render below, the milestones source checkbox render)
+  - Relevant work: `uncommitted` at gate time — stash ref `cfbd4bd82d89473c89fe73713c6bafc2ed0d654f` (created with `git stash create "007 Phase 3 task D1 completion gate snapshot"`; captures the tracked checkpoint gate edit only — untracked files are not in the ref and remain on disk). The scoped docs commit that follows this gate is the authoritative record and matches the pre-render worktree exactly
+  - Checkbox render (R5.3, executed only after the checks above passed): the milestone source entry `- [ ] 007:` was rendered `- [x] 007:` in `docs/plans/001_betterstack-cli-first-release_milestones.md`; all five 007 task checkboxes in the implementation checklist render `[x]`; the render and this gate evidence are committed together as the 007 completion commit
+
 ## Limitations & blockers
 
 - Limitations:
-  - The 007 implementation checklist does not exist yet; Phase 2 (implementation checklist) is the next authorized work after this gate, using the implement skill with the factory override against the completed spec.
-  - The deferred release actions (post-tag remote install check with GOPRIVATE and authenticated Git, and the real-account check) are outside 007 by the source entry itself and require separate future authorization; they are recorded as deferred in spec R4, not planned work for this run.
+  - The deferred release actions remain outside milestone 007 by the source entry itself and are recorded as deferred in the D1 gate above; they require separate future user authorization (post-tag remote install check with GOPRIVATE and authenticated Git; user-controlled real-account check). No tag, push, publication, live API call, or external modification happened in 007.
   - The credential-safety regime and the `safety_test.go` guard limits (covers only clients using `http.DefaultTransport` or `testHTTPClient()`; cannot stop a test that injects its own transport or dials `net.Conn` directly) carry forward and are documented in `cmd/bs/safety_test.go`.
-  - All work stays local: no push, tag, release, deploy, live API call, or external modification. Tests use only dummy tokens and mock loopback servers.
+  - Jaron's deferred token rotation stays a user action; the preserved unauthorized live-GET record and first-token-exposure warning stay preserved.
+  - All work stayed local: no push, tag, release, deploy, live API call, or external modification. Tests used only dummy tokens and mock loopback servers.
 - Blockers: none.
-- Next action (the single next safe action): begin 007 Phase 3 task A1 — run the mock-API acceptance sweep and record the per-command contract→test mapping in the checkpoint.
+- Next action (the single next safe action): the outer Factory loop's restart validation of this checkpoint, then independent review of milestone 007; the next unchecked milestone (if any remains) is selected only after 007's review passes.
