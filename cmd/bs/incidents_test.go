@@ -1389,3 +1389,271 @@ func TestIncidentsTimelineRoutesThroughRunWithAPI(t *testing.T) {
 		t.Errorf("path = %q, want %q", gotPath, want)
 	}
 }
+
+// TestIncidentsTimelineHelpExitsZeroThroughRouting covers B2 (spec R1.3): the
+// unchanged incidentsTimelineHelp text exits 0 with empty stderr and no
+// request.
+func TestIncidentsTimelineHelpExitsZeroThroughRouting(t *testing.T) {
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	t.Setenv(tokenEnvVar, testToken)
+
+	code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "timeline", "--help")
+	if code != 0 {
+		t.Fatalf("exit code = %d, want 0", code)
+	}
+	if stdout != incidentsTimelineHelp {
+		t.Errorf("stdout = %q, want incidentsTimelineHelp", stdout)
+	}
+	if stderr != "" {
+		t.Errorf("stderr = %q, want empty", stderr)
+	}
+	if got := requests.Load(); got != 0 {
+		t.Errorf("server requests = %d, want 0", got)
+	}
+}
+
+// TestIncidentsTimelineRejectsAbsentFeatures covers B2 (spec R1.3, R8):
+// unknown options and --help in flag position are invalid usage with zero
+// requests, proving no pagination, filter, or output-mode flag exists.
+func TestIncidentsTimelineRejectsAbsentFeatures(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"--page", []string{"incidents", "timeline", "123", "--page", "2"}},
+		{"--per-page", []string{"incidents", "timeline", "123", "--per-page", "5"}},
+		{"--pretty", []string{"incidents", "timeline", "123", "--pretty"}},
+		{"--query", []string{"incidents", "timeline", "123", "--query", "x"}},
+		{"short help", []string{"incidents", "timeline", "-h"}},
+		{"help after target", []string{"incidents", "timeline", "123", "--help"}},
+		{"unknown flag", []string{"incidents", "timeline", "123", "--bogus"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), tc.args...)
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if strings.TrimSpace(stderr) == "" {
+				t.Error("stderr is empty, want a readable error")
+			}
+			if strings.Contains(stderr, testToken) {
+				t.Errorf("stderr leaks the token: %q", stderr)
+			}
+			if got := requests.Load(); got != 0 {
+				t.Errorf("server requests = %d, want 0", got)
+			}
+		})
+	}
+}
+
+// TestIncidentsTimelineRejectedURLShapesThroughRouting covers B2 (spec R2.2,
+// R8): every non-observed URL shape is rejected locally, before any request,
+// with a readable token-free message through the routing seam.
+func TestIncidentsTimelineRejectedURLShapesThroughRouting(t *testing.T) {
+	cases := []struct {
+		name   string
+		target string
+	}{
+		{"http scheme", "http://incidents.betterstack.com/team/t1/incidents/123"},
+		{"ftp scheme", "ftp://incidents.betterstack.com/team/t1/incidents/123"},
+		{"wrong host", "https://uptime.betterstack.com/team/t1/incidents/123"},
+		{"near host suffix", "https://incidents.betterstack.com.evil.test/team/t1/incidents/123"},
+		{"near host prefix", "https://evil.test/incidents.betterstack.com/team/t1/incidents/123"},
+		{"empty host", "https:///team/t1/incidents/123"},
+		{"uppercase host", "https://INCIDENTS.betterstack.com/team/t1/incidents/123"},
+		{"explicit port", "https://incidents.betterstack.com:8443/team/t1/incidents/123"},
+		{"explicit 443 port", "https://incidents.betterstack.com:443/team/t1/incidents/123"},
+		{"userinfo", "https://user:pass@incidents.betterstack.com/team/t1/incidents/123"},
+		{"query", "https://incidents.betterstack.com/team/t1/incidents/123?x=1"},
+		{"empty query marker", "https://incidents.betterstack.com/team/t1/incidents/123?"},
+		{"fragment", "https://incidents.betterstack.com/team/t1/incidents/123#frag"},
+		{"empty fragment marker", "https://incidents.betterstack.com/team/t1/incidents/123#"},
+		{"trailing slash", "https://incidents.betterstack.com/team/t1/incidents/123/"},
+		{"too few segments", "https://incidents.betterstack.com/team/t1/incidents"},
+		{"too many segments", "https://incidents.betterstack.com/team/t1/incidents/123/extra"},
+		{"empty team", "https://incidents.betterstack.com/team//incidents/123"},
+		{"wrong path words", "https://incidents.betterstack.com/org/t1/incidents/123"},
+		{"missing terminal id", "https://incidents.betterstack.com/team/t1/incidents/"},
+		{"non-numeric terminal", "https://incidents.betterstack.com/team/t1/incidents/abc"},
+		{"mixed terminal", "https://incidents.betterstack.com/team/t1/incidents/12a"},
+		{"negative terminal", "https://incidents.betterstack.com/team/t1/incidents/-123"},
+		{"decimal terminal", "https://incidents.betterstack.com/team/t1/incidents/12.3"},
+		{"unicode digits", "https://incidents.betterstack.com/team/t1/incidents/\u0661\u0662\u0663"},
+		{"fullwidth digits", "https://incidents.betterstack.com/team/t1/incidents/\uff11\uff12\uff13"},
+		{"scheme-ful opaque", "https:team/t1/incidents/123"},
+		{"encoded slash in id", "https://incidents.betterstack.com/team/t1/incidents/123%2F456"},
+		{"lowercase encoded slash in id", "https://incidents.betterstack.com/team/t1/incidents/123%2f456"},
+		{"encoded slash in team", "https://incidents.betterstack.com/team/t%2F1/incidents/123"},
+		{"encoded query delimiter", "https://incidents.betterstack.com/team/t1/incidents/123%3Fx"},
+		{"encoded fragment delimiter", "https://incidents.betterstack.com/team/t1/incidents/123%23x"},
+		{"encoded backslash", "https://incidents.betterstack.com/team/t1/incidents/123%5C456"},
+		{"encoded dot dot", "https://incidents.betterstack.com/team/t1/incidents/%2e%2e"},
+		{"malformed percent escape", "https://incidents.betterstack.com/team/t1/incidents/123%zz"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "timeline", tc.target)
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if strings.TrimSpace(stderr) == "" {
+				t.Error("stderr is empty, want a readable error")
+			}
+			if strings.Contains(stderr, testToken) {
+				t.Errorf("stderr leaks the token: %q", stderr)
+			}
+			if got := requests.Load(); got != 0 {
+				t.Errorf("server requests = %d, want 0", got)
+			}
+		})
+	}
+}
+
+// TestIncidentsTimelineCredentialFailuresThroughRouting covers B2 (spec R3.1):
+// the routed command fails before any request for unset, empty, and
+// former-name credentials, naming BETTERSTACK_UPTIME_API_TOKEN.
+func TestIncidentsTimelineCredentialFailuresThroughRouting(t *testing.T) {
+	cases := []struct {
+		name  string
+		setup func(t *testing.T)
+	}{
+		{
+			name: "unset",
+			setup: func(t *testing.T) {
+				t.Setenv(tokenEnvVar, "placeholder")
+				if err := os.Unsetenv(tokenEnvVar); err != nil {
+					t.Fatalf("Unsetenv: %v", err)
+				}
+			},
+		},
+		{
+			name: "empty",
+			setup: func(t *testing.T) {
+				t.Setenv(tokenEnvVar, "")
+			},
+		},
+		{
+			name: "former name only",
+			setup: func(t *testing.T) {
+				t.Setenv("BETTERSTACK_API_TOKEN", testToken)
+				t.Setenv(tokenEnvVar, "placeholder")
+				if err := os.Unsetenv(tokenEnvVar); err != nil {
+					t.Fatalf("Unsetenv: %v", err)
+				}
+			},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			tc.setup(t)
+
+			code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "timeline", "123")
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if !strings.Contains(stderr, tokenEnvVar) {
+				t.Errorf("stderr = %q, want it to name %s", stderr, tokenEnvVar)
+			}
+			if got := requests.Load(); got != 0 {
+				t.Errorf("server requests = %d, want 0", got)
+			}
+		})
+	}
+}
+
+// TestIncidentsTimelineNeverPrintsTokenThroughRouting covers B2 (spec R6.3):
+// the routed command keeps the token off both channels on success, non-2xx,
+// and local failure.
+func TestIncidentsTimelineNeverPrintsTokenThroughRouting(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		var gotAuth string
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			gotAuth = r.Header.Get("Authorization")
+			w.WriteHeader(http.StatusOK)
+			_, _ = io.WriteString(w, `{"data":[]}`)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "timeline", "123")
+		if code != 0 {
+			t.Fatalf("exit code = %d, want 0", code)
+		}
+		if want := "Bearer " + testToken; gotAuth != want {
+			t.Errorf("Authorization = %q, want %q", gotAuth, want)
+		}
+		assertNoToken(t, stdout, stderr)
+	})
+
+	t.Run("non-2xx", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusUnauthorized)
+			_, _ = io.WriteString(w, `{"errors":"unauthorized"}`)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "timeline", "123")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		assertNoToken(t, stdout, stderr)
+	})
+
+	t.Run("local failure", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+		closedURL := srv.URL
+		srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(closedURL, newHTTPClient(), "incidents", "timeline", "123")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		assertNoToken(t, stdout, stderr)
+	})
+}
