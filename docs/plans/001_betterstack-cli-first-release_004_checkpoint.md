@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `execute` — Phase 3 implementation is complete through B3; C1 full verification is the next task, independent boundary review pending
-- Current task: `C1` — B3 is recorded; the next task is C1
-- Task states: A1 `implemented, independent review pending`; B1 `implemented, independent review pending`; B2 `implemented, independent review pending`; B3 `implemented, independent review pending`; C1 `unchecked` (task boxes stay unchecked until the independent boundary review passes)
+- Current phase: `execute` — all implementation tasks A1–C1 are complete and C1 verification passed; the run now waits for the independent boundary review, then the Factory completion gate
+- Current task: `none` — C1 is recorded; the next action is outside this execution scope (independent boundary review)
+- Task states: A1 `implemented, independent review pending`; B1 `implemented, independent review pending`; B2 `implemented, independent review pending`; B3 `implemented, independent review pending`; C1 `implemented, independent review pending` (all task boxes stay unchecked until the independent boundary review passes)
 - Milestone checkbox: `unchecked` (source entry `- [ ] 004`, never edited by Phase 3)
-- Last completed phase/task/gate and timestamp: task B3 focused verification 2026-10-18 (see Gate evidence); no task checked pending independent review
+- Last completed phase/task/gate and timestamp: task C1 whole-spec verification 2026-10-18 (see Gate evidence); no task checked pending independent review
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -132,6 +132,19 @@ One entry per passed gate (review, lint, verification, completion):
   - `git status --porcelain`: `M docs/plans/001_betterstack-cli-first-release_004_checkpoint.md`, `M cmd/bs/incidents_test.go` plus the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh`
   - Relevant work: `uncommitted` — stash ref `e6d16d4561614e14fb9b690386affe91cb97508d` (staged-only snapshot of exactly the 004 checkpoint plus `cmd/bs/incidents_test.go`; `git show --stat` shows 2 files). The snapshot predates the substitution of its own ref at this line; the B3 commit that follows is the authoritative record of the same paths
 
+- Gate: task C1 — whole-spec verification (spec R1–R9; milestone 004 acceptance line)
+  - Command(s) and actual result(s):
+    - Full suite once: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./... -count=1` → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.643s` (exit 0)
+    - Race: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./... -race -count=1` → `ok github.com/jrswab/betterstack-cli/cmd/bs 1.728s` (exit 0)
+    - Typecheck/build/format: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go vet ./...` → exit 0; `GOTOOLCHAIN=go1.26.9 GOPROXY=off go build -o /tmp/bs004build ./cmd/bs` → exit 0, binary removed, `test ! -e bs` → `ROOT_BS_ABSENT`; `gofmt -l .` → empty (`GOFMT_CLEAN`); `git diff --check` → clean
+    - Request-path audit: `grep` of `cmd/bs/*.go` shows exactly one request constructor/executor (`http.NewRequestWithContext` and `c.Do` in `doMonitorsRequest`, `cmd/bs/monitors.go:82,93`); the only incident endpoint build is `strings.TrimRight(baseURL, "/") + "/api/v3/incidents/" + url.PathEscape(candidate)` (`cmd/bs/incidents.go:72`) and `incidentsGet` calls only `doMonitorsRequest` (`cmd/bs/incidents.go:73`). `resolveIncidentTarget` returns only the extracted ID; no code path fetches or probes the user-supplied URL host, and no second request path exists
+    - Spec mapping: R1.1/R1.2/R7.1 → A1 parser tests and B3 invalid/unknown-option vectors; R1.3 → B3 help and unknown-option vectors; R2.1–R2.3 → A1 resolver tests; R2.2/R2.4 → B1 wrong-ID passthrough and B3 35-shape zero-request sweep; R3.1/R3.2 → B1/B3 credential matrices and the parse→resolve→token order; R4.1/R4.2 → B1 one-request path/bearer tests; R5.1/R5.2 → B1 raw-body tests (data+included, non-JSON, trailing newline); R6.1–R6.3 → B1/B3 non-2xx/3xx/one-request/no-redirect, local-failure, and token-absence tests; R7.1 → A1/B1 timeout tests; R8 → B3 absent-feature and rejected-shape tests plus the source audit; R9.1/R9.2 → B2 regression edits and the full suite (all `TestMonitorsGet*`/`TestMonitorsList*` unchanged and passing)
+    - Preservation audit: `git status --porcelain=v1 -uall` shows only the verbatim baseline (11 `.wayfinder/` entries and `verify-incident-id.sh`), all untouched and unstaged; no tracked modifications, no staged entries; `git stash list` → 0 entries. Work is local only: no push, tag, release, deploy, or deletion
+    - Task checkbox left unchecked: the independent boundary review is pending and was neither dispatched nor self-claimed
+  - `HEAD` commit SHA: `003659ed9e6fd0dd2842270c5121b054914beb17` — the product HEAD this gate validated
+  - `git status --porcelain`: `M docs/plans/001_betterstack-cli-first-release_004_checkpoint.md` plus the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh`
+  - Relevant work: `uncommitted` — stash ref `d8a4409f32dd914c500f8c6d3f869914a1ff036e` (staged-only snapshot of exactly the 004 checkpoint; `git show --stat` shows 1 file). The snapshot predates the substitution of its own ref at this line; the C1 commit that follows is the authoritative record of the same path
+
 ## Limitations & blockers
 
 - Limitations:
@@ -141,4 +154,4 @@ One entry per passed gate (review, lint, verification, completion):
   - All work stays local: no push, tag, release, deploy, live API call, or external modification. Tests use only dummy tokens and mock loopback servers.
   - The 004 planning artifacts are staged and uncommitted (real stash snapshots recorded above); the Phase 3 flow owns the product and planning commits as in 001–003.
 - Blockers: none.
-- Next action (the single next safe action): run task C1 (full suite, race, vet, build, formatting, diff check, and preservation audit), then record the C1 gate and hand off for the independent boundary review.
+- Next action (the single next safe action): run the independent milestone-boundary review over the range `d965e7d..003659e`; only after it passes may the task boxes be rendered checked and the Factory completion gate run. Task boxes and the source 004 checkbox remain unchecked until then.
