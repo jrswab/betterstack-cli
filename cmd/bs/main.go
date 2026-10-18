@@ -9,20 +9,31 @@ package main
 import (
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 )
 
 func main() {
-	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
+	os.Exit(runWithAPI(os.Args[1:], os.Stdout, os.Stderr, defaultAPIBaseURL, newHTTPClient()))
 }
 
-// run executes one CLI invocation and returns the process exit code. stdout
-// and stderr are injected so tests observe both channels without a subprocess.
+// run keeps the 001 argv/writer seam for existing tests; it uses the
+// production API endpoint and client.
 func run(args []string, stdout, stderr io.Writer) int {
+	return runWithAPI(args, stdout, stderr, defaultAPIBaseURL, newHTTPClient())
+}
+
+// runWithAPI is the test-only injection seam (spec R9). Tests supply the base
+// URL and HTTP client so every request stays on a local mock server. No flag,
+// environment variable, or file changes these values at runtime.
+func runWithAPI(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
 	if help, ok := helpFor(args); ok {
 		fmt.Fprint(stdout, help)
 		return 0
+	}
+	if len(args) >= 2 && args[0] == "monitors" && args[1] == "get" {
+		return monitorsGet(args[2:], stdout, stderr, baseURL, client)
 	}
 	fmt.Fprint(stderr, usageError(args))
 	return 1

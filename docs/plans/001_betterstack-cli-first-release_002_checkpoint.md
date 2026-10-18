@@ -25,21 +25,21 @@ The durable recovery record and sole home of run state for the current milestone
 ?? verify-incident-id.sh
 ```
 
-All pre-existing changes are untracked files preserved untouched. Predecessor state: milestone 001 is complete (source entry `- [x] 001`; checkpoint `docs/plans/001_betterstack-cli-first-release_001_checkpoint.md` passed restart validation at its completion HEAD `f52e820` before this file's setup; `187cfd1` adds the restart-validation record). The prior run's credential-safety rules carry forward: every shell begins with `unset BETTERSTACK_UPTIME_API_TOKEN`; no environment content is printed or logged; no live API call, external request, publication, push, tag, or deletion is authorized. Jaron's deferred token rotation stays a user action.
+All pre-existing changes are untracked files preserved untouched (now displayed collapsed by git as `?? .wayfinder/` plus `?? verify-incident-id.sh`). Predecessor state: milestone 001 is complete (source entry `- [x] 001`; checkpoint `docs/plans/001_betterstack-cli-first-release_001_checkpoint.md` passed restart validation). The prior run's credential-safety rules carry forward: every shell begins with `unset BETTERSTACK_UPTIME_API_TOKEN`; no environment content is printed or logged; no live API call, external request, publication, push, tag, or deletion is authorized. Jaron's deferred token rotation stays a user action.
 
 ## Artifacts
 
-- Spec: `docs/plans/001_betterstack-cli-first-release_002_spec.md` (not yet written — Phase 1 not started)
-- Implementation checklist: `docs/plans/001_betterstack-cli-first-release_002_implement.md` (not yet written — Phase 2 not started)
+- Spec: `docs/plans/001_betterstack-cli-first-release_002_spec.md` (written; Phase 1 gate passed)
+- Implementation checklist: `docs/plans/001_betterstack-cli-first-release_002_implement.md` (written; Phase 2 gate passed)
 - Checkpoint: `docs/plans/001_betterstack-cli-first-release_002_checkpoint.md` (this file)
 
 ## State
 
-- Current phase: `setup` — setup complete 2026-10-17 (this file written atomically); Phase 1 (spec skill) not yet loaded
-- Current task: none (no checklist exists yet)
-- Task states: none yet (T-numbers will be defined by the Phase 2 checklist; checkboxes will render from this file)
+- Current phase: `execute` — Phase 3 (exec) loaded 2026-10-18; A1 verified and committed
+- Current task: A1 complete; A2 is next
+- Task states: A1 verified; A2, A3, B1, B2, B3, C1, C2 unchecked
 - Milestone checkbox: `unchecked` (source entry `- [ ] 002`)
-- Last completed phase/task/gate and timestamp: factory outer-loop selection of milestone 002 after milestone 001 completion and restart validation, 2026-10-17.
+- Last completed phase/task/gate and timestamp: A1 verified 2026-10-18 (see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -51,19 +51,46 @@ One entry per passed gate (review, lint, verification, completion).
 
 - Gate: setup (run established for milestone 002; outer loop selected the first remaining unchecked entry)
   - Command(s) and actual result(s):
-    - `git rev-parse --show-toplevel` → `/home/jaron/dev/betterstack-cli/master`; `git branch --show-current` → `master`; `git rev-parse HEAD` → `187cfd15706ecb3790363794123f81d4c6b7b9b6`
+    - `git rev-parse --show-toplevel` → `/home/jaron/dev/betterstack-cli/master`; `git branch --show-current` → `master`; `git rev-parse HEAD` → `187cfd15706ecb3790363794123f81d4c6b7b9b6` at setup; later commits `f52e820`, `187cfd1`, `b2c9031` (002 setup checkpoint) are all committed; current HEAD `b2c90314cbd99362c2ecacabe45ff92895373b1c`
     - `git status --porcelain=v1 -uall` → the verbatim baseline above (11 `.wayfinder/` entries + `verify-incident-id.sh`); no tracked modifications, no staged entries
-    - Source re-read: the first entry matching `- [ ] NNN:` is `002` (001 renders `- [x]`); the full milestone document and 001 artifacts were read this session
+    - Source re-read: the first entry matching `- [ ] NNN:` is `002` (001 renders `- [x]`); the full milestone document, 001 artifacts, and this checkpoint were read this session
     - Toolchain: `GOTOOLCHAIN=go1.26.9 GOPROXY=off` from the local module cache remains the verified verification environment (001 setup and completion gate evidence); local default `go` is 1.22.2, below the module minimum
     - Script discovery in required order: no relevant CLI on `PATH` for this setup; no repository `.agents/scripts/`; shared `~/.agents/scripts/` contains no factory-setup script — direct commands used
-  - `HEAD` commit SHA: `187cfd15706ecb3790363794123f81d4c6b7b9b6`
+  - `HEAD` commit SHA: `187cfd15706ecb3790363794123f81d4c6b7b9b6` (setup) — this run's gates are recorded at current HEAD `b2c90314cbd99362c2ecacabe45ff92895373b1c`
   - `git status --porcelain`: the verbatim baseline above plus this checkpoint file once committed (recorded at the next gate)
   - Relevant work: `uncommitted` — stash ref `none` (no tracked modifications existed at setup; all baseline paths are untracked files preserved in the worktree)
+- Gate: Phase 1 — spec criterion (2026-10-17)
+  - Command(s) and actual result(s):
+    - Spec written to `docs/plans/001_betterstack-cli-first-release_002_spec.md` and inspected against the complete milestone 002 entry: every in-scope outcome (credential channel, pre-request missing/empty-token failure, old name never read, one bearer GET, raw stdout passthrough without newline, non-2xx-including-3xx raw stderr with exit 1 and no redirects, no retries, 30 s default and `--timeout` override, token-free local/network failure messages, exit codes 0/1 only, mock-API acceptance coverage) has an unambiguous requirement (R1–R9) with a verifiable acceptance boundary; nothing outside milestone 002 is required (003–007 named out of scope; `verify-incident-id.sh` and `.wayfinder/` untouched)
+    - Research claims grounded in current evidence: wayfinder tickets 01 and 05 and asset `01-api-contract-research.md` read this session; `cmd/bs/main.go`, `cmd/bs/help.go`, `cmd/bs/main_test.go`, and `go.mod` read this session; Go stdlib facts (default client follows up to 10 redirects; `http.ErrUseLastResponse` returns the 3xx response with body unclosed and nil error; `*url.Error` renders operation, masked URL, and underlying error — never headers) verified from the local go1.26.9 toolchain source at `/home/jaron/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64/src/net/http/client.go` and `src/net/url/url.go`
+    - Technical decisions on authorized judgment, recorded in the spec: argument validation precedes the token check (consistent with 001's approved invalid-usage behavior and "fails before any request"); `--timeout` uses the Go standard duration grammar with non-positive and unparseable values rejected as invalid usage (within the approved implementer-choice scope)
+    - Git-native evidence: stage of only the run-created artifact (`git add docs/plans/001_betterstack-cli-first-release_002_spec.md`), `git stash create` → `cca382c4beb3b54766d57246c1b6879aac97d1f1` (`git show --stat` confirms it holds exactly the 107-line spec file), then `git restore --staged` (staging reverted; file remains untracked worktree content). Baseline `.wayfinder/` and `verify-incident-id.sh` were never staged
+    - Checkpoint written atomically (temp file + rename)
+  - `HEAD` commit SHA: `b2c90314cbd99362c2ecacabe45ff92895373b1c`
+  - `git status --porcelain`: `?? .wayfinder/` / `?? docs/plans/001_betterstack-cli-first-release_002_spec.md` / `?? verify-incident-id.sh`
+  - Relevant work: `uncommitted` — stash ref `cca382c4beb3b54766d57246c1b6879aac97d1f1`
+- Gate: Phase 2 — implement criterion (2026-10-17)
+  - Command(s) and actual result(s):
+    - Implement skill and its cited tdd skill loaded in full (no separate references directory exists for either); checklist written to `docs/plans/001_betterstack-cli-first-release_002_implement.md` and inspected against the complete spec R1–R9: R1→A2, R2→A2, R3→A3, R4→B1, R5→B2, R6→B3, R7→B3+C1, R8→B2+C1, R9→A1, whole-spec verification→C2; every task names exact file/function surfaces (`cmd/bs/main.go: run()`, new `cmd/bs/monitors.go: monitorsGet()`, `cmd/bs/main_test.go`), its tests, and its verification command; tasks are ordered in one vertical slice (A→B→C) with no parallelism, matching the spec's no-parallelism statement; nothing speculative or outside milestone 002
+    - Git-native evidence: stage of only the run-created artifacts (`git add` of the implement checklist and the checkpoint), `git stash create` → `45e9de0241dcb483ba11929e6c8a64e1ab06dd2f`, then `git restore --staged` both paths. Stash tree verified against the worktree: `git show 45e9de0:docs/plans/001_betterstack-cli-first-release_002_implement.md | wc -l` → 32 (worktree 32); checkpoint → 80 (worktree 80). The spec file's state is captured by the Phase 1 stash ref `cca382c4…`. Baseline `.wayfinder/` and `verify-incident-id.sh` were never staged
+    - `git diff --check` → clean (no output); the checkpoint was rewritten atomically (temp file + rename) at the Phase 1 gate and edited atomically here
+  - `HEAD` commit SHA: `b2c90314cbd99362c2ecacabe45ff92895373b1c`
+  - `git status --porcelain`: ` M docs/plans/001_betterstack-cli-first-release_002_checkpoint.md` / `?? .wayfinder/` / `?? docs/plans/001_betterstack-cli-first-release_002_implement.md` / `?? docs/plans/001_betterstack-cli-first-release_002_spec.md` / `?? verify-incident-id.sh`
+  - Relevant work: `uncommitted` — stash ref `45e9de0241dcb483ba11929e6c8a64e1ab06dd2f` (spec: `cca382c4beb3b54766d57246c1b6879aac97d1f1`)
+- Gate: task A1 — test-only HTTP injection seam (spec R9)
+  - Command(s) and actual result(s):
+    - Red: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./cmd/... -run TestMonitorsGetReachesInjectedServer` → build failed with `undefined: runWithAPI`, `undefined: tokenEnvVar`, `undefined: newHTTPClient` (exit 1) — the seam did not exist
+    - Green after `cmd/bs/main.go` gained `runWithAPI(args, stdout, stderr, baseURL, client)` (production `main` and the 001 `run` wrapper pass `defaultAPIBaseURL` and `newHTTPClient()`) and new `cmd/bs/monitors.go` gained `defaultAPIBaseURL`, `defaultTimeout`, `tokenEnvVar`, `newHTTPClient()`, `monitorsGet`, `parseMonitorsGetTarget`: same focused test → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.006s` (exit 0); the mock server observed exactly one `GET /api/v2/monitors/789`
+    - `gofmt -l cmd/bs` → no output; `GOTOOLCHAIN=go1.26.9 GOPROXY=off go vet ./cmd/...` → exit 0
+  - `HEAD` commit SHA: `b2c90314cbd99362c2ecacabe45ff92895373b1c` (work committed after this gate)
+  - `git status --porcelain`: ` M cmd/bs/main.go` / ` M docs/plans/001_betterstack-cli-first-release_002_checkpoint.md` / `?? cmd/bs/monitors.go` / `?? cmd/bs/monitors_test.go` plus the preserved baseline `.wayfinder/` entries, `verify-incident-id.sh`, and the planning artifacts
+  - Relevant work: `uncommitted` — stash ref `af57aade5ce8cdf94cfae2eb12159ecc11ceb6d2`
 
 ## Limitations & blockers
 
 - Blockers: none.
 - Limitations:
-  - Setup only: the spec and implementation checklist for 002 do not exist yet; Phase 1 (spec skill) is the next phase and has not been loaded. No 002 phase skills have run.
+  - Planning scope only: no implementation work, no code, and no test has been written for 002. Phase 3 (exec skill) has not been loaded; A1–C2 are all unchecked.
   - Credential-safety regime carried forward from the 001 run (see Identity); the exposed `BETTERSTACK_UPTIME_API_TOKEN` value was never read by any session and its rotation remains Jaron's deferred user action.
-- Next action (the single next safe action): load the `spec` skill and write `docs/plans/001_betterstack-cli-first-release_002_spec.md` for milestone 002 only, grounded in the milestone document, the closed wayfinder tickets (01, 05 especially), and the 001 codebase state; record the spec gate in this checkpoint atomically when it passes.
+  - The stash refs `cca382c4…` and `45e9de0…` are unreachable Git objects once recorded; they are inspectable with `git show`/`git stash show` (never applied) and may be pruned by `git gc`.
+- Next action (the single next safe action): begin checklist task A2 (credential channel reading only `BETTERSTACK_UPTIME_API_TOKEN` plus the bearer header and the missing/empty-token failure) with its red test, then implement to green.
