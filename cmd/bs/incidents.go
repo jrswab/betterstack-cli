@@ -3,7 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 )
@@ -39,6 +42,35 @@ func parseIncidentsGetArgs(args []string) (string, time.Duration, error) {
 		return "", 0, errors.New("missing <id-or-url>")
 	}
 	return target, timeout, nil
+}
+
+// incidentsGet implements `bs incidents get <id-or-url> [--timeout <d>]`:
+// argument and target validation run before the credential check, then exactly
+// one bearer-authenticated GET uses the shared 002 response contract.
+func incidentsGet(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
+	// Read the token before validation only so local diagnostics can redact
+	// it; the missing-token failure still occurs after a valid argument vector.
+	token := os.Getenv(tokenEnvVar)
+
+	target, timeout, err := parseIncidentsGetArgs(args)
+	if err != nil {
+		fmt.Fprintf(stderr, "bs: %s; run 'bs incidents get --help' for usage.\n", redactToken(err.Error(), token))
+		return 1
+	}
+
+	candidate, err := resolveIncidentTarget(target)
+	if err != nil {
+		fmt.Fprintf(stderr, "bs: %s; run 'bs incidents get --help' for usage.\n", redactToken(err.Error(), token))
+		return 1
+	}
+
+	if token == "" {
+		fmt.Fprintf(stderr, "bs: %s is not set; set it to a Better Stack API token and try again.\n", tokenEnvVar)
+		return 1
+	}
+
+	endpoint := strings.TrimRight(baseURL, "/") + "/api/v3/incidents/" + url.PathEscape(candidate)
+	return doMonitorsRequest(endpoint, token, timeout, stdout, stderr, client)
 }
 
 // resolveIncidentTarget applies the narrow identity rule (spec R2): a target
