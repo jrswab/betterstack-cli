@@ -204,8 +204,6 @@ func TestInvalidUsageMatrix(t *testing.T) {
 		{"short help flag", []string{"-h"}},
 		{"missing positional", []string{"incidents", "get"}},
 		{"extra positional", []string{"monitors", "get", "1", "2"}},
-		{"non-help command get", []string{"incidents", "get", "123"}},
-		{"non-help command list", []string{"monitors", "list"}},
 		{"unknown resource flag", []string{"--timeout", "30s"}},
 	}
 

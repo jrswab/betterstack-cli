@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `execute` — Phase 3 in progress; A1 and B1 implementations are complete and their focused verification passed, independent boundary review pending
-- Current task: `B2` — B1 is recorded; the next task is B2
-- Task states: A1 `implemented, independent review pending`; B1 `implemented, independent review pending`; B2 `unchecked`, B3 `unchecked`, C1 `unchecked` (task boxes stay unchecked until the independent boundary review passes)
+- Current phase: `execute` — Phase 3 in progress; A1, B1, and B2 implementations are complete and their focused verification passed, independent boundary review pending
+- Current task: `B3` — B2 is recorded; the next task is B3
+- Task states: A1 `implemented, independent review pending`; B1 `implemented, independent review pending`; B2 `implemented, independent review pending`; B3 `unchecked`, C1 `unchecked` (task boxes stay unchecked until the independent boundary review passes)
 - Milestone checkbox: `unchecked` (source entry `- [ ] 004`, never edited by Phase 3)
-- Last completed phase/task/gate and timestamp: task B1 focused verification 2026-10-18 (see Gate evidence); no task checked pending independent review
+- Last completed phase/task/gate and timestamp: task B2 focused verification 2026-10-18 (see Gate evidence); no task checked pending independent review
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -109,12 +109,25 @@ One entry per passed gate (review, lint, verification, completion):
   - `git status --porcelain`: `M docs/plans/001_betterstack-cli-first-release_004_checkpoint.md`, `M cmd/bs/incidents.go`, `M cmd/bs/incidents_test.go` plus the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh`
   - Relevant work: `uncommitted` — stash ref `7a3c14d5c08eadd3668a148469fbbb891a4b07b9` (staged-only snapshot of exactly the 004 checkpoint plus `cmd/bs/incidents.go` and `cmd/bs/incidents_test.go`; `git show --stat` shows 3 files). The snapshot predates the substitution of its own ref at this line; the B1 commit that follows is the authoritative record of the same paths
 
+- Gate: task B2 — `incidents get` routing and regression-case update (spec R1.1, R9.1, R9.2)
+  - Command(s) and actual result(s):
+    - Red: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test -run 'TestIncidentsGetRoutesThroughRunWithAPI|TestIncidentsGetUsageFailuresThroughRouting|TestUnimplementedCommandsMakeNoRequest' ./cmd/bs` → `TestIncidentsGetRoutesThroughRunWithAPI` failed with `bs: "incidents get" is not implemented in this milestone` (exit 1), proving the route was absent
+    - Green after `cmd/bs/main.go` added the `incidents get` branch calling `incidentsGet` next to the monitors branches: the routing tests, the not-implemented regression, help, and invalid-usage matrix all passed (`ok github.com/jrswab/betterstack-cli/cmd/bs 0.011s`)
+    - Regression edits: `TestUnimplementedCommandsMakeNoRequest` no longer lists `incidents get` (now working) and keeps `incidents list`, `incidents timeline`, missing monitor id, and extra monitor positional; `TestIncidentsGetUsageFailuresThroughRouting` proves missing/extra targets and `incidents timeline 123` exit 1 with zero requests. `cmd/bs/main_test.go` also dropped the stale `incidents get 123` and `monitors list` entries from `TestInvalidUsageMatrix` — both are now working commands, and leaving them made the test depend on the ambient credential (see the incident note in Limitations)
+    - Incident disclosure: the first B2 focused run (before the stale `monitors list` case was removed) inherited an ambient token from a shell that had not unset it; the stale case routed `monitors list` to the production endpoint and made one live GET. The test captured the response and printed neither body nor token; the case was removed in this task and every later shell begins with `unset BETTERSTACK_UPTIME_API_TOKEN`
+    - `gofmt -l cmd/bs` → no output; `GOTOOLCHAIN=go1.26.9 GOPROXY=off go vet ./cmd/...` → exit 0
+    - Task checkbox left unchecked: the independent boundary review is pending and was neither dispatched nor self-claimed
+  - `HEAD` commit SHA: `3d2f0ce` (work committed after this gate)
+  - `git status --porcelain`: `M docs/plans/001_betterstack-cli-first-release_004_checkpoint.md`, `M cmd/bs/main.go`, `M cmd/bs/incidents_test.go`, `M cmd/bs/monitors_test.go`, `M cmd/bs/main_test.go` plus the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh`
+  - Relevant work: `uncommitted` — stash ref `56dea3baeced05d669cd5ce19c9dd096dcb11cd3` (staged-only snapshot of exactly the 004 checkpoint plus `cmd/bs/main.go`, `cmd/bs/incidents_test.go`, `cmd/bs/monitors_test.go`, and `cmd/bs/main_test.go`; `git show --stat` shows 5 files). The snapshot predates the substitution of its own ref at this line; the B2 commit that follows is the authoritative record of the same paths
+
 ## Limitations & blockers
 
 - Limitations:
-  - Milestone 004 is at the Phase 2/Phase 3 boundary: spec and checklist are written and inspected; no implementation, no execution, no review. Phase 3 (exec) and the completion gate remain; this run's assignment covered Phases 1–2 only.
-  - Credential-safety regime carried forward from the 001–003 runs (see Identity); the exposed `BETTERSTACK_UPTIME_API_TOKEN` value was never read by any session and its rotation remains Jaron's deferred user action (local continuation approved).
+  - Milestone 004 is in Phase 3: A1–B2 are implemented and focused-verified; B3 and C1 plus the independent boundary review remain. Task checkboxes stay unchecked until that review passes.
+  - Credential-safety incident during B2: one stale regression case (`monitors list` in `TestInvalidUsageMatrix`) made a single live GET while the ambient token was set in a shell that had not unset it. The case was removed in B2 and no response body or token was printed. This was a read-only GET, not a mutation, push, tag, deploy, or deletion; every later shell unsets the token first.
+  - Credential-safety regime carried forward from the 001–003 runs (see Identity); the exposed `BETTERSTACK_UPTIME_API_TOKEN` value was never printed by any session and its rotation remains Jaron's deferred user action (local continuation approved).
   - All work stays local: no push, tag, release, deploy, live API call, or external modification. Tests use only dummy tokens and mock loopback servers.
   - The 004 planning artifacts are staged and uncommitted (real stash snapshots recorded above); the Phase 3 flow owns the product and planning commits as in 001–003.
 - Blockers: none.
-- Next action (the single next safe action): implement task B2 (route `incidents get` in `runWithAPI` and update the not-implemented regression case), then run the focused gate.
+- Next action (the single next safe action): implement task B3 (the end-to-end acceptance sweep through the `invokeAPI` routing seam), then run the focused gate.

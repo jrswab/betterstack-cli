@@ -562,3 +562,77 @@ func TestIncidentsGetCredentialFailures(t *testing.T) {
 		})
 	}
 }
+
+// TestIncidentsGetRoutesThroughRunWithAPI covers B2 (spec R1, R9.1): the
+// routed vector reaches the injected mock once, proving main's incidents get
+// branch is wired ahead of the old not-implemented fallthrough.
+func TestIncidentsGetRoutesThroughRunWithAPI(t *testing.T) {
+	var requests atomic.Int32
+	var gotPath string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		gotPath = r.URL.EscapedPath()
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.WriteString(w, `{"data":{}}`)
+	}))
+	defer srv.Close()
+
+	t.Setenv(tokenEnvVar, testToken)
+
+	code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "get", "123")
+	if code != 0 {
+		t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+	}
+	if stdout != `{"data":{}}` {
+		t.Errorf("stdout = %q, want the raw body", stdout)
+	}
+	if stderr != "" {
+		t.Errorf("stderr = %q, want empty", stderr)
+	}
+	if got := requests.Load(); got != 1 {
+		t.Fatalf("server requests = %d, want 1", got)
+	}
+	if want := "/api/v3/incidents/123"; gotPath != want {
+		t.Errorf("path = %q, want %q", gotPath, want)
+	}
+}
+
+// TestIncidentsGetUsageFailuresThroughRouting covers B2 (spec R1.1, R9.1):
+// missing and extra positional targets fail with zero requests, while
+// incidents timeline stays not implemented.
+func TestIncidentsGetUsageFailuresThroughRouting(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"missing target", []string{"incidents", "get"}},
+		{"extra target", []string{"incidents", "get", "1", "2"}},
+		{"timeline still unimplemented", []string{"incidents", "timeline", "123"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), tc.args...)
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if strings.TrimSpace(stderr) == "" {
+				t.Error("stderr is empty, want a readable error")
+			}
+			if got := requests.Load(); got != 0 {
+				t.Errorf("server requests = %d, want 0", got)
+			}
+		})
+	}
+}

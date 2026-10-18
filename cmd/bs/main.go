@@ -38,6 +38,9 @@ func runWithAPI(args []string, stdout, stderr io.Writer, baseURL string, client 
 	if len(args) >= 2 && args[0] == "monitors" && args[1] == "get" {
 		return monitorsGet(args[2:], stdout, stderr, baseURL, client)
 	}
+	if len(args) >= 2 && args[0] == "incidents" && args[1] == "get" {
+		return incidentsGet(args[2:], stdout, stderr, baseURL, client)
+	}
 	fmt.Fprint(stderr, usageError(args))
 	return 1
 }

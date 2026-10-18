@@ -380,16 +380,16 @@ func TestMonitorsGetNeverPrintsToken(t *testing.T) {
 	})
 }
 
-// TestUnimplementedCommandsMakeNoRequest covers C1 (spec R8): the 001
-// invalid-usage vectors and the not-implemented commands keep exit 1 with a
-// readable error, empty stdout, and zero mock requests.
+// TestUnimplementedCommandsMakeNoRequest covers C1/R9.1: the 001 invalid-usage
+// vectors and the still-not-implemented incidents commands keep exit 1 with a
+// readable error, empty stdout, and zero mock requests. `incidents get` was
+// removed because it is now a working command.
 func TestUnimplementedCommandsMakeNoRequest(t *testing.T) {
 	cases := []struct {
 		name string
 		args []string
 	}{
 		{"incidents list", []string{"incidents", "list"}},
-		{"incidents get", []string{"incidents", "get", "123"}},
 		{"incidents timeline", []string{"incidents", "timeline", "123"}},
 		{"monitors get missing id", []string{"monitors", "get"}},
 		{"monitors get extra positional", []string{"monitors", "get", "1", "2"}},
