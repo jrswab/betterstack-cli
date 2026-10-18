@@ -98,8 +98,8 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
     - Scope-boundary check: no task touches help text, `incidents get` behavior, monitors, `.wayfinder/`, or `verify-incident-id.sh`; no speculative or out-of-scope task exists
     - A corrupted intermediate write of this file (wrong truncated filename with placeholder content) was deleted in the same session before any commit; the committed tree never contained it
   - `HEAD` commit SHA: `99f91b8a98d5ff70aa78e08b0a1964805bf58b65`
-  - `git status --porcelain`: the verbatim baseline plus `?? docs/plans/001_betterstack-cli-first-release_005_spec.md`, `?? docs/plans/001_betterstack-cli-first-release_005_implement.md`, and ` M docs/plans/001_betterstack-cli-first-release_005_checkpoint.md`
-  - Relevant work: `uncommitted` — stash ref `41a9ae8cd00a2da2b13d80384a66e0d8615c61aa` (created with `git stash create "005 Phase 2 gate snapshot"`; inspectable with `git show`). Same `git stash create` limitation as the Phase 1 gate: the ref holds the tracked checkpoint edit; the untracked spec and implement files remain on disk as durable artifacts
+  - `git status --porcelain`: the verbatim baseline only (all 005 artifacts committed at `a68b3c3`; working tree clean of tracked changes)
+  - Relevant work: `committed` — the Phase 1 and Phase 2 gate artifacts (spec, implement, checkpoint with both gates) are committed as `a68b3c3` ("005: write milestone spec and implementation checklist, record phase 1-2 gates"); the pre-gate snapshots `8a8fa44891c6757f2705f44ff20725112f58df59` (Phase 1) and `41a9ae8cd00a2da2b13d80384a66e0d8615c61aa` (Phase 2) remain inspectable with `git show`
 
 ## Limitations & blockers
 
