@@ -73,6 +73,37 @@ func incidentsGet(args []string, stdout, stderr io.Writer, baseURL string, clien
 	return doMonitorsRequest(endpoint, token, timeout, stdout, stderr, client)
 }
 
+// incidentsTimeline implements `bs incidents timeline <id-or-url> [--timeout
+// <d>]`: argument and target validation run before the credential check, then
+// exactly one bearer-authenticated GET to the incident's timeline endpoint uses
+// the shared 002 response contract. The body is opaque: no pagination, no
+// completeness promise, and any timeline_truncated item passes through raw.
+func incidentsTimeline(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
+	// Read the token before validation only so local diagnostics can redact
+	// it; the missing-token failure still occurs after a valid argument vector.
+	token := os.Getenv(tokenEnvVar)
+
+	target, timeout, err := parseIncidentsGetArgs(args)
+	if err != nil {
+		fmt.Fprintf(stderr, "bs: %s; run 'bs incidents timeline --help' for usage.\n", redactToken(err.Error(), token))
+		return 1
+	}
+
+	candidate, err := resolveIncidentTarget(target)
+	if err != nil {
+		fmt.Fprintf(stderr, "bs: %s; run 'bs incidents timeline --help' for usage.\n", redactToken(err.Error(), token))
+		return 1
+	}
+
+	if token == "" {
+		fmt.Fprintf(stderr, "bs: %s is not set; set it to a Better Stack API token and try again.\n", tokenEnvVar)
+		return 1
+	}
+
+	endpoint := strings.TrimRight(baseURL, "/") + "/api/v3/incidents/" + url.PathEscape(candidate) + "/timeline"
+	return doMonitorsRequest(endpoint, token, timeout, stdout, stderr, client)
+}
+
 // resolveIncidentTarget applies the narrow identity rule (spec R2): a target
 // the URL parser reads with a scheme must be exactly the observed dashboard
 // form, whose terminal ASCII-digit segment is the API incident ID. Everything

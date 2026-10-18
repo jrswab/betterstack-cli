@@ -35,12 +35,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `implement` — Phase 2 (implementation checklist) is complete; Phase 3 (execution) is the next phase
-- Current task: `A1` — the first unchecked checklist task; no product code has been touched for 005
-- Task states: A1 `unchecked`, B1 `unchecked`, B2 `unchecked`, C1 `unchecked` (checkboxes render from this)
-- Task states: none yet (the 005 checklist does not exist; checkboxes will render from it in Phase 2)
+- Current phase: `execute` — Phase 3 (execution) is underway; task A1 passed its focused gates and is committed, and the next task is B1
+- Current task: `B1` — routing `incidents timeline` in `cmd/bs/main.go` plus the regression-case update
+- Task states: A1 `implemented, reported pass, review pending`; B1 `unchecked`, B2 `unchecked`, C1 `unchecked` (all task boxes stay unchecked; the independent boundary review is pending)
 - Milestone checkbox: `unchecked` (source entry `- [ ] 005`, never edited by this run)
-- Last completed phase/task/gate and timestamp: Phase 2 (implementation checklist) gate passed 2026-10-18 (see the Phase 2 gate below); Phase 1 (spec) gate passed 2026-10-18
+- Last completed phase/task/gate and timestamp: task A1 gate passed 2026-10-18 (see Gate evidence); Phase 2 (implementation checklist) gate passed 2026-10-18; Phase 1 (spec) gate passed 2026-10-18
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -101,11 +100,23 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - `git status --porcelain`: the verbatim baseline only (all 005 artifacts committed at `a68b3c3`; working tree clean of tracked changes)
   - Relevant work: `committed` — the Phase 1 and Phase 2 gate artifacts (spec, implement, checkpoint with both gates) are committed as `a68b3c3` ("005: write milestone spec and implementation checklist, record phase 1-2 gates"); the pre-gate snapshots `8a8fa44891c6757f2705f44ff20725112f58df59` (Phase 1) and `41a9ae8cd00a2da2b13d80384a66e0d8615c61aa` (Phase 2) remain inspectable with `git show`
 
+- Gate: task A1 — `incidentsTimeline` on the shared request executor (spec R1.1, R1.2, R2.1–R2.4, R3, R4, R5, R6, R7.1)
+  - Command(s) and actual result(s):
+    - TDD red: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./cmd/bs/ -run 'TestIncidentsTimeline' -count=1` → `cmd/bs/incidents_test.go:911:9: undefined: incidentsTimeline` (`FAIL ... [build failed]`) — the new A1 tests failed before the implementation existed
+    - TDD green: after adding `incidentsTimeline` to `cmd/bs/incidents.go` on the unchanged `parseIncidentsGetArgs`, `resolveIncidentTarget`, and `doMonitorsRequest` seams, the same focused command → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.168s`
+    - Focused regression: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./cmd/bs/ -run 'TestIncidents|TestParseIncidentsGetArgs|TestResolveIncidentTarget' -count=1` → `ok ... 0.332s`
+    - `gofmt -l cmd/bs/` → no output; `GOTOOLCHAIN=go1.26.9 GOPROXY=off go vet ./cmd/...` → exit 0
+    - Coverage proven by the new tests: bare ID and dashboard-URL targets each reach the mock once at `/api/v3/incidents/<candidate>/timeline` with the bearer header and an empty query string; the pagination-less heterogeneous envelope (all seven documented `item_type` shapes, numeric/composite/string IDs, object-valued `comment` content, `timeline_truncated`) and a non-JSON body and a body with its own trailing newline pass through byte-for-byte with empty stderr; a dedicated `timeline_truncated` test proves no notice, item count, or completeness claim; 301/302/307/401/404/429/500 raw passthrough with one request and no redirect follow; URL-form wrong-ID 404 at `/api/v3/incidents/999/timeline`; timeout override expiry/success; invalid `--timeout` with zero requests; closed-port local failure token-free; token absent from both channels on success/non-2xx/local failure; unset/empty/former-name-only credentials name `BETTERSTACK_UPTIME_API_TOKEN` with zero requests
+    - Task checkbox left unchecked: the independent boundary review is pending and was neither dispatched nor self-claimed
+  - `HEAD` commit SHA: `38ddb7b65af2a7df4eeb8edbeba3c810ae8267db` (work committed after this gate)
+  - `git status --porcelain`: the verbatim baseline above plus ` M cmd/bs/incidents.go`, ` M cmd/bs/incidents_test.go`, and ` M docs/plans/001_betterstack-cli-first-release_005_checkpoint.md`
+  - Relevant work: `uncommitted` — stash ref `5f17a46fd04ad7f799ede5a3b48d7855169af674` (staged-only snapshot of exactly the 005 checkpoint plus `cmd/bs/incidents.go` and `cmd/bs/incidents_test.go`; `git show --stat` shows 3 files). The snapshot predates the substitution of its own ref at this line; the A1 commit that follows is the authoritative record of the same paths
+
 ## Limitations & blockers
 
 - Limitations:
-  - No 005 spec or checklist exists yet; this checkpoint is setup-only. The spec must be written and pass the Phase 1 gate before any product change (outer-loop rule: no 005 skill work has happened and none may precede the spec).
+  - The 005 spec and implementation checklist exist and have passed their gates; task A1 is implemented and committed. The remaining tasks B1, B2, and C1 are not yet implemented.
   - The credential-safety regime and the `safety_test.go` guard limits (covers only clients using `http.DefaultTransport` or `testHTTPClient()`; cannot stop a test that injects its own transport or dials `net.Conn` directly) carry forward from 004 and are documented in `cmd/bs/safety_test.go`.
   - All work stays local: no push, tag, release, deploy, live API call, or external modification. Tests use only dummy tokens and mock loopback servers.
 - Blockers: none.
-- Next action (the single next safe action): Phase 3 — load the exec skill and begin checklist task A1 (add `incidentsTimeline` to `cmd/bs/incidents.go` with its focused tests), writing the failing test first under the pinned toolchain. No product code may precede this checklist, which has now passed its gate.
+- Next action (the single next safe action): task B1 — write the failing routed-timeline test, then wire the `incidents timeline` branch in `cmd/bs/main.go` and remove the stale `incidents timeline` not-implemented cases in `cmd/bs/monitors_test.go` and `cmd/bs/incidents_test.go`, under the pinned toolchain.
