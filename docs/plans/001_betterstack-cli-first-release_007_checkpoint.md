@@ -127,7 +127,7 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - Scope conformance: verification only; no file was modified by the battery
   - `HEAD` commit SHA: `b55de4d` (the A1 checkbox-render commit; unchanged throughout the battery)
   - `git status --porcelain`: the preserved untracked baseline (`.wayfinder/` tree, `verify-incident-id.sh`) plus this checkpoint edit; `git diff --check` exit 0
-  - Relevant work: `uncommitted` at gate time — stash ref recorded below in the B1 commit gate; the scoped docs commit that follows this gate is the authoritative record
+  - Relevant work: `uncommitted` at gate time — stash ref `bd417d7aa6b331d6c4317a402aba293da587d6af` (created with `git stash create "007 Phase 3 task B1 gate snapshot"`; captures the tracked checkpoint gate edit only — untracked files are not in the ref and remain on disk). The scoped docs commit that follows this gate is the authoritative record and matches the pre-edit worktree exactly
 
 ## Limitations & blockers
 
