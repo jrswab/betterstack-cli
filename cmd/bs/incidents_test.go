@@ -2212,3 +2212,436 @@ func TestIncidentsListUsageFailuresThroughRouting(t *testing.T) {
 		})
 	}
 }
+
+// TestIncidentsListRoutesBearerTokenThroughRunWithAPI covers B3 (spec R3.1,
+// R3.2): the routed command sends exactly one bearer-authenticated GET with
+// the given flags encoded in the query string.
+func TestIncidentsListRoutesBearerTokenThroughRunWithAPI(t *testing.T) {
+	var requests atomic.Int32
+	var gotAuth, gotPath, gotRawQuery string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		gotAuth = r.Header.Get("Authorization")
+		gotPath = r.URL.EscapedPath()
+		gotRawQuery = r.URL.RawQuery
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.WriteString(w, `{"data":[]}`)
+	}))
+	defer srv.Close()
+
+	t.Setenv(tokenEnvVar, testToken)
+
+	code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "list", "--monitor-id", "123", "--resolved=false")
+	if code != 0 {
+		t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+	}
+	if got := requests.Load(); got != 1 {
+		t.Fatalf("server requests = %d, want 1", got)
+	}
+	if want := "Bearer " + testToken; gotAuth != want {
+		t.Errorf("Authorization = %q, want %q", gotAuth, want)
+	}
+	if gotPath != "/api/v3/incidents" {
+		t.Errorf("path = %q, want /api/v3/incidents", gotPath)
+	}
+	if want := "monitor_id=123&resolved=false"; gotRawQuery != want {
+		t.Errorf("query = %q, want %q", gotRawQuery, want)
+	}
+	if stdout != `{"data":[]}` || stderr != "" {
+		t.Errorf("stdout = %q, stderr = %q; want the raw body and empty stderr", stdout, stderr)
+	}
+}
+
+// TestIncidentsListCredentialFailuresThroughRouting covers B3 (spec R2.1):
+// unset, empty, and former-name-only each fail before any request naming
+// BETTERSTACK_UPTIME_API_TOKEN.
+func TestIncidentsListCredentialFailuresThroughRouting(t *testing.T) {
+	cases := []struct {
+		name  string
+		setup func(t *testing.T)
+	}{
+		{"unset", func(t *testing.T) {
+			t.Setenv(tokenEnvVar, "placeholder")
+			if err := os.Unsetenv(tokenEnvVar); err != nil {
+				t.Fatalf("Unsetenv: %v", err)
+			}
+		}},
+		{"empty", func(t *testing.T) { t.Setenv(tokenEnvVar, "") }},
+		{"former name only", func(t *testing.T) {
+			t.Setenv("BETTERSTACK_API_TOKEN", testToken)
+			t.Setenv(tokenEnvVar, "placeholder")
+			if err := os.Unsetenv(tokenEnvVar); err != nil {
+				t.Fatalf("Unsetenv: %v", err)
+			}
+		}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			tc.setup(t)
+
+			code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "list")
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if !strings.Contains(stderr, tokenEnvVar) {
+				t.Errorf("stderr = %q, want it to name %s", stderr, tokenEnvVar)
+			}
+			if got := requests.Load(); got != 0 {
+				t.Errorf("server requests = %d, want 0", got)
+			}
+		})
+	}
+}
+
+// TestIncidentsListNeverPrintsTokenThroughRouting covers B3 (spec R5.3): the
+// routed command keeps the token off both channels on success, non-2xx, and
+// local failure.
+func TestIncidentsListNeverPrintsTokenThroughRouting(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		var gotAuth string
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			gotAuth = r.Header.Get("Authorization")
+			w.WriteHeader(http.StatusOK)
+			_, _ = io.WriteString(w, `{"data":[]}`)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "list")
+		if code != 0 {
+			t.Fatalf("exit code = %d, want 0", code)
+		}
+		if want := "Bearer " + testToken; gotAuth != want {
+			t.Errorf("Authorization = %q, want %q", gotAuth, want)
+		}
+		assertNoToken(t, stdout, stderr)
+	})
+
+	t.Run("non-2xx", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusUnauthorized)
+			_, _ = io.WriteString(w, `{"errors":"unauthorized"}`)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "list")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		assertNoToken(t, stdout, stderr)
+	})
+
+	t.Run("local failure", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+		closedURL := srv.URL
+		srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(closedURL, newHTTPClient(), "incidents", "list")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		assertNoToken(t, stdout, stderr)
+	})
+}
+
+// TestIncidentsListBooleanFormsThroughRouting covers B3 (spec R1.3): both the
+// space and equals boolean forms reach the query string for both flags.
+func TestIncidentsListBooleanFormsThroughRouting(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+		want string
+	}{
+		{"resolved space true", []string{"incidents", "list", "--resolved", "true"}, "resolved=true"},
+		{"resolved space false", []string{"incidents", "list", "--resolved", "false"}, "resolved=false"},
+		{"resolved equals true", []string{"incidents", "list", "--resolved=true"}, "resolved=true"},
+		{"resolved equals false", []string{"incidents", "list", "--resolved=false"}, "resolved=false"},
+		{"acknowledged space true", []string{"incidents", "list", "--acknowledged", "true"}, "acknowledged=true"},
+		{"acknowledged equals false", []string{"incidents", "list", "--acknowledged=false"}, "acknowledged=false"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var gotRawQuery string
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				gotRawQuery = r.URL.RawQuery
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, _, stderr := invokeAPI(srv.URL, newHTTPClient(), tc.args...)
+			if code != 0 {
+				t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+			}
+			if gotRawQuery != tc.want {
+				t.Errorf("query = %q, want %q", gotRawQuery, tc.want)
+			}
+		})
+	}
+}
+
+// TestIncidentsListBooleanRejectionsThroughRouting covers B3 (spec R1.3): a
+// bare flag and every non-lowercase-true/false value exit 1 with zero requests.
+func TestIncidentsListBooleanRejectionsThroughRouting(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"bare resolved", []string{"incidents", "list", "--resolved"}},
+		{"bare acknowledged", []string{"incidents", "list", "--acknowledged"}},
+		{"resolved True", []string{"incidents", "list", "--resolved", "True"}},
+		{"resolved TRUE", []string{"incidents", "list", "--resolved", "TRUE"}},
+		{"resolved 1", []string{"incidents", "list", "--resolved", "1"}},
+		{"resolved 0", []string{"incidents", "list", "--resolved", "0"}},
+		{"resolved yes", []string{"incidents", "list", "--resolved", "yes"}},
+		{"resolved empty", []string{"incidents", "list", "--resolved", ""}},
+		{"resolved equals empty", []string{"incidents", "list", "--resolved="}},
+		{"acknowledged False", []string{"incidents", "list", "--acknowledged", "False"}},
+		{"acknowledged equals bogus", []string{"incidents", "list", "--acknowledged=bogus"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), tc.args...)
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if strings.TrimSpace(stderr) == "" {
+				t.Error("stderr is empty, want a readable error")
+			}
+			if got := requests.Load(); got != 0 {
+				t.Errorf("server requests = %d, want 0", got)
+			}
+		})
+	}
+}
+
+// TestIncidentsListMetadataThroughRouting covers B3 (spec R1.4, R1.5): distinct
+// metadata keys are accepted with both nested parameters on the wire, and a
+// duplicate key is rejected before any request.
+func TestIncidentsListMetadataThroughRouting(t *testing.T) {
+	t.Run("distinct keys accepted", func(t *testing.T) {
+		var gotQuery url.Values
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			gotQuery = r.URL.Query()
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, _, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "list", "--metadata", "Origin=Linear", "--metadata", "Service=api")
+		if code != 0 {
+			t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+		}
+		if got := gotQuery["metadata[Origin][][value]"]; len(got) != 1 || got[0] != "Linear" {
+			t.Errorf("Origin parameter = %#v, want [Linear]", got)
+		}
+		if got := gotQuery["metadata[Service][][value]"]; len(got) != 1 || got[0] != "api" {
+			t.Errorf("Service parameter = %#v, want [api]", got)
+		}
+	})
+
+	t.Run("duplicate key rejected", func(t *testing.T) {
+		var requests atomic.Int32
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requests.Add(1)
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "list", "--metadata", "Origin=Linear", "--metadata", "Origin=Other")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		if stdout != "" {
+			t.Errorf("stdout = %q, want empty", stdout)
+		}
+		if !strings.Contains(stderr, "Origin") {
+			t.Errorf("stderr = %q, want it to name the duplicate key", stderr)
+		}
+		if got := requests.Load(); got != 0 {
+			t.Errorf("server requests = %d, want 0", got)
+		}
+	})
+}
+
+// TestIncidentsListHelpExitsZeroThroughRouting covers B3 (spec R1.7): the
+// unchanged incidentsListHelp text exits 0 with empty stderr and no request.
+func TestIncidentsListHelpExitsZeroThroughRouting(t *testing.T) {
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	t.Setenv(tokenEnvVar, testToken)
+
+	code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "list", "--help")
+	if code != 0 {
+		t.Fatalf("exit code = %d, want 0", code)
+	}
+	if stdout != incidentsListHelp {
+		t.Errorf("stdout = %q, want incidentsListHelp", stdout)
+	}
+	if stderr != "" {
+		t.Errorf("stderr = %q, want empty", stderr)
+	}
+	if got := requests.Load(); got != 0 {
+		t.Errorf("server requests = %d, want 0", got)
+	}
+}
+
+// TestIncidentsListRejectsAbsentFeaturesThroughRouting covers B3 (spec R1.7,
+// R7): unknown options and non-boolean equals forms exit 1 with zero requests.
+func TestIncidentsListRejectsAbsentFeaturesThroughRouting(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"--all", []string{"incidents", "list", "--all"}},
+		{"--pretty", []string{"incidents", "list", "--pretty"}},
+		{"--query", []string{"incidents", "list", "--query", "x"}},
+		{"unknown flag", []string{"incidents", "list", "--bogus"}},
+		{"page equals form", []string{"incidents", "list", "--page=2"}},
+		{"metadata equals form", []string{"incidents", "list", "--metadata=Origin=Linear"}},
+		{"short help", []string{"incidents", "list", "-h"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), tc.args...)
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if strings.TrimSpace(stderr) == "" {
+				t.Error("stderr is empty, want a readable error")
+			}
+			if strings.Contains(stderr, testToken) {
+				t.Errorf("stderr leaks the token: %q", stderr)
+			}
+			if got := requests.Load(); got != 0 {
+				t.Errorf("server requests = %d, want 0", got)
+			}
+		})
+	}
+}
+
+// TestIncidentsListTimeoutThroughRouting covers B3 (spec R6.1): a short
+// override expires with one request; a longer override succeeds; an invalid
+// value fails before any request.
+func TestIncidentsListTimeoutThroughRouting(t *testing.T) {
+	t.Run("expires", func(t *testing.T) {
+		var requests atomic.Int32
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requests.Add(1)
+			time.Sleep(150 * time.Millisecond)
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "list", "--timeout", "10ms")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		if stdout != "" {
+			t.Errorf("stdout = %q, want empty", stdout)
+		}
+		if strings.TrimSpace(stderr) == "" {
+			t.Error("stderr is empty, want a readable error")
+		}
+		if got := requests.Load(); got != 1 {
+			t.Errorf("server requests = %d, want 1", got)
+		}
+	})
+
+	t.Run("within override", func(t *testing.T) {
+		const body = "ok body"
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			_, _ = io.WriteString(w, body)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "list", "--timeout", "5s")
+		if code != 0 {
+			t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+		}
+		if stdout != body {
+			t.Errorf("stdout = %q, want %q", stdout, body)
+		}
+		if stderr != "" {
+			t.Errorf("stderr = %q, want empty", stderr)
+		}
+	})
+
+	t.Run("invalid value", func(t *testing.T) {
+		var requests atomic.Int32
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requests.Add(1)
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(srv.URL, newHTTPClient(), "incidents", "list", "--timeout", "soon")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		if stdout != "" {
+			t.Errorf("stdout = %q, want empty", stdout)
+		}
+		if strings.TrimSpace(stderr) == "" {
+			t.Error("stderr is empty, want a readable error")
+		}
+		if got := requests.Load(); got != 0 {
+			t.Errorf("server requests = %d, want 0", got)
+		}
+	})
+}
