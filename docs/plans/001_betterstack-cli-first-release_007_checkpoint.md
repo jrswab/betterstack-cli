@@ -29,16 +29,17 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## Artifacts
 
-- Spec: `docs/plans/001_betterstack-cli-first-release_007_spec.md` (not yet written — Phase 1 has not run)
+- Spec: `docs/plans/001_betterstack-cli-first-release_007_spec.md` (written and Phase-1-gate-passed)
 - Implementation checklist: `docs/plans/001_betterstack-cli-first-release_007_implement.md` (not yet written — Phase 2 has not run)
 - Checkpoint: `docs/plans/001_betterstack-cli-first-release_007_checkpoint.md` (this file, written by atomic rename at setup)
 
 ## State
 
-- Current phase: `setup` — the 007 checkpoint exists; no 007 phase skill (spec, implement, exec) has been loaded and no product work has started
-- Current task: none (Phase 1 — specification — is the next phase)
-- Task states: none yet (the implementation checklist does not exist; task checkboxes will render from this checkpoint once Phase 2 writes them)
+- Current phase: `spec` — Phase 1 (specification) passed its gate; Phase 2 (implementation checklist) is the next phase
+- Current task: none yet (the implementation checklist does not exist; task checkboxes will render from this checkpoint once Phase 2 writes them)
+- Task states: none yet
 - Milestone checkbox: `unchecked` (source entry `- [ ] 007`, unchanged — 007 is checked only at its own passing completion gate)
+- Last completed phase/gate: Phase 1 — specification (gate evidence below)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -73,12 +74,24 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - `git status --porcelain`: the verbatim baseline above
   - Relevant work: `committed` — the setup gate work is committed as the `007: set up milestone checkpoint after 006 completion` commit; the checkpoint file content is byte-identical to what this gate recorded
 
+- Gate: 007 Phase 1 — specification (this gate)
+  - Command(s) and actual result(s):
+    - The spec skill (factory Phase 1 override) was applied with the checkpoint's grounded scope as context; the spec was written to `docs/plans/001_betterstack-cli-first-release_007_spec.md` covering milestone 007 only, with Section 1 (context, accepted acceptance shape with sources, constraints) before Section 2 (requirements R1–R5, each with acceptance)
+    - Source re-verification before writing: `.wayfinder/tickets/06-installation-distribution-acceptance.md` was read in full this session — its Resolution fixes the four acceptance criteria (mock-API checks; pre-publication local install smoke test requiring no tag; conditional post-tag remote version check requiring separate future authorization to commit/tag/push; user-controlled real-account check) and Decision 3's private-release prerequisites (`GOPRIVATE=github.com/jrswab/betterstack-cli` bypasses proxy/sumdb but does not grant auth; HTTPS Git resolution needs user-configured credentials or SSH `insteadOf` rewriting with its whole-environment scope warning; toolchain auto-download is independent of GOPRIVATE). `README.md` was read (a two-line generic description; no milestone-007 requirement touches it)
+    - Current product/test state confirmed this session by reading `cmd/bs/main.go`, `cmd/bs/monitors.go`, `cmd/bs/incidents.go`, `cmd/bs/safety_test.go`, and grepping the test files: all five commands routed in `runWithAPI`; `tokenEnvVar = "BETTERSTACK_UPTIME_API_TOKEN"` with no product read of `BETTERSTACK_API_TOKEN`; `defaultTimeout = 30 * time.Second`; `doMonitorsRequest` carries the one-request/no-redirect (`http.ErrUseLastResponse`)/raw-2xx-stdout-no-newline/raw-non2xx-stderr/exit-0-1/`redactToken`-locals-only contract; `TestMain` credential isolation and the loopback-only guard stand; the existing suite (55 incidents tests, 26 monitors tests, 5 main tests, 11 safety tests) already covers each contract item — the sweep maps existing tests by name and re-runs them
+    - Scope-boundary check: 007 changes no product code, no help text, no test behavior; no README change is required by the milestone text (the 007 docs themselves are the durable record); the deferred post-tag remote check and real-account check are excluded by the source entry itself; no tag, push, publication, live API call, or external modification is authorized
+    - Inspection against the milestone entry phrase by phrase: mock-API acceptance sweep over all five commands (R1.1/R1.2); the full contract list — filters (R1.2), raw byte-for-byte stdout envelope with no newline (R1.3), non-2xx-including-3xx raw stderr with exit 1 (R1.4), no redirects/no retries (R1.4), 30-second `--timeout` default and override (R1.5), missing-token pre-request failure (R1.6), token never printed/logged/stored (R1.7), old env name never read (R1.6), exit 0/1 only (R1.8); pre-publication local smoke test `go install ./cmd/bs` then `bs --help` (R3); deferred record with separate future authorization (R4.2/R4.3); no tag, push, or publication (R4.1); acceptance "the sweep and smoke test pass on a clean checkout; every deferred release action is documented as requiring separate future authorization" (R1–R4)
+    - Every in-scope outcome, boundary, and failure mode maps to R1 (sweep + contract mapping), R2 (verification battery), R3 (clean-checkout smoke test with isolated GOBIN), R4 (release restraint + deferred record), R5 (durable artifact + accounting); no unresolved questions remain
+  - `HEAD` commit SHA: `3b41a27` (the 007 setup commit; this gate ran against it)
+  - `git status --porcelain`: the verbatim baseline above plus `?? docs/plans/001_betterstack-cli-first-release_007_spec.md`
+  - Relevant work: `uncommitted` at gate time — the spec is the durable on-disk artifact; the scoped docs commit that follows this gate records it and this checkpoint edit
+
 ## Limitations & blockers
 
 - Limitations:
-  - The 007 spec and implementation checklist do not exist yet; Phase 1 (specification) is the next authorized work after this setup gate, using the factory Phase 1 override and the checkpoint's grounded scope notes.
-  - The deferred release actions (post-tag remote install check with GOPRIVATE and authenticated Git, and the real-account check) are outside 007 by the source entry itself and require separate future authorization; this checkpoint records them as deferred, not planned work for this run.
-  - The credential-safety regime and the `safety_test.go` guard limits (covers only clients using `http.DefaultTransport` or `testHTTPClient()`; cannot stop a test that injects its own transport or dials `net.Conn` directly) carry forward from 004–006 and are documented in `cmd/bs/safety_test.go`.
+  - The 007 implementation checklist does not exist yet; Phase 2 (implementation checklist) is the next authorized work after this gate, using the implement skill with the factory override against the completed spec.
+  - The deferred release actions (post-tag remote install check with GOPRIVATE and authenticated Git, and the real-account check) are outside 007 by the source entry itself and require separate future authorization; they are recorded as deferred in spec R4, not planned work for this run.
+  - The credential-safety regime and the `safety_test.go` guard limits (covers only clients using `http.DefaultTransport` or `testHTTPClient()`; cannot stop a test that injects its own transport or dials `net.Conn` directly) carry forward and are documented in `cmd/bs/safety_test.go`.
   - All work stays local: no push, tag, release, deploy, live API call, or external modification. Tests use only dummy tokens and mock loopback servers.
 - Blockers: none.
-- Next action (the single next safe action): begin 007 Phase 1 — apply the spec skill with the factory override to write `docs/plans/001_betterstack-cli-first-release_007_spec.md` against the verbatim scope above.
+- Next action (the single next safe action): begin 007 Phase 2 — apply the implement skill with the factory override to write `docs/plans/001_betterstack-cli-first-release_007_implement.md` from the completed spec.
