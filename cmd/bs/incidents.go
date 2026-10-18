@@ -181,3 +181,143 @@ func leadingScheme(target string) (string, bool) {
 	}
 	return "", false
 }
+
+// incidentsListArgs holds one parsed `bs incidents list` invocation. A nil
+// slice means the flag was absent. A slice containing "" means the flag was
+// present with an explicitly empty value. Repeated flags keep every
+// occurrence in order so each value reaches upstream unchanged (spec R1.6).
+type incidentsListArgs struct {
+	pages         []string
+	perPages      []string
+	froms         []string
+	tos           []string
+	monitorIDs    []string
+	heartbeatIDs  []string
+	teamNames     []string
+	resolveds     []string
+	acknowledgeds []string
+	metadatas     []metadataPair
+	timeout       time.Duration
+}
+
+// metadataPair is one accepted `--metadata key=value` occurrence. The key is
+// opaque and passes through unchanged (spec R1.4); the stdlib query builder
+// percent-encodes it with the rest of the nested parameter name (spec R3.3).
+type metadataPair struct {
+	key   string
+	value string
+}
+
+// parseIncidentsListArgs parses the flags accepted by `bs incidents list`.
+// Every non-boolean flag consumes the following argument as its value. The
+// boolean flags accept both the space form (`--resolved true`) and the
+// documented equals form (`--resolved=true`); only the exact lowercase
+// literals `true` and `false` are valid (spec R1.3). Duplicate-key detection
+// is deferred to duplicateMetadataKey so the parser stays a per-occurrence
+// recorder (spec R1.5).
+func parseIncidentsListArgs(args []string) (incidentsListArgs, error) {
+	parsed := incidentsListArgs{timeout: defaultTimeout}
+	for i := 0; i < len(args); i++ {
+		flag := args[i]
+		switch {
+		case flag == "--page" || flag == "--per-page" || flag == "--from" || flag == "--to" || flag == "--monitor-id" || flag == "--heartbeat-id" || flag == "--team-name" || flag == "--timeout":
+			if i+1 >= len(args) {
+				return incidentsListArgs{}, fmt.Errorf("%s needs a value", flag)
+			}
+			i++
+			value := args[i]
+			switch flag {
+			case "--page":
+				parsed.pages = append(parsed.pages, value)
+			case "--per-page":
+				parsed.perPages = append(parsed.perPages, value)
+			case "--from":
+				parsed.froms = append(parsed.froms, value)
+			case "--to":
+				parsed.tos = append(parsed.tos, value)
+			case "--monitor-id":
+				parsed.monitorIDs = append(parsed.monitorIDs, value)
+			case "--heartbeat-id":
+				parsed.heartbeatIDs = append(parsed.heartbeatIDs, value)
+			case "--team-name":
+				parsed.teamNames = append(parsed.teamNames, value)
+			case "--timeout":
+				d, err := time.ParseDuration(value)
+				if err != nil || d <= 0 {
+					return incidentsListArgs{}, fmt.Errorf("invalid --timeout value %q", value)
+				}
+				parsed.timeout = d
+			}
+		case flag == "--resolved" || flag == "--acknowledged":
+			if i+1 >= len(args) {
+				return incidentsListArgs{}, fmt.Errorf("%s needs a value", flag)
+			}
+			i++
+			value := args[i]
+			if !validBoolLiteral(value) {
+				return incidentsListArgs{}, fmt.Errorf("invalid %s value %q; want true or false", flag, value)
+			}
+			if flag == "--resolved" {
+				parsed.resolveds = append(parsed.resolveds, value)
+			} else {
+				parsed.acknowledgeds = append(parsed.acknowledgeds, value)
+			}
+		case strings.HasPrefix(flag, "--resolved="):
+			value := strings.TrimPrefix(flag, "--resolved=")
+			if !validBoolLiteral(value) {
+				return incidentsListArgs{}, fmt.Errorf("invalid --resolved value %q; want true or false", value)
+			}
+			parsed.resolveds = append(parsed.resolveds, value)
+		case strings.HasPrefix(flag, "--acknowledged="):
+			value := strings.TrimPrefix(flag, "--acknowledged=")
+			if !validBoolLiteral(value) {
+				return incidentsListArgs{}, fmt.Errorf("invalid --acknowledged value %q; want true or false", value)
+			}
+			parsed.acknowledgeds = append(parsed.acknowledgeds, value)
+		case flag == "--metadata":
+			if i+1 >= len(args) {
+				return incidentsListArgs{}, errors.New("--metadata needs a value")
+			}
+			i++
+			pair, err := parseMetadataPair(args[i])
+			if err != nil {
+				return incidentsListArgs{}, err
+			}
+			parsed.metadatas = append(parsed.metadatas, pair)
+		case strings.HasPrefix(flag, "-"):
+			return incidentsListArgs{}, fmt.Errorf("unknown option %q", flag)
+		default:
+			return incidentsListArgs{}, fmt.Errorf("unexpected argument %q", flag)
+		}
+	}
+	return parsed, nil
+}
+
+func validBoolLiteral(value string) bool {
+	return value == "true" || value == "false"
+}
+
+// parseMetadataPair splits a `--metadata` value at its first `=`. The key must
+// be nonempty; the value may be empty and may itself contain `=` (spec R1.4).
+func parseMetadataPair(raw string) (metadataPair, error) {
+	key, value, ok := strings.Cut(raw, "=")
+	if !ok {
+		return metadataPair{}, fmt.Errorf("invalid --metadata value %q; want key=value", raw)
+	}
+	if key == "" {
+		return metadataPair{}, fmt.Errorf("invalid --metadata value %q; the key is empty", raw)
+	}
+	return metadataPair{key: key, value: value}, nil
+}
+
+// duplicateMetadataKey returns the first exact, case-sensitive repeated key.
+func duplicateMetadataKey(pairs []metadataPair) (string, bool) {
+	seen := make(map[string]struct{}, len(pairs))
+	for _, pair := range pairs {
+		if _, ok := seen[pair.key]; ok {
+			return pair.key, true
+		}
+		seen[pair.key] = struct{}{}
+	}
+	return "", false
+}

@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `phase-2-gate-passed` — the Phase 1 (spec) and Phase 2 (implementation checklist) gates both passed; the task loop (Phase 3) has not started
-- Current task: `none` — the task loop has not started
-- Task states: A1, B1, B2, B3, C1 planned and unchecked (task boxes render from this checkpoint once Phase 2 completes)
+- Current phase: `phase-3-executing` — the Phase 3 task loop is running; A1 has passed
+- Current task: `A1 complete; next B1`
+- Task states: A1 passed; B1, B2, B3, C1 planned and unchecked
 - Milestone checkbox: `unchecked` (source entry `- [ ] 006`, never edited by this run)
-- Last completed phase/task/gate and timestamp: 006 committed planning gate recorded 2026-10-18; Phase 2 (implementation checklist) gate passed 2026-10-18; Phase 1 (spec) gate passed 2026-10-18; 006 setup gate 2026-10-18 (see Gate evidence)
+- Last completed phase/task/gate and timestamp: A1 verification 2026-10-18; 006 committed planning gate recorded 2026-10-18; Phase 2 (implementation checklist) gate passed 2026-10-18; Phase 1 (spec) gate passed 2026-10-18; 006 setup gate 2026-10-18 (see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -114,6 +114,16 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - `HEAD` commit SHA: `5be380a` (the 006 planning-artifacts commit)
   - `git status --porcelain`: the verbatim baseline above (12 untracked entries)
   - Relevant work: the planning artifacts are `committed` at `5be380a`; this checkpoint record of the gate is committed by the immediate scoped docs commit that follows (the checkpoint is a tracked file, so no untracked artifact is at risk)
+
+- Gate: 006 Phase 3 task A1 — incidents list parser
+  - Command(s) and actual result(s):
+    - Red: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test -run 'TestParseIncidentsListArgs|TestDuplicateMetadataKey' ./cmd/bs/` → `build failed` with `undefined: incidentsListArgs` (the new test compiled against a missing parser; no request, no network)
+    - Green after adding `parseIncidentsListArgs`, `incidentsListArgs`, `metadataPair`, `parseMetadataPair`, `validBoolLiteral`, and `duplicateMetadataKey` to `cmd/bs/incidents.go`: the same focused run → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.008s`
+    - `gofmt -w cmd/bs/incidents_test.go`, then `gofmt -l cmd/bs/` → empty; `go vet ./...` → exit 0; full package `go test ./...` → `ok github.com/jrswab/betterstack-cli/cmd/bs 1.662s`
+    - Coverage: accepted vectors for every flag alone and combined in any order, both boolean forms, repeated non-boolean and boolean occurrences, different metadata keys, empty-string and empty-metadata values, and first-`=` splitting; rejections for every missing value, every invalid boolean literal (`True`, `TRUE`, `1`, `0`, `yes`, empty, and equals-form variants), metadata grammar (no `=`, empty key), the exact case-sensitive duplicate-key helper, unknown options (`--all`, `--pretty`, `--query`, `--bogus`, `-h`, `--help`, `--page=2`, `--metadata=...`), positional arguments, and invalid `--timeout` values
+  - `HEAD` commit SHA: `e41b69a` (the committed-planning-gate commit; this task ran against it)
+  - `git status --porcelain`: the verbatim baseline above plus ` M cmd/bs/incidents.go`, ` M cmd/bs/incidents_test.go`, ` M docs/plans/001_betterstack-cli-first-release_006_checkpoint.md`, ` M docs/plans/001_betterstack-cli-first-release_006_implement.md`
+  - Relevant work: `uncommitted` — stash ref `22a9817e7de9583d7dd959ab16f5a5a66d922c2f` (created with `git stash create "006 A1 gate snapshot"`; inspectable with `git show --stat`, never applied); the scoped A1 commit that follows is the authoritative record
 
 ## Limitations & blockers
 

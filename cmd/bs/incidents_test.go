@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"reflect"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -1656,4 +1657,141 @@ func TestIncidentsTimelineNeverPrintsTokenThroughRouting(t *testing.T) {
 		}
 		assertNoToken(t, stdout, stderr)
 	})
+}
+
+// TestParseIncidentsListArgs covers A1 (spec R1.1-R1.7, R6.1, R7): the
+// incidents list parser records every accepted flag occurrence unchanged,
+// validates only the boolean literals and the metadata pair grammar, and
+// rejects every invalid vector before any request. No server is involved.
+func TestParseIncidentsListArgs(t *testing.T) {
+	accepted := []struct {
+		name string
+		args []string
+		want incidentsListArgs
+	}{
+		{"no flags", nil, incidentsListArgs{timeout: defaultTimeout}},
+		{"page alone", []string{"--page", "2"}, incidentsListArgs{pages: []string{"2"}, timeout: defaultTimeout}},
+		{"per-page alone", []string{"--per-page", "50"}, incidentsListArgs{perPages: []string{"50"}, timeout: defaultTimeout}},
+		{"from alone", []string{"--from", "2024-01-01"}, incidentsListArgs{froms: []string{"2024-01-01"}, timeout: defaultTimeout}},
+		{"to alone", []string{"--to", "2024-02-01"}, incidentsListArgs{tos: []string{"2024-02-01"}, timeout: defaultTimeout}},
+		{"monitor-id alone", []string{"--monitor-id", "123"}, incidentsListArgs{monitorIDs: []string{"123"}, timeout: defaultTimeout}},
+		{"heartbeat-id alone", []string{"--heartbeat-id", "456"}, incidentsListArgs{heartbeatIDs: []string{"456"}, timeout: defaultTimeout}},
+		{"team-name alone", []string{"--team-name", "Acme"}, incidentsListArgs{teamNames: []string{"Acme"}, timeout: defaultTimeout}},
+		{"team-name empty value", []string{"--team-name", ""}, incidentsListArgs{teamNames: []string{""}, timeout: defaultTimeout}},
+		{"resolved space true", []string{"--resolved", "true"}, incidentsListArgs{resolveds: []string{"true"}, timeout: defaultTimeout}},
+		{"resolved space false", []string{"--resolved", "false"}, incidentsListArgs{resolveds: []string{"false"}, timeout: defaultTimeout}},
+		{"resolved equals true", []string{"--resolved=true"}, incidentsListArgs{resolveds: []string{"true"}, timeout: defaultTimeout}},
+		{"resolved equals false", []string{"--resolved=false"}, incidentsListArgs{resolveds: []string{"false"}, timeout: defaultTimeout}},
+		{"acknowledged space true", []string{"--acknowledged", "true"}, incidentsListArgs{acknowledgeds: []string{"true"}, timeout: defaultTimeout}},
+		{"acknowledged equals false", []string{"--acknowledged=false"}, incidentsListArgs{acknowledgeds: []string{"false"}, timeout: defaultTimeout}},
+		{"metadata simple", []string{"--metadata", "Origin=Linear"}, incidentsListArgs{metadatas: []metadataPair{{key: "Origin", value: "Linear"}}, timeout: defaultTimeout}},
+		{"metadata empty value", []string{"--metadata", "Empty="}, incidentsListArgs{metadatas: []metadataPair{{key: "Empty", value: ""}}, timeout: defaultTimeout}},
+		{"metadata value keeps later equals", []string{"--metadata", "Eq=a=b=c"}, incidentsListArgs{metadatas: []metadataPair{{key: "Eq", value: "a=b=c"}}, timeout: defaultTimeout}},
+		{"timeout override", []string{"--timeout", "45s"}, incidentsListArgs{timeout: 45 * time.Second}},
+		{
+			"all flags any order",
+			[]string{"--team-name", "Acme", "--resolved=false", "--page", "3", "--metadata", "Origin=Linear", "--to", "2024-02-01", "--monitor-id", "1", "--per-page", "25", "--acknowledged", "true", "--from", "2024-01-01", "--heartbeat-id", "2", "--timeout", "5s"},
+			incidentsListArgs{
+				pages: []string{"3"}, perPages: []string{"25"},
+				froms: []string{"2024-01-01"}, tos: []string{"2024-02-01"},
+				monitorIDs: []string{"1"}, heartbeatIDs: []string{"2"},
+				teamNames: []string{"Acme"},
+				resolveds: []string{"false"}, acknowledgeds: []string{"true"},
+				metadatas: []metadataPair{{key: "Origin", value: "Linear"}},
+				timeout:   5 * time.Second,
+			},
+		},
+		{"repeated page preserves order", []string{"--page", "1", "--page", "2"}, incidentsListArgs{pages: []string{"1", "2"}, timeout: defaultTimeout}},
+		{"repeated resolved preserves order", []string{"--resolved", "true", "--resolved=false"}, incidentsListArgs{resolveds: []string{"true", "false"}, timeout: defaultTimeout}},
+		{"different metadata keys", []string{"--metadata", "Origin=Linear", "--metadata", "Service=api"}, incidentsListArgs{metadatas: []metadataPair{{key: "Origin", value: "Linear"}, {key: "Service", value: "api"}}, timeout: defaultTimeout}},
+	}
+	for _, tc := range accepted {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := parseIncidentsListArgs(tc.args)
+			if err != nil {
+				t.Fatalf("parseIncidentsListArgs(%q) error = %v", tc.args, err)
+			}
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("parseIncidentsListArgs(%q) = %+v, want %+v", tc.args, got, tc.want)
+			}
+		})
+	}
+
+	rejected := []struct {
+		name string
+		args []string
+	}{
+		{"page missing value", []string{"--page"}},
+		{"per-page missing value", []string{"--per-page"}},
+		{"from missing value", []string{"--from"}},
+		{"to missing value", []string{"--to"}},
+		{"monitor-id missing value", []string{"--monitor-id"}},
+		{"heartbeat-id missing value", []string{"--heartbeat-id"}},
+		{"team-name missing value", []string{"--team-name"}},
+		{"resolved bare", []string{"--resolved"}},
+		{"acknowledged bare", []string{"--acknowledged"}},
+		{"resolved uppercase True", []string{"--resolved", "True"}},
+		{"resolved uppercase TRUE", []string{"--resolved", "TRUE"}},
+		{"resolved one", []string{"--resolved", "1"}},
+		{"resolved zero", []string{"--resolved", "0"}},
+		{"resolved yes", []string{"--resolved", "yes"}},
+		{"resolved empty space", []string{"--resolved", ""}},
+		{"resolved equals uppercase", []string{"--resolved=True"}},
+		{"resolved equals one", []string{"--resolved=1"}},
+		{"resolved equals empty", []string{"--resolved="}},
+		{"acknowledged uppercase", []string{"--acknowledged", "False"}},
+		{"acknowledged equals bogus", []string{"--acknowledged=bogus"}},
+		{"metadata missing value", []string{"--metadata"}},
+		{"metadata no equals", []string{"--metadata", "noequals"}},
+		{"metadata empty key", []string{"--metadata", "=value"}},
+		{"metadata equals flag form", []string{"--metadata=Origin=Linear"}},
+		{"page equals form", []string{"--page=2"}},
+		{"all", []string{"--all"}},
+		{"pretty", []string{"--pretty"}},
+		{"query", []string{"--query", "x"}},
+		{"unknown flag", []string{"--bogus"}},
+		{"short help", []string{"-h"}},
+		{"long help", []string{"--help"}},
+		{"positional", []string{"foo"}},
+		{"timeout missing value", []string{"--timeout"}},
+		{"timeout unparseable", []string{"--timeout", "soon"}},
+		{"timeout zero", []string{"--timeout", "0s"}},
+		{"timeout negative", []string{"--timeout", "-1s"}},
+	}
+	for _, tc := range rejected {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := parseIncidentsListArgs(tc.args)
+			if err == nil {
+				t.Fatalf("parseIncidentsListArgs(%q) = %+v, nil; want an error", tc.args, got)
+			}
+			if strings.TrimSpace(err.Error()) == "" {
+				t.Error("error message is empty, want a readable problem")
+			}
+		})
+	}
+}
+
+// TestDuplicateMetadataKey covers A1 (spec R1.5): the helper reports the first
+// exact, case-sensitive repeated key and nothing when every key is distinct.
+func TestDuplicateMetadataKey(t *testing.T) {
+	cases := []struct {
+		name  string
+		pairs []metadataPair
+		want  string
+		dup   bool
+	}{
+		{"none", nil, "", false},
+		{"unique", []metadataPair{{key: "a", value: "1"}, {key: "b", value: "2"}}, "", false},
+		{"exact repeat", []metadataPair{{key: "a", value: "1"}, {key: "a", value: "2"}}, "a", true},
+		{"case sensitive", []metadataPair{{key: "a", value: "1"}, {key: "A", value: "2"}}, "", false},
+		{"repeat with empty value", []metadataPair{{key: "k", value: ""}, {key: "k", value: ""}}, "k", true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			gotKey, gotDup := duplicateMetadataKey(tc.pairs)
+			if gotKey != tc.want || gotDup != tc.dup {
+				t.Errorf("duplicateMetadataKey(%+v) = (%q, %v), want (%q, %v)", tc.pairs, gotKey, gotDup, tc.want, tc.dup)
+			}
+		})
+	}
 }
