@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `execute` — Phase 3 (tasks A1 → B1 → C1 → D1); tasks A1 and B1 passed their gates, C1 is next
-- Current task: C1 (next)
-- Task states: A1 `pass`, B1 `pass` (gate evidence below, committed); C1/D1 not started
+- Current phase: `execute` — Phase 3 (tasks A1 → B1 → C1 → D1); tasks A1, B1, and C1 passed their gates, D1 is next
+- Current task: D1 (next)
+- Task states: A1 `pass`, B1 `pass`, C1 `pass` (gate evidence below, committed); D1 not started
 - Milestone checkbox: `unchecked` (source entry `- [ ] 007`, unchanged — 007 is checked only at its own passing completion gate)
-- Last completed phase/task/gate: Phase 3 task B1 gate
+- Last completed phase/task/gate: Phase 3 task C1 gate
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -128,6 +128,18 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - `HEAD` commit SHA: `b55de4d` (the A1 checkbox-render commit; unchanged throughout the battery)
   - `git status --porcelain`: the preserved untracked baseline (`.wayfinder/` tree, `verify-incident-id.sh`) plus this checkpoint edit; `git diff --check` exit 0
   - Relevant work: `uncommitted` at gate time — stash ref `bd417d7aa6b331d6c4317a402aba293da587d6af` (created with `git stash create "007 Phase 3 task B1 gate snapshot"`; captures the tracked checkpoint gate edit only — untracked files are not in the ref and remain on disk). The scoped docs commit that follows this gate is the authoritative record and matches the pre-edit worktree exactly
+
+- Gate: 007 Phase 3 — task C1, pre-publication local install smoke test (this gate)
+  - Command(s) and actual result(s) (every shell began with `unset BETTERSTACK_UPTIME_API_TOKEN` and `unset BETTERSTACK_API_TOKEN`; pinned `GOTOOLCHAIN=go1.26.9 GOPROXY=off`; no env dump, no xtrace, no `.env` read, no live request; the mock-API run covered loopback tests, and the smoke test itself makes no network request at all):
+    - Clean checkout materialization: `tmp=$(mktemp -d /tmp/bs007-smoke.XXXXXX)` → `/tmp/bs007-smoke.KNZ4DO`; `git archive HEAD | tar -x -C "$tmp"` → `ok` (the verified HEAD `86c01e7` tree materialized outside the working tree; `ls` confirmed `LICENSE README.md cmd docs go.mod` present)
+    - Isolated install: from the clean checkout, `GOBIN="$tmp/go-bin" GOTOOLCHAIN=go1.26.9 GOPROXY=off go install ./cmd/bs` → exit 0; `ls "$tmp/go-bin/bs"` → binary present (≈8.7 MB)
+    - Help smoke: `"$tmp/go-bin/bs" --help` → exit 0, stdout 309 bytes / 11 lines starting `bs - read-only Better Stack Uptime CLI`, stderr 0 bytes, no network request (help is pure text; both credential variables unset in the shell, and re-verified with `env -u BETTERSTACK_UPTIME_API_TOKEN -u BETTERSTACK_API_TOKEN bs --help` → exit 0)
+    - Cleanup: `rm -rf "$tmp"` → exit 0; `find . -name 'bs' -type f -not -path './.git/*'` → 0 stray binaries or build artifacts in the tree
+    - Post-smoke status: `git status --porcelain=v1 -uall` → exactly the twelve preserved pre-existing untracked entries (`.wayfinder/` tree and `verify-incident-id.sh`), 0 modified, 0 staged
+  - Scope conformance: the working tree was never written into; the smoke ran against the exact committed tree; `README.md`, `LICENSE`, `.gitignore`, `verify-incident-id.sh`, and `.wayfinder/` stayed untouched
+  - `HEAD` commit SHA: `86c01e7` (the B1 checkbox-render commit; unchanged throughout the smoke)
+  - `git status --porcelain`: the preserved untracked baseline plus this checkpoint edit; `git diff --check` exit 0
+  - Relevant work: `uncommitted` at gate time — stash ref `49f0755277a82e762407008e5d2fa2dca6007f97` (created with `git stash create "007 Phase 3 task C1 gate snapshot"`; captures the tracked checkpoint gate edit only — untracked files are not in the ref and remain on disk). The scoped docs commit that follows this gate is the authoritative record and matches the pre-edit worktree exactly
 
 ## Limitations & blockers
 
