@@ -94,7 +94,7 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
     - Scope-boundary check: no task writes product source, help text, or test behavior; no task touches `README.md`, `LICENSE`, `.gitignore`, `verify-incident-id.sh`, or `.wayfinder/`; no task executes a tag, push, publication, live API call, or any deferred release action; all four checkboxes render `- [ ]` (none pre-rendered)
   - `HEAD` commit SHA: `20d0747` (the 007 Phase 1 planning commit; this gate ran against it)
   - `git status --porcelain`: the preserved untracked baseline (`.wayfinder/`, `verify-incident-id.sh`) plus `?? docs/plans/001_betterstack-cli-first-release_007_implement.md` and the modified checkpoint
-  - Relevant work: `uncommitted` at gate time — stash ref recorded below; the scoped docs commit that follows this gate records the checklist and this checkpoint edit
+  - Relevant work: `uncommitted` at gate time — stash ref `8bf0449f8f19fda869beec86294cfe345f4ed2db` (created with `git stash create "007 Phase 2 gate snapshot"` before the commit; captures the tracked checkpoint gate edit only — untracked files are not in the ref and remain on disk as durable artifacts). The scoped docs commit `a25ebed` that follows this gate is the authoritative record of the checklist and this checkpoint edit
 
 ## Limitations & blockers
 
