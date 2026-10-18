@@ -321,3 +321,74 @@ func duplicateMetadataKey(pairs []metadataPair) (string, bool) {
 	}
 	return "", false
 }
+
+// incidentsList implements `bs incidents list [flags]`: argument validation and
+// duplicate-key rejection run before the credential check, then exactly one
+// bearer-authenticated GET to the v3 incidents endpoint sends the parsed flags
+// through the shared 002 response contract. The CLI never follows pagination
+// links (spec R7).
+func incidentsList(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
+	// Read the token before validation only so local diagnostics can redact
+	// it; the missing-token failure still occurs after a valid argument vector.
+	token := os.Getenv(tokenEnvVar)
+
+	parsed, err := parseIncidentsListArgs(args)
+	if err != nil {
+		fmt.Fprintf(stderr, "bs: %s; run 'bs incidents list --help' for usage.\n", redactToken(err.Error(), token))
+		return 1
+	}
+	if key, dup := duplicateMetadataKey(parsed.metadatas); dup {
+		fmt.Fprintf(stderr, "bs: duplicate --metadata key %q; run 'bs incidents list --help' for usage.\n", redactToken(key, token))
+		return 1
+	}
+
+	if token == "" {
+		fmt.Fprintf(stderr, "bs: %s is not set; set it to a Better Stack API token and try again.\n", tokenEnvVar)
+		return 1
+	}
+
+	endpoint := strings.TrimRight(baseURL, "/") + "/api/v3/incidents"
+	if query := parsed.query().Encode(); query != "" {
+		endpoint += "?" + query
+	}
+	return doMonitorsRequest(endpoint, token, parsed.timeout, stdout, stderr, client)
+}
+
+// query maps every present flag occurrence onto its documented API parameter
+// using the stdlib url.Values builder, which percent-encodes the nested
+// metadata parameter name including its brackets (spec R3.3). An absent flag
+// adds nothing; an explicit empty value adds the parameter with an empty value.
+func (a incidentsListArgs) query() url.Values {
+	query := url.Values{}
+	for _, value := range a.pages {
+		query.Add("page", value)
+	}
+	for _, value := range a.perPages {
+		query.Add("per_page", value)
+	}
+	for _, value := range a.froms {
+		query.Add("from", value)
+	}
+	for _, value := range a.tos {
+		query.Add("to", value)
+	}
+	for _, value := range a.monitorIDs {
+		query.Add("monitor_id", value)
+	}
+	for _, value := range a.heartbeatIDs {
+		query.Add("heartbeat_id", value)
+	}
+	for _, value := range a.teamNames {
+		query.Add("team_name", value)
+	}
+	for _, value := range a.resolveds {
+		query.Add("resolved", value)
+	}
+	for _, value := range a.acknowledgeds {
+		query.Add("acknowledged", value)
+	}
+	for _, pair := range a.metadatas {
+		query.Add("metadata["+pair.key+"][][value]", pair.value)
+	}
+	return query
+}

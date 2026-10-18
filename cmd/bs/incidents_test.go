@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"reflect"
 	"strings"
@@ -1793,5 +1794,343 @@ func TestDuplicateMetadataKey(t *testing.T) {
 				t.Errorf("duplicateMetadataKey(%+v) = (%q, %v), want (%q, %v)", tc.pairs, gotKey, gotDup, tc.want, tc.dup)
 			}
 		})
+	}
+}
+
+// invokeIncidentsList calls the command directly on the injected seam.
+func invokeIncidentsList(baseURL string, client *http.Client, args ...string) (code int, stdout, stderr string) {
+	var out, err bytes.Buffer
+	code = incidentsList(args, &out, &err, baseURL, client)
+	return code, out.String(), err.String()
+}
+
+// TestIncidentsListQueryTranslation covers B1 (spec R3.1-R3.4): each flag maps
+// to exactly one documented query parameter, an absent flag adds nothing, and
+// repetition preserves every occurrence. The mock decodes the query so the
+// assertion is independent of the encoder's byte order.
+func TestIncidentsListQueryTranslation(t *testing.T) {
+	cases := []struct {
+		name string
+		args []string
+		want map[string][]string
+	}{
+		{"no flags", nil, map[string][]string{}},
+		{"page", []string{"--page", "2"}, map[string][]string{"page": {"2"}}},
+		{"per-page", []string{"--per-page", "50"}, map[string][]string{"per_page": {"50"}}},
+		{"from", []string{"--from", "2024-01-01"}, map[string][]string{"from": {"2024-01-01"}}},
+		{"to", []string{"--to", "2024-02-01"}, map[string][]string{"to": {"2024-02-01"}}},
+		{"monitor-id", []string{"--monitor-id", "123"}, map[string][]string{"monitor_id": {"123"}}},
+		{"heartbeat-id", []string{"--heartbeat-id", "456"}, map[string][]string{"heartbeat_id": {"456"}}},
+		{"team-name", []string{"--team-name", "Acme"}, map[string][]string{"team_name": {"Acme"}}},
+		{"team-name empty value", []string{"--team-name", ""}, map[string][]string{"team_name": {""}}},
+		{"resolved space true", []string{"--resolved", "true"}, map[string][]string{"resolved": {"true"}}},
+		{"resolved equals false", []string{"--resolved=false"}, map[string][]string{"resolved": {"false"}}},
+		{"acknowledged space false", []string{"--acknowledged", "false"}, map[string][]string{"acknowledged": {"false"}}},
+		{"acknowledged equals true", []string{"--acknowledged=true"}, map[string][]string{"acknowledged": {"true"}}},
+		{"metadata", []string{"--metadata", "Origin=Linear"}, map[string][]string{"metadata[Origin][][value]": {"Linear"}}},
+		{"metadata empty value", []string{"--metadata", "Empty="}, map[string][]string{"metadata[Empty][][value]": {""}}},
+		{"repeated page", []string{"--page", "1", "--page", "2"}, map[string][]string{"page": {"1", "2"}}},
+		{"different metadata keys", []string{"--metadata", "Origin=Linear", "--metadata", "Service=api"}, map[string][]string{"metadata[Origin][][value]": {"Linear"}, "metadata[Service][][value]": {"api"}}},
+		{
+			"all filters combined",
+			[]string{"--from", "2024-01-01", "--to", "2024-02-01", "--monitor-id", "1", "--heartbeat-id", "2", "--team-name", "Acme", "--resolved", "false", "--acknowledged", "true", "--metadata", "Origin=Linear", "--metadata", "Service=api", "--page", "2", "--per-page", "5"},
+			map[string][]string{
+				"from": {"2024-01-01"}, "to": {"2024-02-01"},
+				"monitor_id": {"1"}, "heartbeat_id": {"2"}, "team_name": {"Acme"},
+				"resolved": {"false"}, "acknowledged": {"true"},
+				"metadata[Origin][][value]": {"Linear"}, "metadata[Service][][value]": {"api"},
+				"page": {"2"}, "per_page": {"5"},
+			},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var gotMethod, gotPath, gotAuth string
+			var gotQuery url.Values
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				gotMethod = r.Method
+				gotPath = r.URL.EscapedPath()
+				gotAuth = r.Header.Get("Authorization")
+				gotQuery = r.URL.Query()
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, _, stderr := invokeIncidentsList(srv.URL, newHTTPClient(), tc.args...)
+			if code != 0 {
+				t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+			}
+			if got := requests.Load(); got != 1 {
+				t.Fatalf("server requests = %d, want 1", got)
+			}
+			if gotMethod != http.MethodGet {
+				t.Errorf("method = %q, want %q", gotMethod, http.MethodGet)
+			}
+			if gotPath != "/api/v3/incidents" {
+				t.Errorf("path = %q, want %q", gotPath, "/api/v3/incidents")
+			}
+			if want := "Bearer " + testToken; gotAuth != want {
+				t.Errorf("Authorization = %q, want %q", gotAuth, want)
+			}
+			if !reflect.DeepEqual(map[string][]string(gotQuery), tc.want) {
+				t.Errorf("query = %#v, want %#v", map[string][]string(gotQuery), tc.want)
+			}
+		})
+	}
+}
+
+// TestIncidentsListMetadataBracketEncoding covers B1 (spec R3.3): the nested
+// metadata parameter name reaches the wire with its brackets percent-encoded
+// by the stdlib query builder.
+func TestIncidentsListMetadataBracketEncoding(t *testing.T) {
+	var gotRawQuery string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotRawQuery = r.URL.RawQuery
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	t.Setenv(tokenEnvVar, testToken)
+
+	code, _, stderr := invokeIncidentsList(srv.URL, newHTTPClient(), "--metadata", "Origin=Linear")
+	if code != 0 {
+		t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+	}
+	if want := "metadata%5BOrigin%5D%5B%5D%5Bvalue%5D=Linear"; gotRawQuery != want {
+		t.Errorf("raw query = %q, want %q", gotRawQuery, want)
+	}
+}
+
+// TestIncidentsListRawSuccessBody covers B1 (spec R4.1, R4.2): raw 2xx bodies
+// pass through byte-for-byte with no appended newline, including a pagination
+// object, a non-JSON body, and a body with its own trailing newline.
+func TestIncidentsListRawSuccessBody(t *testing.T) {
+	cases := []struct {
+		name string
+		body string
+	}{
+		{"pagination envelope", `{"data":[],"pagination":{"first":"https://incidents.betterstack.com/api/v3/incidents?page=1","last":"https://incidents.betterstack.com/api/v3/incidents?page=9","prev":null,"next":null}}`},
+		{"non-json", "not json at all"},
+		{"own trailing newline", "kept\n"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				_, _ = io.WriteString(w, tc.body)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeIncidentsList(srv.URL, newHTTPClient())
+			if code != 0 {
+				t.Fatalf("exit code = %d, want 0", code)
+			}
+			if stdout != tc.body {
+				t.Errorf("stdout = %q, want %q", stdout, tc.body)
+			}
+			if stderr != "" {
+				t.Errorf("stderr = %q, want empty", stderr)
+			}
+		})
+	}
+}
+
+// TestIncidentsListDuplicateMetadataKeyRejected covers B1 (spec R1.5): a
+// repeated metadata key exits 1 before any request and names the key.
+func TestIncidentsListDuplicateMetadataKeyRejected(t *testing.T) {
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	t.Setenv(tokenEnvVar, testToken)
+
+	code, stdout, stderr := invokeIncidentsList(srv.URL, newHTTPClient(), "--metadata", "Origin=Linear", "--metadata", "Origin=Other")
+	if code != 1 {
+		t.Fatalf("exit code = %d, want 1", code)
+	}
+	if stdout != "" {
+		t.Errorf("stdout = %q, want empty", stdout)
+	}
+	if !strings.Contains(stderr, "Origin") {
+		t.Errorf("stderr = %q, want it to name the duplicate key", stderr)
+	}
+	if strings.Contains(stderr, testToken) {
+		t.Errorf("stderr leaks the token: %q", stderr)
+	}
+	if got := requests.Load(); got != 0 {
+		t.Errorf("server requests = %d, want 0", got)
+	}
+}
+
+// TestIncidentsListNon2xxPassthrough covers B1 (spec R5.1): every non-2xx
+// status, 3xx included, passes the raw body to stderr, reaches the server
+// once, follows no redirect, and writes no stdout.
+func TestIncidentsListNon2xxPassthrough(t *testing.T) {
+	cases := []struct {
+		name   string
+		status int
+		body   string
+	}{
+		{"moved permanently", http.StatusMovedPermanently, "redirect body"},
+		{"found", http.StatusFound, `{"errors":"moved"}`},
+		{"temporary redirect", http.StatusTemporaryRedirect, "temporary"},
+		{"unauthorized", http.StatusUnauthorized, `{"errors":"unauthorized"}`},
+		{"not found", http.StatusNotFound, `{"errors":"not found"}`},
+		{"too many requests", http.StatusTooManyRequests, "slow down"},
+		{"server error", http.StatusInternalServerError, "boom"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				if r.URL.Path == "/redirect-target" {
+					w.WriteHeader(http.StatusOK)
+					return
+				}
+				w.Header().Set("Location", "/redirect-target")
+				w.WriteHeader(tc.status)
+				_, _ = io.WriteString(w, tc.body)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeIncidentsList(srv.URL, newHTTPClient())
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if stderr != tc.body {
+				t.Errorf("stderr = %q, want raw body %q", stderr, tc.body)
+			}
+			if got := requests.Load(); got != 1 {
+				t.Errorf("server requests = %d, want 1 (no redirect follow, no retry)", got)
+			}
+		})
+	}
+}
+
+// TestIncidentsListTimeoutOverride covers B1 (spec R6.1): a short override
+// expires with one request; a longer override succeeds.
+func TestIncidentsListTimeoutOverride(t *testing.T) {
+	t.Run("expires", func(t *testing.T) {
+		var requests atomic.Int32
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requests.Add(1)
+			time.Sleep(150 * time.Millisecond)
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeIncidentsList(srv.URL, newHTTPClient(), "--timeout", "10ms")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		if stdout != "" {
+			t.Errorf("stdout = %q, want empty", stdout)
+		}
+		if strings.TrimSpace(stderr) == "" {
+			t.Error("stderr is empty, want a readable error")
+		}
+		if got := requests.Load(); got != 1 {
+			t.Errorf("server requests = %d, want 1", got)
+		}
+	})
+
+	t.Run("within override", func(t *testing.T) {
+		const body = "ok body"
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			_, _ = io.WriteString(w, body)
+		}))
+		defer srv.Close()
+
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeIncidentsList(srv.URL, newHTTPClient(), "--timeout", "5s")
+		if code != 0 {
+			t.Fatalf("exit code = %d, want 0; stderr = %q", code, stderr)
+		}
+		if stdout != body {
+			t.Errorf("stdout = %q, want %q", stdout, body)
+		}
+		if stderr != "" {
+			t.Errorf("stderr = %q, want empty", stderr)
+		}
+	})
+}
+
+// TestIncidentsListInvalidTimeout covers B1 (spec R6.1): invalid durations
+// fail before any request.
+func TestIncidentsListInvalidTimeout(t *testing.T) {
+	cases := [][]string{
+		{"--timeout"},
+		{"--timeout", "soon"},
+		{"--timeout", "0s"},
+		{"--timeout", "-1s"},
+	}
+	for _, args := range cases {
+		t.Run(strings.Join(args, " "), func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(http.StatusOK)
+			}))
+			defer srv.Close()
+
+			t.Setenv(tokenEnvVar, testToken)
+
+			code, stdout, stderr := invokeIncidentsList(srv.URL, newHTTPClient(), args...)
+			if code != 1 {
+				t.Fatalf("exit code = %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Errorf("stdout = %q, want empty", stdout)
+			}
+			if strings.TrimSpace(stderr) == "" {
+				t.Error("stderr is empty, want a readable error")
+			}
+			if got := requests.Load(); got != 0 {
+				t.Errorf("server requests = %d, want 0", got)
+			}
+		})
+	}
+}
+
+// TestIncidentsListLocalFailureIsTokenFree covers B1 (spec R5.2, R5.3): a
+// closed local port exits 1 with one concise token-free message.
+func TestIncidentsListLocalFailureIsTokenFree(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	closedURL := srv.URL
+	srv.Close()
+
+	t.Setenv(tokenEnvVar, testToken)
+
+	code, stdout, stderr := invokeIncidentsList(closedURL, newHTTPClient())
+	if code != 1 {
+		t.Fatalf("exit code = %d, want 1", code)
+	}
+	if stdout != "" {
+		t.Errorf("stdout = %q, want empty", stdout)
+	}
+	if strings.TrimSpace(stderr) == "" {
+		t.Error("stderr is empty, want a readable error")
+	}
+	if strings.Contains(stderr, testToken) {
+		t.Errorf("stderr leaks the token: %q", stderr)
 	}
 }

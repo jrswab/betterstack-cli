@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `phase-3-executing` — the Phase 3 task loop is running; A1 has passed
-- Current task: `A1 complete; next B1`
-- Task states: A1 passed; B1, B2, B3, C1 planned and unchecked
+- Current phase: `phase-3-executing` — the Phase 3 task loop is running; A1 and B1 have passed
+- Current task: `B1 complete; next B2`
+- Task states: A1, B1 passed; B2, B3, C1 planned and unchecked
 - Milestone checkbox: `unchecked` (source entry `- [ ] 006`, never edited by this run)
-- Last completed phase/task/gate and timestamp: A1 verification 2026-10-18; 006 committed planning gate recorded 2026-10-18; Phase 2 (implementation checklist) gate passed 2026-10-18; Phase 1 (spec) gate passed 2026-10-18; 006 setup gate 2026-10-18 (see Gate evidence)
+- Last completed phase/task/gate and timestamp: B1 verification 2026-10-18; A1 verification 2026-10-18; 006 committed planning gate recorded 2026-10-18; Phase 2 (implementation checklist) gate passed 2026-10-18; Phase 1 (spec) gate passed 2026-10-18; 006 setup gate 2026-10-18 (see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -125,6 +125,17 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - `git status --porcelain`: the verbatim baseline above plus ` M cmd/bs/incidents.go`, ` M cmd/bs/incidents_test.go`, ` M docs/plans/001_betterstack-cli-first-release_006_checkpoint.md`, ` M docs/plans/001_betterstack-cli-first-release_006_implement.md`
   - Relevant work: `uncommitted` — stash ref `22a9817e7de9583d7dd959ab16f5a5a66d922c2f` (created with `git stash create "006 A1 gate snapshot"`; inspectable with `git show --stat`, never applied); the scoped A1 commit that follows is the authoritative record
 
+- Gate: 006 Phase 3 task B1 — incidents list execution and query translation
+  - Command(s) and actual result(s):
+    - Red: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test -run 'TestIncidentsList' ./cmd/bs/` → `build failed` with `undefined: incidentsList` (the new tests compiled against the missing command; no request, no network)
+    - Green after adding `incidentsList` and `incidentsListArgs.query` to `cmd/bs/incidents.go`: the same focused run → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.172s`
+    - `gofmt -w cmd/bs/`, then `gofmt -l cmd/bs/` → empty; `go vet ./...` → exit 0; full package `go test ./...` → `ok github.com/jrswab/betterstack-cli/cmd/bs 1.874s`
+    - Coverage: decoded-query assertions for every flag alone, both boolean forms, empty-string and empty-metadata values, repeated non-boolean flags, and all filters combined; an exact raw-query assertion proving the nested name is `metadata%5BOrigin%5D%5B%5D%5Bvalue%5D=Linear`; raw success passthrough for a pagination envelope, a non-JSON body, and a trailing newline; duplicate-key rejection (exit 1, names the key, token-free, zero requests); non-2xx-including-3xx raw stderr passthrough with exactly one request and no redirect follow; timeout override expiry and success; invalid `--timeout` values with zero requests; and a closed-port local failure with a token-free message
+    - Bracket-injection check (spec constraint): the metadata key is opaque and is never locally validated. Because the parameter name is built as `metadata[<key>][][value]` and encoded by the stdlib `url.Values` builder, any `[`/`]` in the key is percent-encoded and cannot alter the parameter structure. No local validation was added because the spec forbids broadening beyond the documented key rule.
+  - `HEAD` commit SHA: `96bbc14` (the A1 commit; this task ran against it)
+  - `git status --porcelain`: the verbatim baseline above plus ` M cmd/bs/incidents.go`, ` M cmd/bs/incidents_test.go`, ` M docs/plans/001_betterstack-cli-first-release_006_checkpoint.md`, ` M docs/plans/001_betterstack-cli-first-release_006_implement.md`
+  - Relevant work: `uncommitted` — stash ref `5d9a31c6ab92b86e6d69e02db35d9e77305ed2ba` (created with `git stash create "006 B1 gate snapshot"`; inspectable with `git show --stat`, never applied); the scoped B1 commit that follows is the authoritative record
+
 ## Limitations & blockers
 
 - Limitations:
@@ -132,4 +143,4 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - The credential-safety regime and the `safety_test.go` guard limits (covers only clients using `http.DefaultTransport` or `testHTTPClient()`; cannot stop a test that injects its own transport or dials `net.Conn` directly) carry forward from 004/005 and are documented in `cmd/bs/safety_test.go`.
   - All work stays local: no push, tag, release, deploy, live API call, or external modification. Tests use only dummy tokens and mock loopback servers.
 - Blockers: none.
-- Next action (the single next safe action): begin 006 Phase 3 task A1 — implement `parseIncidentsListArgs` TDD-first per the Phase-2-gated checklist, then B1, B2, B3, C1, the boundary review, and the completion gate.
+- Next action (the single next safe action): begin 006 Phase 3 task B2 — wire the `incidents list` routing in `cmd/bs/main.go`, adjust `resourceUsageError`, and drop the stale `incidents list` case from `TestUnimplementedCommandsMakeNoRequest`, then B3, C1, and the completion gate.
