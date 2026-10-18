@@ -267,6 +267,49 @@ func TestMonitorsGetInvalidTimeout(t *testing.T) {
 	}
 }
 
+// TestMonitorsGetLocalFailureIsTokenFree covers B3 (spec R6, R7): a local
+// connection failure exits 1 with a concise stderr message, empty stdout, and
+// no token anywhere — including when the token text is part of the request URL
+// that a transport error would otherwise echo.
+func TestMonitorsGetLocalFailureIsTokenFree(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	closedURL := srv.URL
+	srv.Close()
+
+	t.Run("connection refused", func(t *testing.T) {
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(closedURL, newHTTPClient(), "monitors", "get", "789")
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		if stdout != "" {
+			t.Errorf("stdout = %q, want empty", stdout)
+		}
+		if strings.TrimSpace(stderr) == "" {
+			t.Error("stderr is empty, want a readable error")
+		}
+		if strings.Contains(stderr, testToken) {
+			t.Errorf("stderr leaks the token: %q", stderr)
+		}
+	})
+
+	t.Run("token in diagnostic url", func(t *testing.T) {
+		t.Setenv(tokenEnvVar, testToken)
+
+		code, stdout, stderr := invokeAPI(closedURL, newHTTPClient(), "monitors", "get", testToken)
+		if code != 1 {
+			t.Fatalf("exit code = %d, want 1", code)
+		}
+		if stdout != "" {
+			t.Errorf("stdout = %q, want empty", stdout)
+		}
+		if strings.Contains(stderr, testToken) {
+			t.Errorf("stderr leaks the token: %q", stderr)
+		}
+	})
+}
+
 // TestMonitorsGetCredentialFailures covers A2 (spec R2): an unset or empty
 // token, and the former `BETTERSTACK_API_TOKEN` name set alone, each fail
 // before any request with a message naming `BETTERSTACK_UPTIME_API_TOKEN`.

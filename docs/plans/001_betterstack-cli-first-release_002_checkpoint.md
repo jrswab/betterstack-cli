@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched (now displayed 
 
 ## State
 
-- Current phase: `execute` — Phase 3 (exec) loaded 2026-10-18; A1–A3, B1, B2 verified and committed
-- Current task: B2 complete; B3 is next
-- Task states: A1, A2, A3, B1, B2 verified; B3, C1, C2 unchecked
+- Current phase: `execute` — Phase 3 (exec) loaded 2026-10-18; A1–A3, B1–B3 verified and committed
+- Current task: B3 complete; C1 is next
+- Task states: A1, A2, A3, B1, B2, B3 verified; C1, C2 unchecked
 - Milestone checkbox: `unchecked` (source entry `- [ ] 002`)
-- Last completed phase/task/gate and timestamp: B2 verified 2026-10-18 (see Gate evidence)
+- Last completed phase/task/gate and timestamp: B3 verified 2026-10-18 (see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -113,6 +113,13 @@ One entry per passed gate (review, lint, verification, completion).
   - `HEAD` commit SHA: `af50f77d7ff7d31d6c872a4e3113f23c550685dd` (work committed after this gate)
   - `git status --porcelain`: ` M cmd/bs/monitors.go` / ` M cmd/bs/monitors_test.go` / ` M docs/plans/001_betterstack-cli-first-release_002_checkpoint.md` plus the preserved baseline and planning artifacts
   - Relevant work: `uncommitted` — stash ref `e1507598e83a1b097f7ac598acdc19fe5c56a6b8`
+- Gate: task B3 — token-free local/network failure output (spec R6, R7)
+  - Command(s) and actual result(s):
+    - Red: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./cmd/... -run TestMonitorsGetLocalFailureIsTokenFree` → `token in diagnostic url` failed with stderr containing the dummy token in the request URL (exit 1)
+    - Green after `cmd/bs/monitors.go` added `redactToken` and applied it to the argument-usage, request-build, transport, and body-read diagnostics (never to the raw upstream body): full `go test ./...` → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.166s` (exit 0); a closed-port connection refused exited 1 with non-empty token-free stderr and empty stdout; the token-as-target case also produced token-free stderr; `gofmt -l cmd/bs` no output; `go vet ./cmd/...` exit 0
+  - `HEAD` commit SHA: `ff30897f2db1df26990cf34aced29b0536856edf` (work committed after this gate)
+  - `git status --porcelain`: ` M cmd/bs/monitors.go` / ` M cmd/bs/monitors_test.go` / ` M docs/plans/001_betterstack-cli-first-release_002_checkpoint.md` plus the preserved baseline and planning artifacts
+  - Relevant work: `uncommitted` — stash ref `10c90fa1c807c4912a6fe178c3cf03db71403afd`
 
 ## Limitations & blockers
 
@@ -121,4 +128,4 @@ One entry per passed gate (review, lint, verification, completion).
   - Planning scope only: no implementation work, no code, and no test has been written for 002. Phase 3 (exec skill) has not been loaded; A1–C2 are all unchecked.
   - Credential-safety regime carried forward from the 001 run (see Identity); the exposed `BETTERSTACK_UPTIME_API_TOKEN` value was never read by any session and its rotation remains Jaron's deferred user action.
   - The stash refs `cca382c4…` and `45e9de0…` are unreachable Git objects once recorded; they are inspectable with `git show`/`git stash show` (never applied) and may be pruned by `git gc`.
-- Next action (the single next safe action): begin checklist task B3 (token-free local/network failure output with redaction of locally generated diagnostics) with its red tests, then implement to green.
+- Next action (the single next safe action): begin checklist task C1 (token-leak sweep across success/non-2xx/local paths plus the 001 invalid-usage and not-implemented regression with zero mock requests) with its red tests, then implement to green.

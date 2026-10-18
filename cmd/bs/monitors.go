@@ -22,17 +22,21 @@ const (
 // disabled in monitorsGet so an injected client cannot re-enable it.
 func newHTTPClient() *http.Client { return &http.Client{} }
 
-// monitorsGet implements `bs monitors get <id>`. The HTTP request path lands
-// here; credential handling, output passthrough, and timeout parsing follow in
-// later checklist tasks.
+// monitorsGet implements `bs monitors get <id> [--timeout <duration>]`:
+// exactly one bearer-authenticated GET, raw success body on stdout, raw
+// non-2xx body on stderr, and token-free local failure messages.
 func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
+	// The token is read before argument validation only so locally generated
+	// diagnostics can redact it. The missing-token failure still happens only
+	// after a valid argument vector (spec R2).
+	token := os.Getenv(tokenEnvVar)
+
 	target, timeout, err := parseMonitorsGetArgs(args)
 	if err != nil {
-		fmt.Fprintf(stderr, "bs: %s; run 'bs monitors get --help' for usage.\n", err)
+		fmt.Fprintf(stderr, "bs: %s; run 'bs monitors get --help' for usage.\n", redactToken(err.Error(), token))
 		return 1
 	}
 
-	token := os.Getenv(tokenEnvVar)
 	if token == "" {
 		fmt.Fprintf(stderr, "bs: %s is not set; set it to a Better Stack API token and try again.\n", tokenEnvVar)
 		return 1
@@ -44,7 +48,7 @@ func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
-		fmt.Fprintf(stderr, "bs: could not build request: %s\n", err)
+		fmt.Fprintf(stderr, "bs: could not build request: %s\n", redactToken(err.Error(), token))
 		return 1
 	}
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -55,14 +59,14 @@ func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client
 	}
 	resp, err := c.Do(req)
 	if err != nil {
-		fmt.Fprintf(stderr, "bs: request to the Better Stack API failed: %s\n", err)
+		fmt.Fprintf(stderr, "bs: request to the Better Stack API failed: %s\n", redactToken(err.Error(), token))
 		return 1
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Fprintf(stderr, "bs: could not read the API response: %s\n", err)
+		fmt.Fprintf(stderr, "bs: could not read the API response: %s\n", redactToken(err.Error(), token))
 		return 1
 	}
 
@@ -70,8 +74,20 @@ func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client
 		_, _ = stdout.Write(body)
 		return 0
 	}
+	// The raw upstream body is the authoritative non-2xx output; it is printed
+	// byte-for-byte with no redaction or wrapper (spec R4, R7).
 	_, _ = stderr.Write(body)
 	return 1
+}
+
+// redactToken removes the credential value from a locally generated
+// diagnostic. It is never applied to a raw upstream response body, which the
+// passthrough contract leaves untouched (spec R7).
+func redactToken(s, token string) string {
+	if token == "" {
+		return s
+	}
+	return strings.ReplaceAll(s, token, "[REDACTED]")
 }
 
 func parseMonitorsGetArgs(args []string) (string, time.Duration, error) {
