@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `execute` — Phase 3 (tasks A1 → B1 → C1 → D1); task A1 passed its gate, B1 is next
-- Current task: B1 (next)
-- Task states: A1 `pass` (gate evidence below, committed); B1/C1/D1 not started
+- Current phase: `execute` — Phase 3 (tasks A1 → B1 → C1 → D1); tasks A1 and B1 passed their gates, C1 is next
+- Current task: C1 (next)
+- Task states: A1 `pass`, B1 `pass` (gate evidence below, committed); C1/D1 not started
 - Milestone checkbox: `unchecked` (source entry `- [ ] 007`, unchanged — 007 is checked only at its own passing completion gate)
-- Last completed phase/task/gate: Phase 3 task A1 gate
+- Last completed phase/task/gate: Phase 3 task B1 gate
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -115,6 +115,19 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - `HEAD` commit SHA: `27fd4ee` at gate time (unchanged throughout the sweep)
   - `git status --porcelain`: the preserved untracked baseline (`.wayfinder/` tree, `verify-incident-id.sh`) plus this checkpoint edit; `git diff --check` exit 0 (whitespace-clean)
   - Relevant work: `uncommitted` at gate time — stash ref `09ec8463920ac6038480b9f83e219725b46fc687` (created with `git stash create "007 Phase 3 task A1 gate snapshot"`; captures the tracked checkpoint gate edit only — untracked files are not in the ref and remain on disk). The scoped docs commit `137a888` that follows this gate is the authoritative record and matches the pre-edit worktree exactly
+
+- Gate: 007 Phase 3 — task B1, full regression verification battery (this gate)
+  - Command(s) and actual result(s) (every shell began with `unset BETTERSTACK_UPTIME_API_TOKEN` and `unset BETTERSTACK_API_TOKEN`; pinned `GOTOOLCHAIN=go1.26.9 GOPROXY=off`; no env dump, no xtrace, no `.env` read, no live request):
+    - Race suite `go test -race -count=1 ./...` → `ok github.com/jrswab/betterstack-cli/cmd/bs 3.308s`, exit 0 (2026-10-18T01:54:05Z)
+    - `go vet ./...` → no output, exit 0
+    - `gofmt -l .` → no output (clean), exit 0
+    - `git diff --check` → no output (clean), exit 0
+    - `go mod verify` → `all modules verified`, exit 0
+    - Help/invalid-usage regression from `cmd/bs/main_test.go` inside the suite: `go test -count=1 -run 'TestRootHelp|TestResourceHelp|TestCommandHelp|TestBareInvocationIsInvalidUsage|TestInvalidUsageMatrix' ./cmd/bs` → `ok ... 0.015s`, exit 0 (`TestRootHelp`, `TestResourceHelp`, `TestCommandHelp`, `TestBareInvocationIsInvalidUsage`, `TestInvalidUsageMatrix` all green)
+  - Scope conformance: verification only; no file was modified by the battery
+  - `HEAD` commit SHA: `b55de4d` (the A1 checkbox-render commit; unchanged throughout the battery)
+  - `git status --porcelain`: the preserved untracked baseline (`.wayfinder/` tree, `verify-incident-id.sh`) plus this checkpoint edit; `git diff --check` exit 0
+  - Relevant work: `uncommitted` at gate time — stash ref recorded below in the B1 commit gate; the scoped docs commit that follows this gate is the authoritative record
 
 ## Limitations & blockers
 
