@@ -35,11 +35,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `complete` — Phase 3 passed all four task gates and the completion gate; the milestone checkbox renders checked from this evidence
-- Current task: none (all tasks passed)
-- Task states: A1 `pass`, B1 `pass`, C1 `pass`, D1 `pass` (each gate's evidence is in this file, committed)
-- Milestone checkbox: `checked` (source entry rendered `- [x] 007` at this passing completion gate)
-- Last completed phase/task/gate: Phase 3 task D1 gate + 007 completion gate
+- Current phase: `phase-3-executing` — Phase 3 tasks A1–D1 were executed and verified, but the milestone was rendered `complete` and all four task boxes `[x]` before the independent targeted review ran; the artifact review of `27fd4ee..eda2982` returned verdict artifact BLOCK with findings B1 (premature completion before independent review) and B2 (missing `monitors get` absent-feature acceptance test). This repair reverts the premature renders and adds the missing coverage; the independent targeted review of this repair is pending.
+- Current task: `B1/B2 artifact repair committed; independent targeted review pending`
+- Task states: A1, B1, C1, D1 executed and verified, committed; task checkboxes `unchecked` — they were rendered `[x]` prematurely before the independent review ran, and this repair reverts them until the independent targeted review confirms the remedy; milestone checkbox `unchecked` (independent targeted review pending, not rendered)
+- Milestone checkbox: `unchecked` (source entry `- [ ] 007`, deliberately left unchanged pending the independent targeted review, per the run constraint)
+- Last completed phase/task/gate and timestamp: 007 artifact repair B2 (monitors get absent-feature coverage + A1 mapping completion) 2026-10-18; 007 artifact repair B1 (premature completion corrected) 2026-10-18; Phase 3 task D1 gate + 007 completion gate 2026-10-18 (render later annotated PREMISE INVALID at the B1 repair gate); task C1 2026-10-18; task B1 2026-10-18; task A1 2026-10-18 (see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -156,13 +156,31 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - `git status --porcelain`: the preserved untracked baseline plus this checkpoint edit (and, after the render below, the milestones source checkbox render)
   - Relevant work: `uncommitted` at gate time — stash ref `cfbd4bd82d89473c89fe73713c6bafc2ed0d654f` (created with `git stash create "007 Phase 3 task D1 completion gate snapshot"`; captures the tracked checkpoint gate edit only — untracked files are not in the ref and remain on disk). The scoped docs commit that follows this gate is the authoritative record and matches the pre-render worktree exactly
   - Checkbox render (R5.3, executed only after the checks above passed): the milestone source entry `- [ ] 007:` was rendered `- [x] 007:` in `docs/plans/001_betterstack-cli-first-release_milestones.md`; all five 007 task checkboxes in the implementation checklist render `[x]`; the render and this gate evidence are committed together as the 007 completion commit
+  - **PREMISE INVALID (annotated at the 007 artifact repair B1 gate):** this completion render was premature — it ran before the independent targeted review, and the artifact review of `27fd4ee..eda2982` returned verdict artifact BLOCK. Every command result in this D1 gate above is preserved as verification evidence, not as a passing completion gate. The milestone source entry and the four task checkboxes are reverted to `- [ ]` at the B1 repair gate, and this D1 gate must not be cited as a passing completion gate until the independent targeted review confirms the remedy.
+
+- Gate: 007 artifact repair B1 — premature completion corrected (this gate)
+  - Finding: the artifact review of `27fd4ee..eda2982` returned verdict artifact BLOCK. B1: milestone 007 was rendered `complete` with the milestone source entry `- [x] 007` and all four task checkboxes `[x]` before the independent targeted review ran. Factory and exec rules render task checkboxes from checkpoint gate evidence only after the review gate passes, and the milestone entry only at a passing completion gate; neither had happened, so the completion render was premature. The flip is logged here honestly as premature, not erased.
+  - Remedy (this gate, docs-only): the four 007 task boxes (A1, B1, C1, D1) are reverted to `- [ ]` in `docs/plans/001_betterstack-cli-first-release_007_implement.md`; the milestone source entry `- [x] 007` is reverted to `- [ ] 007` in `docs/plans/001_betterstack-cli-first-release_milestones.md`; the State section now reads the authoritative states (executed and verified, committed, checkbox `unchecked`); the D1 completion-gate render is annotated PREMISE INVALID above. Every command result in the D1 gate is preserved as verification evidence, not as a passing completion gate. The source entries `- [x] 001`–`- [x] 006` are deliberately left unchanged.
+  - Preserved unchanged: every historical gate entry above (including the four original task-gate verifications and their snapshot refs — historical record, not current truth) and the baseline `.wayfinder/` tree and `verify-incident-id.sh`.
+  - Command(s) and actual result(s) (every shell began with `unset BETTERSTACK_UPTIME_API_TOKEN` and `unset BETTERSTACK_API_TOKEN`; no env dump, no xtrace, no `.env` read, no live request):
+    - `git rev-parse HEAD` → `eda29827b5bc338b2943e79ba5d5017c4974362f`; `git branch --show-current` → `master`; the review-range endpoint is the current HEAD
+    - `git diff 27fd4ee..eda2982 --stat` → only the three 007 docs (`007_checkpoint.md`, `007_implement.md`, `milestones.md`); `git diff 27fd4ee..eda2982 -- cmd/bs` → empty, so product code and tests are unchanged in the reviewed range
+    - `git status --porcelain=v1 -uall` → the twelve preserved pre-existing untracked entries (`.wayfinder/` tree and `verify-incident-id.sh`) plus the three modified 007 docs from this repair; 0 staged
+    - `git diff --check` → no output, exit 0
+    - Source checkbox accounting: `grep -c '^- \[x\] 00[1-6]:'` → 6 (001–006 remain checked); source `007` now reads `- [ ] 007:`; the four 007 implement task boxes now read `- [ ]`
+    - `git stash create "007 artifact-repair B1 gate snapshot"` → `f47ac4935bd6b2a08ba176a9f269a98eef9e679f` (inspectable with `git cat-file -t` → `commit` and `git show --stat` — a real Git object labelled "On master: 007 artifact-repair B1 gate snapshot", 3 files changed, all 007 docs — never applied; no stash entry kept)
+  - `HEAD` commit SHA: `eda2982` (the 007 completion commit; this repair ran against it)
+  - `git status --porcelain`: the preserved untracked baseline plus ` M docs/plans/001_betterstack-cli-first-release_007_checkpoint.md`, ` M docs/plans/001_betterstack-cli-first-release_007_implement.md`, and ` M docs/plans/001_betterstack-cli-first-release_milestones.md`
+  - Relevant work: `uncommitted` — stash ref `f47ac4935bd6b2a08ba176a9f269a98eef9e679f` (created with `git stash create "007 artifact-repair B1 gate snapshot"`; inspectable with `git show --stat`, never applied); the scoped docs-only repair commit that follows is the authoritative record
 
 ## Limitations & blockers
 
 - Limitations:
+  - The artifact review of `27fd4ee..eda2982` returned verdict artifact BLOCK: milestone 007 was rendered `complete` and checked before the independent targeted review ran (B1), and the `monitors get` absent-feature acceptance test was missing from the A1 sweep mapping (B2). Both are logged honestly in the artifact-repair gates above as premature/incomplete, not erased; the repair reverts the renders and adds the coverage. No claim is made that 007 passed review.
+  - The checkpoint is the sole home of run state: task and milestone checkboxes render from it, never independently. A task box renders `[x]` only after the independent targeted review confirms the remedy; the milestone source entry renders `[x]` only at a passing completion gate.
   - The deferred release actions remain outside milestone 007 by the source entry itself and are recorded as deferred in the D1 gate above; they require separate future user authorization (post-tag remote install check with GOPRIVATE and authenticated Git; user-controlled real-account check). No tag, push, publication, live API call, or external modification happened in 007.
   - The credential-safety regime and the `safety_test.go` guard limits (covers only clients using `http.DefaultTransport` or `testHTTPClient()`; cannot stop a test that injects its own transport or dials `net.Conn` directly) carry forward and are documented in `cmd/bs/safety_test.go`.
   - Jaron's deferred token rotation stays a user action; the preserved unauthorized live-GET record and first-token-exposure warning stay preserved.
   - All work stayed local: no push, tag, release, deploy, live API call, or external modification. Tests used only dummy tokens and mock loopback servers.
 - Blockers: none.
-- Next action (the single next safe action): the outer Factory loop's restart validation of this checkpoint, then independent review of milestone 007; the next unchecked milestone (if any remains) is selected only after 007's review passes.
+- Next action (the single next safe action): run the independent targeted review of the artifact-repair commits (auto-review and design-review against the 007 spec, the A1–D1 commits, and this repair); on a passing targeted review, re-render the four task checkboxes from the checkpoint and proceed to the completion gate, whose passing result alone renders the milestone entry to `- [x] 007`.
