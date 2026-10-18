@@ -36,11 +36,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `execute` — Phases 1 (spec) and 2 (implementation checklist) gates passed 2026-10-18; planning evidence repaired 2026-10-18; Phase 3 (execution) is the next action
-- Current task: `C1` — next action
-- Task states: A1, B1, B2, and B3 implemented with focused tests green, review pending (checkboxes unchecked); C1 unchecked
+- Current phase: `execute` — Phases 1 (spec) and 2 (implementation checklist) gates passed 2026-10-18; planning evidence repaired 2026-10-18; tasks A1–C1 implemented and verified 2026-10-18; independent review is the next action
+- Current task: `none` — A1–C1 checks are green; review pending
+- Task states: A1, B1, B2, B3, C1 implemented and verified with focused/full checks green, review pending (all checkboxes intentionally unchecked)
 - Milestone checkbox: `unchecked` (source entry `- [ ] 003`)
-- Last completed phase/task/gate and timestamp: task B3 implementation 2026-10-18 (review pending; see Gate evidence)
+- Last completed phase/task/gate and timestamp: task C1 full verification 2026-10-18 (review pending; see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -76,10 +76,11 @@ One entry per passed gate (review, lint, verification, completion):
 ## Limitations & blockers
 
 - Limitations:
-  - Phases 1 (spec) and 2 (checklist) are complete, and their git-native evidence is repaired with the real snapshot ref `e5b288125d7dc4fed598ca541a7f4ca50ea112e6`. Phase 3 execution is starting at task A1. Task checkboxes stay unchecked until the independent review gate passes; per instruction, no review sub-agent has been dispatched and no review is self-claimed.
+  - Phases 1 (spec) and 2 (checklist) are complete, and their git-native evidence is repaired with the real snapshot ref `e5b288125d7dc4fed598ca541a7f4ca50ea112e6`. Tasks A1–C1 are implemented and their focused/full checks are green. Task checkboxes stay unchecked until the independent review gate passes; per instruction, no review sub-agent has been dispatched and no review is self-claimed. No milestone completion gate has run.
   - Credential-safety regime carried forward from the 001/002 runs (see Identity); the exposed `BETTERSTACK_UPTIME_API_TOKEN` value was never read by any session and its rotation remains Jaron's deferred user action.
+  - All work stayed local: no push, tag, release, deploy, live API call, or external modification. Tests use only dummy tokens and loopback mock servers.
 - Blockers: none.
-- Next action (the single next safe action): Phase 3 — load `~/.agents/skills/exec/SKILL.md` with the factory Phase 3 overrides and execute the checklist starting at task A1 (`parseMonitorsListArgs` + parser tests) under the pinned toolchain.
+- Next action (the single next safe action): independent review of the 003 product range `9a8f8d4..ec4d436`; then render task checkboxes from the review outcome and run the Factory completion gate. Do not dispatch or self-claim the review inside this run.
 
 - Gate: Phase 2 — implementation checklist (checklist written from the completed spec and inspected against it before Phase 3)
   - Command(s) and actual result(s):
@@ -144,3 +145,20 @@ One entry per passed gate (review, lint, verification, completion):
   - `HEAD` commit SHA: `9054d29` (work committed after this gate)
   - `git status --porcelain`: ` M cmd/bs/monitors_test.go` plus the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh` (this B3 checkpoint entry is added before the B3 commit)
   - Relevant work: `uncommitted` — stash ref `981e50dba2cc49a5494a2343a77738aa6ec6a7b6` (staged-only snapshot: `cmd/bs/monitors_test.go`; `git show --stat` shows 1 file, 294 insertions)
+
+- Gate: task C1 — whole-spec verification (spec R1–R8; milestone 003 acceptance line)
+  - Command(s) and actual result(s):
+    - `gofmt -l cmd/bs` → no output (exit 0)
+    - `GOTOOLCHAIN=go1.26.9 GOPROXY=off go vet ./...` → exit 0 (`VET_OK`)
+    - `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./... -count=1` → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.486s` (exit 0), run once on the committed tree
+    - `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./cmd/bs -count=1 -run 'TestParseMonitorsListArgs|TestMonitorsList|TestMonitorsGet|TestUnimplementedCommandsMakeNoRequest|TestCommandHelp|TestInvalidUsageMatrix'` → `ok ... 0.486s` (exit 0)
+    - `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test -race ./cmd/bs -count=1` → `ok ... 1.536s` (exit 0)
+    - `GOTOOLCHAIN=go1.26.9 GOPROXY=off go build -o /tmp/bs003build ./cmd/bs` → exit 0 (`BUILD_OK`); temp binary deleted; root stray binary check `test -e bs` → `NO_ROOT_BS`
+    - `git diff --check` → exit 0 (`DIFFCHECK_OK`); `git status --porcelain=v1 -uall` → only the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh` (all `??`), no tracked modifications
+    - Source audit: product code contains no `pagination` read/follow, no `--all`, no `--pretty`, and no `--query`; the only generated diagnostic mention of pagination is the comment stating it is never followed. Both monitor commands use `http.ErrUseLastResponse`, so no redirect target is requested.
+    - Requirement mapping: R1.1→B2 routing/positional test; R1.2–R1.4→A1 parser and B1/B3 query tests; R2→B3 credential matrix (old name never read); R3→B1/B3 exact query, omission, empty explicit, repeated, adversarial encoding, one request, bearer header; R4→B1/B3 raw bodies including pagination object, non-JSON, and trailing newline; R4.2/R7→B1 `TestMonitorsListNeverDrainsPagination` plus `--all`/`--pretty`/`--query` rejection; R5→B1/B3 non-2xx-including-3xx raw stderr, one endpoint request, zero redirect-target requests, local failure, token-free output; R6→A1/B1/B3 timeout default/override/expiry/invalid; R8→full suite including untouched `TestMonitorsGet*` and updated `TestUnimplementedCommandsMakeNoRequest`. Milestone acceptance line (flag-to-query translation, omission-passes-defaults, one-page-only, error passthrough under 002 rules) is covered.
+    - Deliberate boundary: the 30-second default is verified by the single `defaultTimeout` source and the unchanged 002 parse path, not by a 30-second wall-clock test.
+    - Checkboxes left unchecked and milestone left unchecked: review and the Factory completion gate are pending, per instruction.
+  - `HEAD` commit SHA: `ec4d4363960e859250b171657727ed3711554b49` (the verified product HEAD; the commit recording this C1 entry is doc-only)
+  - `git status --porcelain`: the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh` (no product changes uncommitted); this C1 checkpoint entry is the only doc edit, committed after this record
+  - Relevant work: `committed` — stash ref `none` (all product and test changes are committed at `ec4d436`; no uncommitted relevant work existed at verification time)
