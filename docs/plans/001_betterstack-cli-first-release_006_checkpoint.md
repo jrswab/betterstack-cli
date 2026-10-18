@@ -39,7 +39,7 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 - Current task: `none` — the task loop has not started
 - Task states: A1, B1, B2, B3, C1 planned and unchecked (task boxes render from this checkpoint once Phase 2 completes)
 - Milestone checkbox: `unchecked` (source entry `- [ ] 006`, never edited by this run)
-- Last completed phase/task/gate and timestamp: Phase 2 (implementation checklist) gate passed 2026-10-18; Phase 1 (spec) gate passed 2026-10-18; 006 setup gate 2026-10-18 (see Gate evidence)
+- Last completed phase/task/gate and timestamp: 006 committed planning gate recorded 2026-10-18; Phase 2 (implementation checklist) gate passed 2026-10-18; Phase 1 (spec) gate passed 2026-10-18; 006 setup gate 2026-10-18 (see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -104,6 +104,16 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
   - `HEAD` commit SHA: `319848c` (the 006 setup commit; this gate ran against it)
   - `git status --porcelain`: the verbatim baseline above plus `?? docs/plans/001_betterstack-cli-first-release_006_spec.md`, `?? docs/plans/001_betterstack-cli-first-release_006_implement.md`, and ` M docs/plans/001_betterstack-cli-first-release_006_checkpoint.md`
   - Relevant work: `uncommitted` — stash ref `da3cf29ec5896f975a4a3e0ebfdbe89b91b0fe30` (created with `git stash create "006 Phase 2 gate snapshot"`; inspectable with `git show` — `git show --stat` shows 1 file, the checkpoint gate edit). Limitation, same as the Phase 1 precedent: `git stash create` captures tracked modifications only — the untracked spec and implement files are not in the ref and remain on disk as the durable artifacts; the Phase-1/Phase-2 artifacts commit that follows is the authoritative record of all three paths
+
+- Gate: 006 committed planning gate (supersedes the untracked incomplete Phase 1/2 snapshot capture)
+  - Command(s) and actual result(s):
+    - `git log --oneline -3` → `5be380a 006: write milestone spec and implementation checklist, record phase 1-2 gates`; `git show --stat 5be380a` → 3 files changed, 160 insertions(+), 7 deletions(-): `docs/plans/001_betterstack-cli-first-release_006_checkpoint.md`, `docs/plans/001_betterstack-cli-first-release_006_implement.md`, `docs/plans/001_betterstack-cli-first-release_006_spec.md`; `git ls-files docs/plans | grep 006` → all three 006 artifact paths are tracked
+    - Old refs inspected honestly with native Git (never applied, never erased): `git show --format='%H %s' --stat eab3c0f97282f68e4d836d464d313068df746be7` → a real Git object labelled "On master: 006 Phase 1 gate snapshot", 1 file changed (the checkpoint gate edit only); `git show --format='%H %s' --stat da3cf29ec5896f975a4a3e0ebfdbe89b91b0fe30` → a real Git object labelled "On master: 006 Phase 2 gate snapshot", 1 file changed (the checkpoint gate edit only). The historical limitation is confirmed: `git stash create` captured tracked modifications only, so neither ref holds the then-untracked spec or implement files; those refs are incomplete for recovery and are superseded, not trusted.
+    - Current repository state before this record: `git rev-parse HEAD` → `5be380a`; `git status --porcelain=v1 -uall` → the 12 preserved untracked entries (the `.wayfinder/` tree plus `verify-incident-id.sh`), 0 tracked modifications, 0 staged entries; `git stash list` → 0 entries
+    - The committed Phase-1/Phase-2 artifacts at `5be380a` are the complete, authoritative record of the spec, the implementation checklist, and the Phase-1/Phase-2 checkpoint edits. This committed gate supersedes the incomplete untracked capture for restart purposes; the old refs stay recorded as inspectable history.
+  - `HEAD` commit SHA: `5be380a` (the 006 planning-artifacts commit)
+  - `git status --porcelain`: the verbatim baseline above (12 untracked entries)
+  - Relevant work: the planning artifacts are `committed` at `5be380a`; this checkpoint record of the gate is committed by the immediate scoped docs commit that follows (the checkpoint is a tracked file, so no untracked artifact is at risk)
 
 ## Limitations & blockers
 
