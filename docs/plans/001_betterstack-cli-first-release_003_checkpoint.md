@@ -36,11 +36,11 @@ All pre-existing changes are untracked files preserved untouched. Predecessor st
 
 ## State
 
-- Current phase: `execute` — Phases 1 (spec) and 2 (implementation checklist) gates passed 2026-10-18; planning evidence repaired 2026-10-18; tasks A1–C1 implemented and verified 2026-10-18; independent review is the next action
-- Current task: `none` — A1–C1 checks are green; review pending
-- Task states: A1, B1, B2, B3, C1 implemented and verified with focused/full checks green, review pending (all checkboxes intentionally unchecked)
-- Milestone checkbox: `unchecked` (source entry `- [ ] 003`)
-- Last completed phase/task/gate and timestamp: task C1 full verification 2026-10-18 (review pending; see Gate evidence)
+- Current phase: `complete` — Factory completion gate passed 2026-10-18; all four completion checks passed (full `-count=1` suite once, spec comparison, Git accounting, checkbox render)
+- Current task: `none` — milestone 003 complete
+- Task states: A1, B1, B2, B3, C1 implemented, verified, review-passed, and checked; none left unchecked in this milestone
+- Milestone checkbox: `checked` (source entry `- [x] 003`, rendered from the passing completion-gate record below)
+- Last completed phase/task/gate and timestamp: Factory completion gate passed 2026-10-18 (see Gate evidence)
 
 ## Milestone scope (verbatim source entry, for restart grounding)
 
@@ -73,14 +73,26 @@ One entry per passed gate (review, lint, verification, completion):
   - `git status --porcelain`: the setup baseline plus `?? docs/plans/001_betterstack-cli-first-release_003_spec.md` (no tracked modifications, no staged entries)
   - Relevant work: `uncommitted` — stash ref `none` (`git stash create` returned empty: no tracked modifications exist; all work is untracked files inspectable in the worktree)
 
+- Gate: Factory completion gate — PASS (2026-10-18)
+  - Command(s) and actual result(s):
+    - Full relevant suite once: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go test ./... -count=1` → `ok github.com/jrswab/betterstack-cli/cmd/bs 0.529s` (exit 0)
+    - Lint/typecheck/build: `GOTOOLCHAIN=go1.26.9 GOPROXY=off go vet ./...` → exit 0; `gofmt -l .` → no output (exit 0); `GOTOOLCHAIN=go1.26.9 GOPROXY=off go build -o /tmp/bs003build ./cmd/bs` → exit 0, temp binary deleted, root stray check `test -e bs` → `NO_ROOT_BS`
+    - Isolated install from a clean archive: `git archive HEAD | tar -x -C /tmp/bs003arc/repo` → exit 0; `GOTOOLCHAIN=go1.26.9 GOPROXY=off GOBIN=/tmp/bs003arc/bin go install ./cmd/bs` → exit 0; help smoke only: `/tmp/bs003arc/bin/bs --help` → exit 0, 309 bytes of help on stdout, 0 bytes on stderr. No live GET and no authenticated request ran anywhere in the gate; the temp archive directory was removed afterward
+    - Comparison with every spec requirement and the milestone acceptance line: R1.1–R1.4 by the A1 parser tests, B2 routing/positional test, and the B3 help/unknown-option vectors; R2 by the B3 credential matrix (unset/empty/former-name-only exit 1 before any request, old name never read); R3 by the B1/B3 exact query tests (no flags, each flag alone, all combined, explicit empty, repeated, adversarial encoding, exactly one GET with the bearer header); R4 by the raw-body tests (pagination JSON, non-JSON, trailing newline) byte-for-byte with no appended newline; R5 by the 301/302/307/401/404/429/500 raw-stderr one-request tests, zero redirect-target requests, closed-port local failure, and the token-absence sweep; R6 by the timeout expiry/override/invalid tests with the C1 deliberate boundary on the 30-second default (single `defaultTimeout` source, no wall-clock test — review finding F1); R7 by source audit plus `--all`/`--pretty`/`--query` rejection (no auto-drain: `TestMonitorsListNeverDrainsPagination`, no `pagination` read in product code); R8 by the full suite including unchanged-observable `TestMonitorsGet*` and the updated `TestUnimplementedCommandsMakeNoRequest`. Milestone acceptance line covered: flag-to-query translation, omission-passes-API-defaults, one-page-only behavior, error passthrough under the 002 rules. Review findings F1 (default-timeout wallclock) and F2 (repeated `--timeout` overlay-only) are non-blocking and recorded at the review gate above
+    - Preservation audit: `git status --porcelain=v1 -uall` → only the two doc edits below plus the verbatim baseline (11 `.wayfinder/` entries + `verify-incident-id.sh`), all baseline entries untouched and unstaged; `git stash list` → 0 entries; work is local only — no push, no tag, no release, no live API call; the deferred real-token rotation remains Jaron's user action
+  - `HEAD` commit SHA: `08120fe3c2e6b63823911d203ea7b2b4cbbffd41` — the product HEAD this gate validated (product code unchanged since `ec4d436`; every 003 product commit is inside the review-passed range `9a8f8d4..ec4d436`). The commit that records this gate, the already-rendered task checkboxes, and the source milestone checkbox afterward is a doc-only delta with no product change; no further documentation commits are manufactured after it
+  - `git status --porcelain`: ` M docs/plans/001_betterstack-cli-first-release_003_checkpoint.md` / ` M docs/plans/001_betterstack-cli-first-release_003_implement.md` / ` M docs/plans/001_betterstack-cli-first-release_milestones.md` plus the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh` (the source milestone checkbox renders `- [x]` immediately after this record, inside the same commit)
+  - Relevant work: `uncommitted` — stash ref `9990cb01dc7c557be42496c46ec46ce40f2a60a6` (snapshot taken before this gate entry: exactly the checkpoint review-record edit and the five rendered task checkboxes; `git show --stat` shows 2 files, 17 insertions, 8 deletions). The completion-gate record and the source checkbox render postdate that ref and are covered by the final commit; this supersession is stated here so the delta stays truthful
+
 ## Limitations & blockers
 
 - Limitations:
-  - Phases 1 (spec) and 2 (checklist) are complete, and their git-native evidence is repaired with the real snapshot ref `e5b288125d7dc4fed598ca541a7f4ca50ea112e6`. Tasks A1–C1 are implemented and their focused/full checks are green. Task checkboxes stay unchecked until the independent review gate passes; per instruction, no review sub-agent has been dispatched and no review is self-claimed. No milestone completion gate has run.
+  - All verification for 003 is complete: implementation, focused gates, independent review (PASS, F1–F2 non-blocking), and the Factory completion gate (PASS). The per-task stash refs recorded above are unreachable Git objects; they are inspectable with `git show`/`git stash show` (never applied) and may be pruned by `git gc`.
+  - The 30-second default timeout is verified by the single `defaultTimeout` source and the unchanged 002 parse path, not by a 30-second wall-clock test (review finding F1). Repeated `--timeout` last-wins for `monitors list` is verified through the shared 002 parse-path overlay, not by a dedicated list test (review finding F2). Both boundaries are accepted as non-blocking.
   - Credential-safety regime carried forward from the 001/002 runs (see Identity); the exposed `BETTERSTACK_UPTIME_API_TOKEN` value was never read by any session and its rotation remains Jaron's deferred user action.
   - All work stayed local: no push, tag, release, deploy, live API call, or external modification. Tests use only dummy tokens and loopback mock servers.
 - Blockers: none.
-- Next action (the single next safe action): independent review of the 003 product range `9a8f8d4..ec4d436`; then render task checkboxes from the review outcome and run the Factory completion gate. Do not dispatch or self-claim the review inside this run.
+- Next action (the single next safe action): validate this checkpoint for handoff (restart validation), then select milestone 004 and write its setup checkpoint before any 004 phase planning begins.
 
 - Gate: Phase 2 — implementation checklist (checklist written from the completed spec and inspected against it before Phase 3)
   - Command(s) and actual result(s):
@@ -145,6 +157,15 @@ One entry per passed gate (review, lint, verification, completion):
   - `HEAD` commit SHA: `9054d29` (work committed after this gate)
   - `git status --porcelain`: ` M cmd/bs/monitors_test.go` plus the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh` (this B3 checkpoint entry is added before the B3 commit)
   - Relevant work: `uncommitted` — stash ref `981e50dba2cc49a5494a2343a77738aa6ec6a7b6` (staged-only snapshot: `cmd/bs/monitors_test.go`; `git show --stat` shows 1 file, 294 insertions)
+
+- Gate: independent milestone-boundary review — PASS (2026-10-18), range `9a8f8d43ea18f96cbfcc1b9c451e5d0c5605f4b2..ec4d4363960e859250b171657727ed3711554b49`, no blocking findings
+  - Command(s) and actual result(s):
+    - Independent review of the complete 003 slice (product commits A1–B3 in the range `9a8f8d4..ec4d436`; the C1 commit `ec4d436..08120fe` is checkpoint-only) returned PASS with no blocking findings, at review HEAD `08120fe3c2e6b63823911d203ea7b2b4cbbffd41`
+    - The review verified the suite, race detector, `go vet`, and build over the reviewed range; the C1 gate record above holds those verbatim commands and results (full `-count=1` suite 0.486s, `-race` 1.536s, vet exit 0, build exit 0)
+    - Non-blocking findings, recorded truthfully as reported: F1 the 30-second default timeout is not exercised by a wall-clock test — it is verified by the single `defaultTimeout` source and the unchanged 002 parse path (the C1 deliberate boundary; spec R6 leaves duration-grammar specifics to implementer choice); F2 repeated `--timeout` (last-wins) for `monitors list` is verified only through the shared parse-path overlay from 002, not by a dedicated list-command test — the timeout parse path is identical to `parseMonitorsGetArgs`, and repeats of the other five flags have dedicated list tests (spec R1.4). Neither finding blocks the milestone
+  - `HEAD` commit SHA: `08120fe3c2e6b63823911d203ea7b2b4cbbffd41` (unchanged; the review validated already-committed work)
+  - `git status --porcelain`: the preserved baseline `.wayfinder/` entries and `verify-incident-id.sh` only (no product changes uncommitted)
+  - Relevant work: `committed` — stash ref `none` (product and test changes are committed at `ec4d436`; this review record is the only edit, applied atomically to the checkpoint before the completion gate)
 
 - Gate: task C1 — whole-spec verification (spec R1–R8; milestone 003 acceptance line)
   - Command(s) and actual result(s):
