@@ -33,12 +33,12 @@ The checkpoint owns task state. The implementation checklist renders task boxes 
 ## State
 
 - Lane: `full`, retained from planning. This run executes the resolved S0 records checklist only.
-- Current phase: `execute`, stopped after review re-run findings N1–N3 and the duplication nit repairs.
+- Current phase: `execute`, stopped after review gate 1 re-run 2 finding L1 and the Request executor capitalization fix.
 - Current task: none. A1–A4 remain passed. V1 remains unstarted.
 - Task states: A1 `passed` (committed in `43b250786351384ff20b8b8ae3dd1bf99693f033`); A2 `passed` (committed in `7cda359d378913f308088ba4dde5aedd007a2345`); A3 `passed` (committed in `43b250786351384ff20b8b8ae3dd1bf99693f033`); A4 `passed` (committed in `7cda359d378913f308088ba4dde5aedd007a2345`); V1 `not started`.
 - Milestone checkbox: `unchecked`. The user excludes rendering this protected baseline file.
-- Last completed gate: requested review re-run documentation checks passed against HEAD `0dd18c50830f2f2237f579e1d1a7d77e50cf74d5` with uncommitted fixes. This is not V1.
-- Next action: stop after the authorized `001: fix review re-run findings N1-N3` local commit. V1 requires a separate authorized invocation.
+- Last completed gate: requested L1 documentation checks passed against HEAD `c0a389fe39fe24ae62a31a5a2f705d02a7e0e5c0` with uncommitted fixes. This is not V1.
+- Next action: stop after the authorized `001: fix review finding L1` local commit. V1 requires a separate authorized invocation.
 - Authorization: explicit-path local commits on `master` only. No push, live API request, credential use, or milestone 002+ work.
 
 ## Previous planning evidence
@@ -2388,3 +2388,254 @@ Command: `git stash create`. Stdout follows verbatim. Stderr was empty. The comm
 This object captures all nine uncommitted documentation files before this final evidence append. It creates no stash-list entry.
 The final append uses a temporary file and `mv`. Explicit staging and final checks precede the single authorized commit.
 The terminal report supplies the final commit SHA, status, and log. No further milestone work is authorized.
+
+## Review gate 1 re-run 2 — CHANGES REQUESTED (L1, low) and fix
+
+**Gate evidence:** The user supplied L1 and the Request executor capitalization nit for HEAD `c0a389fe39fe24ae62a31a5a2f705d02a7e0e5c0` on `master`.
+L1 assigns network-guard limits to the Command routing boundary in `.mem/practices.md:20`.
+This invocation repairs that attribution and checks every `.mem/` sentence changed by `c0a389f` against `cmd/bs/*.go`.
+It does not run V1 or change any task checkbox.
+
+Command: `git rev-parse HEAD`. Stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+c0a389fe39fe24ae62a31a5a2f705d02a7e0e5c0
+```
+
+The initial `git status --porcelain` had empty stderr and exited 0. Stdout follows verbatim:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+The protected-path fingerprint command in Identity had empty stderr and exited 0. Stdout follows verbatim:
+
+```text
+a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4  -
+```
+
+**Changes:** The following before/after text quotes the changed sentences. No function is added or modified.
+
+- `.mem/practices.md:20` before: "[Testing](uptime/testing.md) documents the Command routing boundary and its limits."
+- `.mem/practices.md:20` after: "[Testing](uptime/testing.md) documents the Command routing boundary, the loopback-only network guard, and the guard's limits."
+- `.mem/summary.md:3` before: "The request executor sends a bearer-authenticated GET, applies a 30-second default timeout, disables redirects, and passes response bodies unchanged to stdout for 2xx or stderr otherwise."
+- `.mem/summary.md:3` after: "The Request executor sends a bearer-authenticated GET, applies a 30-second default timeout, disables redirects, and passes response bodies unchanged to stdout for 2xx or stderr otherwise."
+- `.mem/uptime/requests.md:17` before: "After checking `err`, the request executor sets authentication:"
+- `.mem/uptime/requests.md:17` after: "After checking `err`, the Request executor sets authentication:"
+- `.mem/uptime/requests.md:23` before: "The request executor copies the supplied client and sets `CheckRedirect` to return `http.ErrUseLastResponse`."
+- `.mem/uptime/requests.md:23` after: "The Request executor copies the supplied client and sets `CheckRedirect` to return `http.ErrUseLastResponse`."
+- `.mem/uptime/requests.md:27` before: "The request executor reads the entire response with `io.ReadAll` before writing output and closes the body afterward."
+- `.mem/uptime/requests.md:27` after: "The Request executor reads the entire response with `io.ReadAll` before writing output and closes the body afterward."
+- `.mem/uptime/requests.md:35` before: "The current request executor ignores output-writer errors, so its exit code reflects HTTP status and read success, not successful downstream delivery."
+- `.mem/uptime/requests.md:35` after: "The current Request executor ignores output-writer errors, so its exit code reflects HTTP status and read success, not successful downstream delivery."
+- Checkpoint line 36 changes the active phase from N1–N3 repairs to L1 and capitalization repairs.
+- Checkpoint line 40 changes the active documentation gate baseline from `0dd18c5` to `c0a389f`.
+- Checkpoint line 41 changes the authorized stop commit from `001: fix review re-run findings N1-N3` to `001: fix review finding L1`.
+- This section adds the supplied review evidence and fix evidence. All earlier gate transcripts remain historical and unchanged.
+
+**Meaning audit:** `git show c0a389f -- .mem` exited 0. I inspected every changed sentence and the removed duplicate paragraph.
+The following source checks found no other meaning shift.
+
+| Changed text in `c0a389f` | Source verification | Result |
+|---|---|---|
+| `.mem/mem-map.md:16` names the Command routing boundary and loopback protections. | `cmd/bs/main.go:31–53` and `cmd/bs/safety_test.go:13–24,52–69,72–137` separate routing from the network guard. | The map describes both subjects correctly. |
+| `.mem/practices.md:5` names production inputs and test injection through the Command routing boundary. | `cmd/bs/main.go:17–31` and `cmd/bs/monitors_test.go:23–26,32–60` supply those inputs. | The rename preserves the injection contract. |
+| `.mem/practices.md:20` attaches limits to the Command routing boundary. | `cmd/bs/safety_test.go:13–24,129–137` documents guard coverage and bypasses. `.mem/uptime/testing.md:29,31` describes that guard and its limits. | L1 fixes the incorrect attribution. |
+| `.mem/summary.md:3` names the shared Request executor and its response behavior. | All five handlers call `doMonitorsRequest` in `cmd/bs/monitors.go:30–76` and `cmd/bs/incidents.go:51–108,333–360`. `cmd/bs/monitors.go:18,82–117` implements the shared behavior. | Only capitalization needs correction. |
+| `.mem/uptime/commands.md:7` names the writer of the usage diagnostic. | `cmd/bs/main.go:31–53,82–163` keeps the resource gate in `usageError` and the stderr write in `runWithAPI`. | The actor and resource gate remain correct. |
+| `.mem/uptime/requests.md:9,17,23,27,35` names authentication, client copying, body reading, and ignored writer errors. | `cmd/bs/monitors.go:82–117` implements each operation in `doMonitorsRequest`. | The heading is correct. Four prose references need capitalization only. |
+| `.mem/uptime/testing.md:7` replaces duplicated routing prose with a Commands link. | `cmd/bs/main.go:31–53,82–163` matches `.mem/uptime/commands.md:7,9`. | The link preserves the removed paragraph's rules. |
+
+**Decisions and limits:**
+
+- Assumption: This invocation repairs the supplied review findings only. Earlier gate evidence remains historical.
+- Root fix: The rename attached "its limits" to the wrong subject. Naming the loopback-only network guard restores the intended meaning.
+- Trade-off: Explicit attribution adds a few words. Keeping the ambiguous pronoun was rejected.
+- Trade-off: The audit preserves all other correct renamed sentences. A broad prose rewrite was rejected.
+- Ladder rung 1: V1, checkbox changes, Go checks, runtime edits, README edits, push, live requests, and credential use remain excluded.
+- Ladder rung 1: No new tests, changelog fragment, provenance entry, or TAGS.md edit is needed or authorized.
+- Ladder rung 1: `.mem/terminology.md:6` retains the intentional lowercase `request executor` in its Avoid list.
+- Ladder rung 2: Python standard-library checks and installed Git tools cover the requested documentation verification. No dependency is added.
+- Script exception: No applicable Factory CLI, Make target, repository script, or shared script exists. The repository script performs live checks.
+- Script exception: The user protects `.agents/` and restricts writable paths. Direct commands replace the new-script fallback.
+- Limitation: No Markdown formatter or linter configuration exists. Direct whitespace, fence, syntax, line-limit, and tracked-link checks apply.
+- Symptom patches: none. No runtime behavior or exported symbol changes.
+
+Commands `make help` and `make docs-check` each had empty stdout and exited 2. Their stderr follows verbatim:
+
+| Command | Verbatim stderr |
+|---|---|
+| `make help` | `make: *** No rule to make target 'help'.  Stop.` |
+| `make docs-check` | `make: *** No rule to make target 'docs-check'.  Stop.` |
+
+Neither unavailable target is reported as passed. No Makefile is added.
+
+### R1 direct re-run 2 — passed
+
+This command selects only the current tracked-target R1 check recorded under Review gate 1. It runs no other gate.
+
+```sh
+python3 - <<'PY'
+from pathlib import Path
+import re
+import subprocess
+
+checkpoint = Path('docs/plans/008_telemetry-logs-search_001_checkpoint.md').read_text()
+r1 = checkpoint.split('### Current R1 direct check — tracked targets required\n', 1)[1].split('### Current R3 direct check', 1)[0]
+command, = re.findall(r'```sh\n(.*?)\n```', r1, re.S)
+result = subprocess.run(command, shell=True)
+print(f'R1 direct check exit: {result.returncode}', flush=True)
+raise SystemExit(result.returncode)
+PY
+```
+
+Stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+R1 PASS: exactly nine memory files and nine map entries
+R1 PASS: 61 relative links resolve to Git-tracked files
+R1 PASS: existing untracked AGENTS.md target is rejected (git exit 1)
+R1 PASS: topic examples, Mermaid flow, balanced fences, and 250-line limits
+R1 PASS: local toolchain override is absent from memory
+R1 direct check exit: 0
+```
+
+Command: `wc -l .mem/summary.md .mem/terminology.md .mem/practices.md .mem/mem-map.md .mem/uptime/summary.md .mem/uptime/commands.md .mem/uptime/requests.md .mem/uptime/incidents.md .mem/uptime/testing.md`.
+Stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+    3 .mem/summary.md
+   16 .mem/terminology.md
+   26 .mem/practices.md
+   16 .mem/mem-map.md
+   35 .mem/uptime/summary.md
+   53 .mem/uptime/commands.md
+   37 .mem/uptime/requests.md
+   39 .mem/uptime/incidents.md
+   39 .mem/uptime/testing.md
+  264 total
+```
+
+### Capitalization and pre-checkpoint whitespace checks
+
+```sh
+python3 - <<'PY'
+from pathlib import Path
+import subprocess
+
+for path in sorted(Path('.mem').rglob('*.md')):
+    for number, line in enumerate(path.read_text().splitlines(), 1):
+        if 'request executor' not in line:
+            continue
+        assert str(path) == '.mem/terminology.md' and line.endswith('Avoid: request executor.'), (path, number, line)
+        print(f'NAMING PASS: {path}:{number} retains intentional Avoid: request executor.')
+assert subprocess.check_output(['git', 'diff', 'c0a389f', '--', '.mem/terminology.md']) == b''
+print('NAMING PASS: all other Request executor references use capital R; terminology.md is unchanged')
+PY
+```
+
+Stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+NAMING PASS: .mem/terminology.md:6 retains intentional Avoid: request executor.
+NAMING PASS: all other Request executor references use capital R; terminology.md is unchanged
+```
+
+| Command | Stdout | Stderr | Exit |
+|---|---|---|---|
+| `git diff --check` | Empty | Empty | 0 |
+| `git diff c0a389f -- cmd` | Empty | Empty | 0 |
+
+### Documentation audit correction and recheck
+
+The first documentation audit rejected the historical-section comparison because only one operand removed its final newline.
+The checkpoint's earlier transcripts were unchanged. The correction removes only trailing newlines from both comparison operands.
+The audit still checks every historical content byte. No documentation correction or symptom patch was needed.
+
+The first audit had empty stdout and exited 1. Stderr follows verbatim:
+
+```text
+Traceback (most recent call last):
+  File "<stdin>", line 28, in <module>
+AssertionError
+```
+
+`git diff --check` and `git diff c0a389f -- cmd` each still had empty stdout/stderr and exited 0.
+The temporary checkpoint audit also passed with empty stderr and exit 0. Its stdout follows verbatim:
+
+```text
+TEMP PASS: checkpoint whitespace, fences, stored shell/Python syntax, and JSON outputs pass
+```
+
+### Final documentation audit — passed
+
+The corrected audit checks only documentation and source equality. It parses stored commands without executing them.
+
+```sh
+python3 - <<'PY'
+from pathlib import Path
+import json
+import re
+import subprocess
+
+expected = {
+    '.mem/practices.md', '.mem/summary.md', '.mem/uptime/requests.md',
+    'docs/plans/008_telemetry-logs-search_001_checkpoint.md',
+}
+changed = set(subprocess.check_output(['git', 'diff', 'c0a389f', '--name-only'], text=True).splitlines())
+assert changed == expected, changed
+for name in sorted(expected):
+    text = Path(name).read_text()
+    assert text.endswith('\n') and not text.endswith('\n\n'), name
+    assert all(line == line.rstrip() for line in text.splitlines()), name
+    assert sum(bool(re.fullmatch(r'```[a-z]*', line)) for line in text.splitlines()) % 2 == 0, name
+    if name.startswith('.mem/'):
+        assert len(text.splitlines()) <= 250, name
+checkpoint = Path('docs/plans/008_telemetry-logs-search_001_checkpoint.md').read_text()
+for shell in re.findall(r'```sh\n(.*?)\n```', checkpoint, re.S):
+    result = subprocess.run(['bash', '-n'], input=shell, text=True, capture_output=True)
+    assert result.returncode == 0, result.stderr
+    if shell.startswith("python3 - <<'PY'\n"):
+        compile(shell.split('\n', 1)[1].rsplit('\nPY', 1)[0], '<checkpoint command>', 'exec')
+for output in re.findall(r'```json\n(.*?)\n```', checkpoint, re.S):
+    assert isinstance(json.loads(output), str)
+original = subprocess.check_output(['git', 'show', 'c0a389f:docs/plans/008_telemetry-logs-search_001_checkpoint.md'], text=True)
+history = checkpoint.split('## Previous planning evidence\n', 1)[1].split('\n## Review gate 1 re-run 2 —', 1)[0]
+assert history.rstrip('\n') == original.split('## Previous planning evidence\n', 1)[1].rstrip('\n')
+state = checkpoint.split('## State\n', 1)[1].split('## Previous planning evidence', 1)[0]
+assert 'V1 `not started`' in state and 'Milestone checkbox: `unchecked`' in state
+assert subprocess.check_output(['git', 'diff', 'c0a389f', '--', 'cmd']) == b''
+assert subprocess.check_output(['git', 'diff', 'c0a389f', '--', 'docs/plans/008_telemetry-logs-search_001_implement.md']) == b''
+for path in ('.mem/practices.md', '.mem/summary.md', '.mem/uptime/requests.md'):
+    before = subprocess.check_output(['git', 'show', 'c0a389f:' + path], text=True)
+    if path == '.mem/practices.md':
+        before = before.replace('[Testing](uptime/testing.md) documents the Command routing boundary and its limits.', "[Testing](uptime/testing.md) documents the Command routing boundary, the loopback-only network guard, and the guard's limits.")
+    else:
+        before = before.replace('request executor', 'Request executor')
+    assert Path(path).read_text() == before, path
+print('DOCS PASS: exactly four authorized documentation files changed')
+print('DOCS PASS: Markdown whitespace/fences, checkpoint shell/Python syntax, and JSON outputs pass')
+print('DOCS PASS: historical evidence and all task boxes are unchanged; V1 remains unstarted')
+print('DOCS PASS: memory diff contains only L1 and capitalization fixes; cmd diff against c0a389f is empty')
+PY
+```
+
+Stdout follows verbatim. Stderr was empty. The corrected audit exited 0.
+
+```text
+DOCS PASS: exactly four authorized documentation files changed
+DOCS PASS: Markdown whitespace/fences, checkpoint shell/Python syntax, and JSON outputs pass
+DOCS PASS: historical evidence and all task boxes are unchanged; V1 remains unstarted
+DOCS PASS: memory diff contains only L1 and capitalization fixes; cmd diff against c0a389f is empty
+```
+
+**Commit boundary:** This checkpoint update uses a temporary file and `mv`. The final documentation audit and whitespace checks follow it.
+Explicit staging includes only `.mem/practices.md`, `.mem/summary.md`, `.mem/uptime/requests.md`, and this checkpoint.
+The terminal report supplies final verification outputs, the commit SHA, final status, and the final two log entries.
+The checkpoint cannot contain its own eventual commit SHA without another self-referential commit.
+V1 remains unstarted. All task boxes and all five protected baseline paths remain unchanged and unstaged.
+No further milestone work or push is authorized.

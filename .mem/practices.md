@@ -17,7 +17,7 @@ go test ./...
 gofmt -l cmd/bs/*.go
 ```
 
-Tests use dummy tokens and loopback `httptest` servers. `TestMain` clears inherited credentials and installs the network guard. A custom transport can bypass that guard. [Testing](uptime/testing.md) documents the Command routing boundary and its limits.
+Tests use dummy tokens and loopback `httptest` servers. `TestMain` clears inherited credentials and installs the network guard. A custom transport can bypass that guard. [Testing](uptime/testing.md) documents the Command routing boundary, the loopback-only network guard, and the guard's limits.
 
 ## Repository records
 
