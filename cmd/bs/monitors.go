@@ -25,6 +25,7 @@ func newHTTPClient() *http.Client { return &http.Client{} }
 // monitorsGet implements `bs monitors get <id> [--timeout <duration>]`:
 // exactly one bearer-authenticated GET, raw success body on stdout, raw
 // non-2xx body on stderr, and token-free local failure messages.
+// @anchor:uptime:command-handler
 func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
 	// The token is read before argument validation only so locally generated
 	// diagnostics can redact it. The missing-token failure still happens only
@@ -50,6 +51,7 @@ func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client
 // bearer-authenticated GET, the parsed flags encoded as query parameters,
 // raw success body on stdout, raw non-2xx body on stderr, and token-free
 // local failure messages. The CLI never follows pagination links.
+// @anchor:uptime:command-handler
 func monitorsList(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
 	token := os.Getenv(tokenEnvVar)
 
@@ -75,6 +77,7 @@ func monitorsList(args []string, stdout, stderr io.Writer, baseURL string, clien
 // the shared 002 response contract used by both monitor commands: raw 2xx body
 // to stdout, raw non-2xx body to stderr, redirects not followed, and
 // token-free local diagnostics.
+// @anchor:uptime:request-executor
 func doMonitorsRequest(endpoint, token string, timeout time.Duration, stdout, stderr io.Writer, client *http.Client) int {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()

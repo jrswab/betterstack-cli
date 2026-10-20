@@ -27,6 +27,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 // runWithAPI is the test-only injection seam (spec R9). Tests supply the base
 // URL and HTTP client so every request stays on a local mock server. No flag,
 // environment variable, or file changes these values at runtime.
+// @anchor:uptime:router
 func runWithAPI(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
 	if help, ok := helpFor(args); ok {
 		fmt.Fprint(stdout, help)

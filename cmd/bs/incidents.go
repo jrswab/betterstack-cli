@@ -47,6 +47,7 @@ func parseIncidentsGetArgs(args []string) (string, time.Duration, error) {
 // incidentsGet implements `bs incidents get <id-or-url> [--timeout <d>]`:
 // argument and target validation run before the credential check, then exactly
 // one bearer-authenticated GET uses the shared 002 response contract.
+// @anchor:uptime:command-handler
 func incidentsGet(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
 	// Read the token before validation only so local diagnostics can redact
 	// it; the missing-token failure still occurs after a valid argument vector.
@@ -78,6 +79,7 @@ func incidentsGet(args []string, stdout, stderr io.Writer, baseURL string, clien
 // exactly one bearer-authenticated GET to the incident's timeline endpoint uses
 // the shared 002 response contract. The body is opaque: no pagination, no
 // completeness promise, and any timeline_truncated item passes through raw.
+// @anchor:uptime:command-handler
 func incidentsTimeline(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
 	// Read the token before validation only so local diagnostics can redact
 	// it; the missing-token failure still occurs after a valid argument vector.
@@ -327,6 +329,7 @@ func duplicateMetadataKey(pairs []metadataPair) (string, bool) {
 // bearer-authenticated GET to the v3 incidents endpoint sends the parsed flags
 // through the shared 002 response contract. The CLI never follows pagination
 // links (spec R7).
+// @anchor:uptime:command-handler
 func incidentsList(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
 	// Read the token before validation only so local diagnostics can redact
 	// it; the missing-token failure still occurs after a valid argument vector.
