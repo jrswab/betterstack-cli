@@ -1,0 +1,3 @@
+# System summary
+
+`bs` is a read-only Better Stack Uptime CLI implemented with the Go standard library in [cmd/bs](../cmd/bs/main.go). `runWithAPI` routes monitors list/get and incidents list/get/timeline, or returns exact-match help without reading credentials or sending requests. Valid commands use `BETTERSTACK_UPTIME_API_TOKEN` and the shared `doMonitorsRequest` executor. The executor sends a bearer-authenticated GET, applies a 30-second default timeout, disables redirects, and passes response bodies unchanged to stdout for 2xx or stderr otherwise. Tests inject loopback servers and clear inherited credentials. The [memory map](mem-map.md) indexes the [Uptime topics](uptime/summary.md), [terminology](terminology.md), and [practices](practices.md).
