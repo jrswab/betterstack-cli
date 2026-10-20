@@ -2,7 +2,7 @@
 
 ## Command boundaries
 
-The command package uses the Go standard library without third-party dependencies. [go.mod](../go.mod) declares the module and Go version. `main` supplies the production endpoint, client, and output writers to the Command routing boundary (`runWithAPI`). Tests supply loopback endpoints through this boundary. There is no runtime endpoint override flag, environment variable, or configuration file.
+The command package uses the Go standard library without third-party dependencies. [go.mod](../go.mod) declares the module and Go version. `main` supplies the production endpoint, client, and output writers to the Command routing boundary (`runWithAPI`). `runWithAPI` delegates to the Endpoint injection seam (`runWithEndpoints`), passing the Uptime base URL, the fixed Telemetry REST host, and an empty SQL URL. The seam accepts separate test inputs for all three service destinations. Only Uptime routes use an endpoint today. No Telemetry configuration is active. Tests supply loopback endpoints through either interface. There is no runtime endpoint override flag, environment variable, or configuration file.
 
 Handlers keep argument parsing and query translation separate from HTTP execution. `url.Values` encodes query parameters, and `url.PathEscape` escapes target path segments. All handlers share the [request contract](uptime/requests.md). API validation handles opaque filter values except locally validated booleans, metadata grammar, and positive timeout durations.
 

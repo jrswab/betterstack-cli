@@ -1,11 +1,12 @@
 # Uptime summary
 
-The [command package](../../cmd/bs/main.go) implements five read-only Uptime commands. `main` supplies the fixed production base URL and an HTTP client. `runWithAPI` accepts those dependencies and the stdout/stderr writers so tests can use local servers. `helpFor` runs before command routing.
+The [command package](../../cmd/bs/main.go) implements five read-only Uptime commands. `main` supplies the fixed production base URL and an HTTP client. `runWithAPI` accepts those dependencies and the stdout/stderr writers so tests can use local servers. It delegates to `runWithEndpoints`, which accepts distinct Uptime, Telemetry REST, and SQL endpoint inputs. Only Uptime handlers are active. `helpFor` runs before command routing.
 
 ```mermaid
 flowchart TD
     Main[main] --> Router[runWithAPI]
-    Router --> Help{helpFor matches?}
+    Router --> Endpoints[runWithEndpoints]
+    Endpoints --> Help{helpFor matches?}
     Help -->|yes| Text[Help text to stdout, exit 0]
     Help -->|no| Route{Known command?}
     Route -->|no| Usage[Usage error to stderr, exit 1]
@@ -24,11 +25,11 @@ flowchart TD
     Body -->|read failure| Error
 ```
 
-The monitors-list route in `runWithAPI` delegates to its handler with the remaining arguments and injected dependencies:
+The monitors-list route in `runWithEndpoints` delegates to its handler with the remaining arguments and injected Uptime dependencies:
 
 ```go
 if len(args) >= 2 && args[0] == "monitors" && args[1] == "list" {
-	return monitorsList(args[2:], stdout, stderr, baseURL, client)
+	return monitorsList(args[2:], stdout, stderr, uptimeBaseURL, client)
 }
 ```
 

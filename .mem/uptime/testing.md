@@ -6,7 +6,7 @@
 
 [Commands](commands.md) documents usage diagnostics and the resource gate that later resources must extend.
 
-Routing tests use `invokeAPI` to call `runWithAPI` with captured stdout/stderr, a loopback `httptest.NewServer` URL, and an HTTP client. [monitors_test.go](../../cmd/bs/monitors_test.go) defines `invokeAPI` and the fixed dummy `testToken`. Other tests call handlers directly through helpers such as `invokeMonitorsList` and `invokeIncidentsList`. These tests verify path escaping, bearer headers, query translation, raw output, exit codes, invalid arguments, timeouts, and disabled redirects.
+Routing tests use `invokeAPI` to call `runWithAPI` with captured stdout/stderr, a loopback `httptest.NewServer` URL, and an HTTP client. `runWithAPI` delegates to `runWithEndpoints` without changing its signature. `main_test.go` also calls `runWithEndpoints` directly with three distinct loopback endpoint inputs. It verifies all five Uptime routes use the Uptime input, not the Telemetry REST or SQL inputs, and that help and invalid usage send no requests through either interface. Telemetry REST and SQL routing have no request boundaries yet. [monitors_test.go](../../cmd/bs/monitors_test.go) defines `invokeAPI` and the fixed dummy `testToken`. Other tests call handlers directly through helpers such as `invokeMonitorsList` and `invokeIncidentsList`. These tests verify path escaping, bearer headers, query translation, raw output, exit codes, invalid arguments, timeouts, and disabled redirects.
 
 This existing test pattern authenticates only to a local mock server:
 

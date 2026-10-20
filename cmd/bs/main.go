@@ -1,9 +1,5 @@
 // Command bs is a read-only CLI for the Better Stack Uptime API.
-//
-// Milestone 001 delivers the installable skeleton and the three-level help
-// surface only. No invocation performs a network request and no invocation
-// reads a credential. Help forms exit 0; every other argument vector exits 1
-// with a readable error on stderr.
+// Exact help forms return without reading credentials or sending requests.
 package main
 
 import (
@@ -29,24 +25,32 @@ func run(args []string, stdout, stderr io.Writer) int {
 // environment variable, or file changes these values at runtime.
 // @anchor:uptime:router
 func runWithAPI(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
+	return runWithEndpoints(args, stdout, stderr, baseURL, "https://telemetry.betterstack.com", "", client)
+}
+
+// runWithEndpoints accepts distinct test endpoints without adding production
+// host overrides. Only Uptime routes are active. The Telemetry REST and SQL
+// inputs remain unused until their command slices add request boundaries.
+// @anchor:uptime:router endpoints
+func runWithEndpoints(args []string, stdout, stderr io.Writer, uptimeBaseURL, telemetryRESTBaseURL, telemetrySQLURL string, client *http.Client) int {
 	if help, ok := helpFor(args); ok {
 		fmt.Fprint(stdout, help)
 		return 0
 	}
 	if len(args) >= 2 && args[0] == "monitors" && args[1] == "list" {
-		return monitorsList(args[2:], stdout, stderr, baseURL, client)
+		return monitorsList(args[2:], stdout, stderr, uptimeBaseURL, client)
 	}
 	if len(args) >= 2 && args[0] == "monitors" && args[1] == "get" {
-		return monitorsGet(args[2:], stdout, stderr, baseURL, client)
+		return monitorsGet(args[2:], stdout, stderr, uptimeBaseURL, client)
 	}
 	if len(args) >= 2 && args[0] == "incidents" && args[1] == "get" {
-		return incidentsGet(args[2:], stdout, stderr, baseURL, client)
+		return incidentsGet(args[2:], stdout, stderr, uptimeBaseURL, client)
 	}
 	if len(args) >= 2 && args[0] == "incidents" && args[1] == "timeline" {
-		return incidentsTimeline(args[2:], stdout, stderr, baseURL, client)
+		return incidentsTimeline(args[2:], stdout, stderr, uptimeBaseURL, client)
 	}
 	if len(args) >= 2 && args[0] == "incidents" && args[1] == "list" {
-		return incidentsList(args[2:], stdout, stderr, baseURL, client)
+		return incidentsList(args[2:], stdout, stderr, uptimeBaseURL, client)
 	}
 	fmt.Fprint(stderr, usageError(args))
 	return 1

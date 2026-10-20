@@ -2,7 +2,11 @@ package main
 
 import (
 	"bytes"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 )
 
@@ -12,6 +16,112 @@ func invoke(args ...string) (code int, stdout, stderr string) {
 	var out, err bytes.Buffer
 	code = run(args, &out, &err)
 	return code, out.String(), err.String()
+}
+
+// TestRunWithAPIKeepsSignatureAndUptimeRouting preserves the Uptime injection
+// interface and raw response behavior against a guarded loopback server.
+func TestRunWithAPIKeepsSignatureAndUptimeRouting(t *testing.T) {
+	var route func([]string, io.Writer, io.Writer, string, *http.Client) int = runWithAPI
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		if r.Method != http.MethodGet || r.URL.Path != "/api/v2/monitors/789" || r.Header.Get("Authorization") != "Bearer "+testToken {
+			t.Errorf("request = %s %s, Authorization = %q", r.Method, r.URL.Path, r.Header.Get("Authorization"))
+		}
+		_, _ = io.WriteString(w, "raw uptime body\n")
+	}))
+	defer srv.Close()
+	t.Setenv(tokenEnvVar, testToken)
+
+	var out, err bytes.Buffer
+	code := route([]string{"monitors", "get", "789"}, &out, &err, srv.URL, testHTTPClient())
+	if code != 0 || out.String() != "raw uptime body\n" || err.String() != "" || requests.Load() != 1 {
+		t.Fatalf("code = %d, stdout = %q, stderr = %q, requests = %d", code, out.String(), err.String(), requests.Load())
+	}
+}
+
+// TestRunWithEndpointsUsesDistinctEndpoints routes Uptime commands only to
+// the Uptime input when all three endpoint inputs are distinct.
+func TestRunWithEndpointsUsesDistinctEndpoints(t *testing.T) {
+	var uptimeRequests, telemetryRequests atomic.Int32
+	uptime := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		uptimeRequests.Add(1)
+		if r.Method != http.MethodGet || r.Header.Get("Authorization") != "Bearer "+testToken {
+			t.Errorf("method = %q, Authorization = %q", r.Method, r.Header.Get("Authorization"))
+		}
+		_, _ = io.WriteString(w, r.URL.Path)
+	}))
+	defer uptime.Close()
+	rejectTelemetry := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		telemetryRequests.Add(1)
+		w.WriteHeader(http.StatusInternalServerError)
+	})
+	rest := httptest.NewServer(rejectTelemetry)
+	defer rest.Close()
+	sql := httptest.NewServer(rejectTelemetry)
+	defer sql.Close()
+	t.Setenv(tokenEnvVar, testToken)
+
+	cases := []struct {
+		args []string
+		path string
+	}{
+		{[]string{"monitors", "list"}, "/api/v2/monitors"},
+		{[]string{"monitors", "get", "789"}, "/api/v2/monitors/789"},
+		{[]string{"incidents", "list"}, "/api/v3/incidents"},
+		{[]string{"incidents", "get", "123"}, "/api/v3/incidents/123"},
+		{[]string{"incidents", "timeline", "123"}, "/api/v3/incidents/123/timeline"},
+	}
+	for _, tc := range cases {
+		t.Run(strings.Join(tc.args, " "), func(t *testing.T) {
+			var out, err bytes.Buffer
+			code := runWithEndpoints(tc.args, &out, &err, uptime.URL, rest.URL, sql.URL+"/query", testHTTPClient())
+			if code != 0 || out.String() != tc.path || err.String() != "" {
+				t.Fatalf("code = %d, stdout = %q, stderr = %q, want path %q", code, out.String(), err.String(), tc.path)
+			}
+		})
+	}
+	if uptimeRequests.Load() != int32(len(cases)) || telemetryRequests.Load() != 0 {
+		t.Fatalf("Uptime requests = %d, Telemetry requests = %d", uptimeRequests.Load(), telemetryRequests.Load())
+	}
+}
+
+// TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage checks
+// compatibility and zero requests for local help and invalid arguments.
+func TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage(t *testing.T) {
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+	}))
+	defer srv.Close()
+	t.Setenv(tokenEnvVar, testToken)
+
+	cases := []struct {
+		name string
+		args []string
+		code int
+	}{
+		{"root help", []string{"--help"}, 0},
+		{"resource help", []string{"incidents", "--help"}, 0},
+		{"command help", []string{"monitors", "get", "--help"}, 0},
+		{"empty", nil, 1},
+		{"unknown resource", []string{"unknown", "list"}, 1},
+		{"missing target", []string{"monitors", "get"}, 1},
+		{"extra target", []string{"incidents", "get", "1", "2"}, 1},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var out, err bytes.Buffer
+			code := runWithEndpoints(tc.args, &out, &err, srv.URL+"/uptime", srv.URL+"/rest", srv.URL+"/sql", testHTTPClient())
+			oldCode, oldOut, oldErr := invokeAPI(srv.URL+"/uptime", testHTTPClient(), tc.args...)
+			if code != tc.code || code != oldCode || out.String() != oldOut || err.String() != oldErr {
+				t.Fatalf("endpoints = (%d, %q, %q), API = (%d, %q, %q), want code %d", code, out.String(), err.String(), oldCode, oldOut, oldErr, tc.code)
+			}
+		})
+	}
+	if requests.Load() != 0 {
+		t.Fatalf("requests = %d, want 0", requests.Load())
+	}
 }
 
 // TestBareInvocationIsInvalidUsage covers T2's baseline: bare `bs` is invalid

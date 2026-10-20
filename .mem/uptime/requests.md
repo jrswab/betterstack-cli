@@ -6,6 +6,18 @@ All five [command handlers](commands.md) read only `BETTERSTACK_UPTIME_API_TOKEN
 
 `redactToken` replaces every occurrence of the token with `[REDACTED]` in locally generated argument, request, and response-read diagnostics. It does not redact raw upstream response bodies.
 
+## Reusable Telemetry secret redaction
+
+[redactSecrets](../../cmd/bs/telemetry.go) accepts diagnostic text, a Telemetry API token, SQL username, and SQL password as explicit strings. It does not read environment variables. It replaces literal case-sensitive occurrences with `[REDACTED]` and ignores empty values. When either SQL credential is non-empty, it includes standard base64 encoding of `username:password`. Longer values take priority over shorter values, including overlaps starting at different positions. The helper splits unredacted text in longest-first order and joins the remaining parts with the marker. It never scans replacement text again, so credentials matching the marker cannot alter new markers.
+
+This direct call returns `"[REDACTED] [REDACTED] [REDACTED] [REDACTED]"`:
+
+```go
+redactSecrets("token user pass dXNlcjpwYXNz", "token", "user", "pass")
+```
+
+No current response path calls this helper. Uptime local diagnostics continue using `redactToken`, and upstream bodies remain raw. [telemetry_test.go](../../cmd/bs/telemetry_test.go) tests explicit dummy strings, overlap, repeated matches, case differences, empty credentials, and unrelated text.
+
 ## Request executor
 
 [doMonitorsRequest](../../cmd/bs/monitors.go) serves all five handlers despite its monitor-oriented name. It creates a timeout context, builds an HTTP GET with no body, and sets the bearer header:
