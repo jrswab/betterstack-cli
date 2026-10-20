@@ -5,11 +5,11 @@ The checkpoint owns task state. The milestone source remains untracked and is ne
 ## Identity
 
 - Milestone ID: `003` (S2).
-- Milestone source: `docs/plans/008_telemetry-logs-search_milestones.md`. This invocation did not edit its checkbox.
+- Milestone source: `docs/plans/008_telemetry-logs-search_milestones.md`. This phase did not edit its checkbox.
 - Repository root: `/home/jaron/dev/betterstack-cli/master`.
 - Branch: `master`.
-- Setup HEAD: `7b3cc6df628f919e97d349d54a4008d47f94f24e`.
-- Baseline untracked paths from invocation state (verbatim):
+- Phase 2 starting HEAD: `4e504fded2f20e5abebfb9114f1da2c29e6c212d` (`003: S2 spec and checkpoint`).
+- Baseline untracked paths (never stage, modify, or delete):
 
 ```text
 ?? .agents/
@@ -19,115 +19,142 @@ The checkpoint owns task state. The milestone source remains untracked and is ne
 ?? verify-incident-id.sh
 ```
 
-- Baseline stash list: empty.
-- Protected baseline fingerprint: `38aa6b80387cfee47600181bdbcfc84279f60c56668a60ab4b094233c9ee8ce8`.
-- Fingerprint command: `find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum`.
-- Fingerprint output: `38aa6b80387cfee47600181bdbcfc84279f60c56668a60ab4b094233c9ee8ce8  -`.
-- Toolchain for later execution: `PATH=/home/jaron/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64/bin:$PATH GOTOOLCHAIN=local GOPROXY=off`.
-- Authorization: local commits on `master` are authorized. Do not push, issue live requests, or use credentials. Stage only this checkpoint and `docs/plans/008_telemetry-logs-search_003_spec.md`. Preserve the baseline untracked paths.
+- Baseline stash list: empty at Phase 2 start.
+- Authorization: the Factory invocation authorizes local commits on `master`. Do not push or make live requests. Stage only the two Phase 2 artifacts for this commit.
+- Do not build a `bs` binary into the repository root. Use `GOFLAGS=-o=/dev/null go build ./...` or an output under `/tmp/factory-003/`.
 
 ## Artifacts
 
 - Spec: `docs/plans/008_telemetry-logs-search_003_spec.md`.
-- Implementation checklist: none yet.
+- Implementation checklist: `docs/plans/008_telemetry-logs-search_003_implement.md`.
 - Checkpoint: `docs/plans/008_telemetry-logs-search_003_checkpoint.md`.
 
 ## State
 
 - Lane: `full` — S2 adds external API commands, Telemetry authentication, and secret-exposure warnings.
-- Current phase: `spec` complete.
+- Current phase: `implement` complete.
 - Current task: none.
-- Task states: setup `passed`; restart validation for 002 `passed`; Phase 1 specification `passed`.
+- Task states: setup `passed`; restart validation for 002 `passed`; Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; A1–A5 and V1 `not started`.
+- Checklist task states: A1 `not started`; A2 `not started`; A3 `not started`; A4 `not started`; A5 `not started`; V1 `not started`.
 - Milestone checkbox: `unchecked`.
-- Last completed phase/task/gate: Phase 1 spec audit passed on 2026-10-20.
-- Next action: create the 003 implementation checklist and execute milestone 003 under the Factory implementation flow.
-- Current staged paths: none at setup. Stage only the two named 003 artifacts at this invocation's commit gate.
+- Phase 2 next action: stage exactly the checklist and this checkpoint, verify the staged paths and whitespace, then commit as `003: S2 implementation checklist`.
+- Next phase: execute Phase 3 tasks A1–A5 and V1. Keep all checklist boxes unchecked until each task passes.
+- Blockers: none identified during checklist planning. Record any implementation-time conflict as `BLOCKED` without pausing.
 
-## Step 0 — Restart validation for milestone 002
+## Phase 2 — Implementation checklist
 
-**Result: PASS.** The 002 checkpoint names milestone `002` (S1), the correct milestone source, repository root `/home/jaron/dev/betterstack-cli/master`, and branch `master`. The milestone source shows `[x] 002`. The 002 implementation checklist shows A1, A2, A3, and V1 checked, matching the checkpoint's passed task states and complete checklist state.
+**Result: PASS.** The checklist follows `~/.agents/skills/implement/SKILL.md`. It summarizes the spec's context and constraints, groups work into vertical slices, names exact source and test files and functions, pairs every behavior implementation with tests first, identifies parallel tasks, and maps all requirements R1–R9. The checklist scope is milestone 003 only.
 
-The current HEAD is `7b3cc6df628f919e97d349d54a4008d47f94f24e`, with tree `d5a1d24afe63ae8168436561a8333835913f61c1`. Its parent is `d9bf3eb909a75cdafe690aef169fe54d02f2f40a`, the checkpoint's recorded 002 verification parent. HEAD changes only `docs/plans/008_telemetry-logs-search_002_checkpoint.md` and `docs/plans/008_telemetry-logs-search_002_implement.md`. `git diff --quiet HEAD^ HEAD -- . ':!docs/plans/008_telemetry-logs-search_002_checkpoint.md' ':!docs/plans/008_telemetry-logs-search_002_implement.md'` exited 0. Therefore the completion-gate tree matches HEAD for all non-artifact files.
+### Checklist tasks and purpose
 
-Restart commands and actual outputs:
-
-| Command | Output | Result |
+| Task | Purpose | State |
 |---|---|---|
-| `pwd` | `/home/jaron/dev/betterstack-cli/master` | PASS |
-| `git rev-parse --show-toplevel` | `/home/jaron/dev/betterstack-cli/master` | PASS |
-| `git branch --show-current` | `master` | PASS |
-| `git rev-parse HEAD` | `7b3cc6df628f919e97d349d54a4008d47f94f24e` | PASS |
-| `git rev-parse HEAD^{tree}` | `d5a1d24afe63ae8168436561a8333835913f61c1` | PASS |
-| `git rev-parse HEAD^` | `d9bf3eb909a75cdafe690aef169fe54d02f2f40a` | PASS |
-| `git diff-tree --no-commit-id --name-only -r HEAD` | `docs/plans/008_telemetry-logs-search_002_checkpoint.md`; `docs/plans/008_telemetry-logs-search_002_implement.md` | PASS |
-| `git status --porcelain` | The five baseline paths recorded under Identity | PASS |
-| `git stash list` | Empty | PASS |
-| Fingerprint command above | `38aa6b80387cfee47600181bdbcfc84279f60c56668a60ab4b094233c9ee8ce8  -` | PASS |
-| Non-artifact tree comparison command above | Empty output, exit 0 | PASS |
-| `rg -n '^\\- \\[x\\] 002:|^\\- \\[x\\] (A1|A2|A3|V1):' docs/plans/008_telemetry-logs-search_milestones.md docs/plans/008_telemetry-logs-search_002_implement.md` | The milestone 002 line and A1/A2/A3/V1 lines all show `[x]` | PASS |
+| A1 | Test and route sources through the Telemetry REST endpoint injected by `runWithEndpoints`, while preserving `runWithAPI` and Uptime routing. | Not started |
+| A2 | Implement and test `sources list` pagination validation, query mapping, timeout, Telemetry authentication, and missing-token behavior. | Not started |
+| A3 | Implement and test `sources get` opaque ID escaping, positional validation, timeout, Telemetry authentication, and missing-token behavior. | Not started |
+| A4 | Test and integrate raw source response handling, redirects, exact help, source usage routing, and generic secret warning. | Not started |
+| A5 | Update README, `.mem/`, `TAGS.md`, and `changelog.d/` with S2 behavior, then check those records. | Not started |
+| V1 | Run the full verification suite, direct scripts, staged-path checks, and both authorized local commits. | Not started |
 
-An initial fingerprint attempt incorrectly passed `.agents/` and `.wayfinder/` directories directly to `sha256sum` and exited 1. The exact checkpoint fingerprint command above corrected that invocation and passed. No source file changed during restart validation.
+A2 and A3 can proceed in parallel after A1. A4 depends on both behavior handlers. A5 follows behavior changes. V1 gates the implementation commit and then commits only the Phase 2 checklist and checkpoint.
 
-## Specification decisions
+### Requirement coverage
 
-- Production sources use `GET /api/v2/sources` and `GET /api/v2/sources/{id}` under the fixed `https://telemetry.betterstack.com` base URL, with `Authorization: Bearer <token>`. Tests route through `runWithEndpoints`; this seam does not create a production host override.
-- Both commands use only `BETTERSTACK_TELEMETRY_API_TOKEN`. There is no fallback to the Uptime token. Invalid arguments fail before a missing-token error, and missing or empty Telemetry credentials produce a local error with no request.
-- `sources list` accepts `--page` and `--per-page`. Values are unsigned base-10 integers containing decimal digits only. Page values must be positive. Per-page values must be 1 through 50 inclusive. Invalid, empty, zero, negative, non-integer, and out-of-range values fail locally. Missing flags are omitted because the Telemetry source documentation defines no defaults. Repeated values follow existing list parser behavior and become repeated query values.
-- `sources get` accepts one required opaque string ID. The ID is escaped as one URL path segment. The command rejects missing, empty, or extra positional IDs and does not impose a numeric-only rule or interpret the ID as a URL.
-- Both commands accept a positive Go duration using the existing space-separated `--timeout` form. The default is 30 seconds. Get accepts the flag before or after its ID. The last repeated timeout applies. The equals form remains unsupported.
-- Both commands reuse `doMonitorsRequest`. Success bodies remain byte-for-byte unchanged on stdout. Non-2xx bodies, including 404, remain byte-for-byte unchanged on stderr. Neither path decodes or redacts the body. One GET is sent, and redirects are not followed.
-- The source response includes a `token` field. Help for both source commands must say it is a secret credential, advise users to keep it private and not paste it into shared logs or tickets, and make no claim about its permissions or exact purpose. This follows tickets 09 and 10. Ticket 11 assigns redaction only to non-2xx SQL responses in S4.
-- Source resource usage routing extends `usageError` and `knownAction`. Exact help forms include root resource listing, `sources --help`, `sources list --help`, and `sources get --help`. Logs routing and help remain excluded for milestone 006.
-- Active commands and `BETTERSTACK_TELEMETRY_API_TOKEN` require a README update in the implementation commit. Applicable memory topics and terminology, `TAGS.md`, and a changelog fragment also require updates under repository rules. The implementation phase must use the `mem` and `changelog` skills. Add provenance only if implementation introduces non-obvious rationale.
-- The documented list response is a `data` and `pagination` envelope; get returns a source object directly. Source error schemas beyond the documented get 404 are unknown. Bodies stay opaque, so no schema assumption changes command behavior.
-- The source examples do not define the regional SQL host and show `table_name` without the SQL table prefix. S2 performs no source-to-SQL mapping.
+- R1: A1 and A4 verify one GET per command, Telemetry REST routing through the endpoint injection seam, bearer auth, and unchanged Uptime behavior.
+- R2: A2 and A3 verify the Telemetry token only, unset/empty and Uptime-only cases, validation order, and no request on missing credentials.
+- R3: A2 verifies unsigned decimal values, page positivity, per-page bounds 1–50, repeats, absent query values, exact names, invalid inputs, and zero requests.
+- R4: A3 verifies opaque ID handling, path escaping, exact positional count, timeout placement/default/repetition, invalid durations, and zero requests.
+- R5: A4 verifies byte-for-byte 2xx and non-2xx bodies, token preservation, opposite output channels, no redirects, and one request.
+- R6: A4 verifies root, resource, and command help; source-aware usage diagnostics; exit status; and zero requests for help or invalid usage.
+- R7: A4 verifies the generic token warning in both command help outputs and rejects unsupported token purpose or permission claims.
+- R8: A5 updates README, memory, anchor index, and changelog; V1 runs build, vet, tests, formatting, direct checks, and staged whitespace/path checks.
+- R9: A1–A5 constrain scope; V1 verifies no logs or SQL implementation, redaction, pagination loop, source writes, or production endpoint override.
 
-## Scope and records read
+### Mutation-sensitive test requirements
 
-Read the complete milestone plan, repository `AGENTS.md`, `.mem/mem-map.md` and all files it links, `TAGS.md`, empty `LOG.md`, every file in `log.d/`, tickets 01, 02, 03, 09, and 10, `assets/03-sources-api-contract-research.md`, `cmd/bs/*.go` and its tests, both 002 spec/checkpoint artifacts, the Factory checkpoint template, the spec skill, and the `mem` and `changelog` skill instructions. No Better Stack API was called and no credential was used.
+The checklist explicitly requires tests that fail if implementation changes any of these behaviors:
 
-The audited affected surfaces are `runWithEndpoints` and `helpFor` in `cmd/bs/main.go`, the shared request executor and Uptime parser conventions in `cmd/bs/monitors.go`, resource/command help in `cmd/bs/help.go`, and usage gating in `usageError`/`knownAction`. Current anchors are indexed in `TAGS.md`; implementation must add or update only anchors needed for actual S2 boundaries and keep the index exact.
+- Source requests route through the wrong endpoint input.
+- A source command reads `BETTERSTACK_UPTIME_API_TOKEN` instead of `BETTERSTACK_TELEMETRY_API_TOKEN`.
+- The per-page upper bound changes from 50 or admits 51.
+- Numeric pagination accepts a sign, whitespace, empty input, or a non-digit value.
+- Repeated pagination values collapse, or absent values create an undocumented default.
+- Opaque IDs are not escaped as one path segment or receive numeric/URL restrictions.
+- Response bodies are formatted, redacted, paginated, or routed to the wrong output channel.
+- A redirect is followed, or more than one request is made.
+- Help bypasses no-credential/no-request behavior or omits or expands the generic warning.
 
-## Phase 1 artifact gate
+## Read scope and implementation surfaces
 
-- Milestone comparison: PASS. The spec targets only milestone `003` (S2) and covers both source commands, their token, fixed REST routing, shared request behavior, pagination and ID validation, and generic warnings.
-- Requirement coverage: R1 covers Telemetry REST routing and the shared request path; R2 covers the separate token and missing-token behavior; R3 covers pagination parsing and query mapping; R4 covers ID and timeout validation; R5 fixes both response channels; R6 covers routing usage and all source help forms; R7 fixes generic warning language; R8 carries repository records and verification into implementation; R9 excludes later behavior.
-- Decision evidence: tickets 01 and 02 define the command surface, host, auth, seam, and shared request path. Ticket 03 and its asset define methods, endpoints, query names, `per_page` maximum, response forms, string ID, documented 404, and undocumented defaults. Tickets 09 and 10 settle raw output and the generic source-token warning. Ticket 11 confines redaction to SQL non-2xx responses. Existing list and get parsers ground flag syntax and timeout behavior.
-- The spec distinguishes documented behavior from inference. It does not invent pagination defaults, source error schemas, token permissions, regional SQL host mapping, or SQL table mapping.
-- The spec audit confirmed required sections, R1–R9, API paths, credential policy, numeric pagination bounds, response handling, logs-help exclusion, balanced Markdown fences, no trailing whitespace, and a final newline. All links in the audit point to official HTTP URLs or tickets recorded as plain text; the spec itself contains no Markdown link syntax.
-- `git diff --check` exited 0 with empty output. `git diff --cached --check` exited 0 with empty output. The index was empty during specification setup.
-- An initial direct-audit assertion expected zero token-permission wording and failed because the spec correctly states the prohibition. The corrected audit checked for the word `permissions` and passed. This was an audit assertion mismatch, not a spec failure.
-- No Go build, vet, test, or `gofmt` command ran. These are implementation checks. No live request or credential was used.
+Read the complete implement skill; the 003 spec and checkpoint; milestone 003; repository `AGENTS.md`; all indexed `.mem/` files; `TAGS.md`; `.agents/skills/mem/SKILL.md`; `.agents/skills/changelog/SKILL.md`; all `cmd/bs/*.go` source and test files; and the 002 implementation checklist for conventions.
 
-## Commands and setup evidence
+Relevant code boundaries are `runWithEndpoints`, `helpFor`, `usageError`, and `knownAction` in `cmd/bs/main.go`; the existing shared `doMonitorsRequest` in `cmd/bs/monitors.go`; help constants in `cmd/bs/help.go`; endpoint configuration in `cmd/bs/main.go`; and loopback/credential protections in `cmd/bs/safety_test.go`. Existing command/parser tests establish direct and routed test patterns. The implementation checklist assumes source behavior in `cmd/bs/sources.go` and tests in `cmd/bs/sources_test.go`; it names these as planned paths, not existing files.
 
-- `command -v make` returned `/usr/bin/make`.
-- `make help` exited 2 with no standard output and stderr `make: *** No rule to make target 'help'.  Stop.` No applicable task runner was available.
-- `.agents/scripts/` contains `.gitkeep` and `telemetry-live-probe.sh`. The live probe is outside scope and was not run.
-- `find log.d -maxdepth 1 -type f -print` returned `log.d/.gitkeep`. `LOG.md` is empty. No existing log entry constrains S2.
-- The invocation wrote only the named 003 spec and this checkpoint. It did not edit the untracked milestone plan or any baseline path.
+The memory map indexes system and Uptime topics but no Telemetry source topic. The implementation task must update current-state records through the `mem` skill. Existing anchors cover `telemetry:config` only. Add source handler anchors only at command boundaries and update `TAGS.md` to match. `LOG.md` is empty, and `log.d/` contains `.gitkeep`; add provenance only if implementation introduces non-obvious rationale.
 
-## Commit boundary
+## Verification required during Phase 3
+
+Run and record verbatim outputs for:
+
+```text
+GOFLAGS=-o=/dev/null go build ./...
+go vet ./...
+go test -count=1 ./...
+gofmt -l cmd/bs/*.go
+```
+
+Also create and run direct check scripts under `/tmp/factory-003/` using quoted heredocs. At minimum, run `/tmp/factory-003/check-sources.sh` and `/tmp/factory-003/check-records.sh`. Never use inline Python. Run `make fragments-check` if available, and record its result if unavailable. Run `git diff --check`, inspect the exact staged path list, and run `git diff --cached --check` before each commit. Record commands that could not run.
+
+## Phase 2 authoring evidence
+
+- `make help` was attempted first as the repository's preferred task-runner discovery. It exited 2 and printed `make: *** No rule to make target 'help'.  Stop.`
+- Read the complete implement skill and its linked TDD skill, including vertical-slice, seam, test-first, and mutation-resistant test guidance. The 002 checklist also supplies repository-specific direct-script and commit conventions.
+- Read the complete 003 spec, 003 checkpoint, milestone 003 entry, repository `AGENTS.md`, all `.mem/` files indexed by `.mem/mem-map.md`, `TAGS.md`, the `mem` and `changelog` skills, all `cmd/bs/*.go` files, and the complete 002 implementation checklist.
+- The source spec settles endpoint, authentication, pagination, ID, timeout, response, warning, usage, and scope behavior. No unresolved spec issue was found. Any newly discovered conflict must be reported as `BLOCKED` in the execution checkpoint without pausing.
+- No Go build, vet, test, formatting, direct check, or live request ran in Phase 2. These checks belong to Phase 3.
+- `git status --short --branch` at Phase 2 start reported `## master...origin/master [ahead 19]` and exactly the five baseline untracked paths recorded above. HEAD was `4e504fded2f20e5abebfb9114f1da2c29e6c212d`.
+
+## Phase 2 commit gate
 
 Stage exactly:
 
+- `docs/plans/008_telemetry-logs-search_003_implement.md`
 - `docs/plans/008_telemetry-logs-search_003_checkpoint.md`
-- `docs/plans/008_telemetry-logs-search_003_spec.md`
 
-Run `git diff --cached --check`, verify the staged path list contains exactly those two files, then commit as `003: S2 spec and checkpoint`. Do not push. Do not stage or modify the baseline untracked paths. After commit, record the actual HEAD, `git status --short --branch`, and `git log --oneline -2` in the handoff.
+Run `git diff --cached --check`. Confirm `git diff --cached --name-only` lists exactly those two paths. Commit as `003: S2 implementation checklist`. Do not stage or modify any baseline untracked path or the milestone source. Do not push. After commit, record actual HEAD, `git status --short --branch`, and `git log --oneline -2` in the handoff.
 
-## Requirement summary
+## Phase 2 commit evidence
 
-- R1: fixed Telemetry REST endpoint routing through the endpoint injection seam, one GET, shared request executor.
-- R2: separate Telemetry API token, no Uptime fallback, no request when missing.
-- R3: `page` positive unsigned decimal and `per_page` 1–50 unsigned decimal, repeated values preserved, absent defaults omitted.
-- R4: opaque string ID, one path segment, strict positional count, positive 30-second-default timeout semantics.
-- R5: exact raw 2xx stdout and non-2xx stderr passthrough, no redirect following or source-body redaction.
-- R6–R7: source-aware usage errors, root/resource/command help, and generic secret-credential warning without permission claims.
-- R8: README, memory, anchor index, changelog, Go verification, formatting, and staged-path checks for implementation.
-- R9: no logs, SQL, source mapping, writes, pagination loop, redaction, or endpoint override behavior.
+- `git diff --check` produced no output and exited 0 before staging.
+- `git diff --cached --name-only` output was exactly:
 
-## Blockers and next action
+```text
+docs/plans/008_telemetry-logs-search_003_checkpoint.md
+docs/plans/008_telemetry-logs-search_003_implement.md
+```
 
-- Blockers: none. Defaults, undocumented error shapes, and token meaning are explicitly bounded by the specification.
-- Next action: proceed to the 003 implementation checklist. Resolve any new implementation-time requirement conflict as `BLOCKED` in the execution checkpoint without pausing.
+- `git diff --cached --check` produced no output and exited 0.
+- Commit command: `git commit -m '003: S2 implementation checklist'`. The command output was:
+
+```text
+[master 6c06e17] 003: S2 implementation checklist
+ 2 files changed, 145 insertions(+), 92 deletions(-)
+ create mode 100644 docs/plans/008_telemetry-logs-search_003_implement.md
+```
+
+- `git log --oneline -1` output was `6c06e17 003: S2 implementation checklist`.
+- `git status --short --branch` output was:
+
+```text
+## master...origin/master [ahead 20]
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- The five baseline untracked paths remain unstaged. No Go build, vet, test, formatting, or direct source check ran because this phase produced a planning checklist only. No live request or credential was used. The initial commit `6c06e17` was amended to add this evidence. The amend output was `[master ae60a43] 003: S2 implementation checklist`, with 2 files changed, 179 insertions(+), and 90 deletions(-). Its post-amend log output was `ae60a43 003: S2 implementation checklist`.
+- Checks unavailable or not run: `make help` had no target and exited 2. `make fragments-check` was not run because no changelog fragment was created in this planning phase.
+- Final phase status: Phase 2 `passed`; A1–A5 and V1 remain `not started`; milestone 003 remains unchecked.
+- Blocked items: none.
