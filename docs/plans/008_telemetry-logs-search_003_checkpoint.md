@@ -33,15 +33,14 @@ The checkpoint owns task state. The milestone source remains untracked and is ne
 ## State
 
 - Lane: `full` — S2 adds external API commands, Telemetry authentication, and secret-exposure warnings.
-- Current phase: Phase 3 A1–A5 local execution complete. Independent review gates remain BLOCKED.
-- Current task: none. Stop before V1.
-- Task states: setup `passed`; restart validation for 002 `passed`; Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; A1–A5 local gates `passed`; V1 `not started`.
-- Checklist task states: A1 `passed`; A2 `passed`; A3 `passed`; A4 `passed`; A5 `passed`; V1 `not started`.
-- Milestone checkbox: `unchecked`.
+- Current phase: complete. V1 and the Factory completion gate passed.
+- Current task: none.
+- Task states: setup `passed`; restart validation for 002 `passed`; Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; A1–A5 local gates `passed`; V1 `passed`.
+- Checklist task states: A1 `passed`; A2 `passed`; A3 `passed`; A4 `passed`; A5 `passed`; V1 `passed`.
+- Milestone checkbox: `checked`.
 - Implementation commit: `032b5464cb941449b5e1a0a6ea5a175e5134bcaf` (`003: S2 sources list and get`).
-- Next action: commit only checkpoint/render artifacts as `003: S2 implementation checkpoint`, then stop. V1 requires a later invocation.
-- Stop boundary: V1 remains `not started`. Do not edit the milestone checkbox.
-- BLOCKED: independent auto-review and design-review gates cannot run because this session has no sub-agent tool. Local reviews and executable checks are recorded instead.
+- Next action: none. Milestone 004 is the next sequential unchecked entry.
+- Completion gate: passed in this invocation. Independent auto-review and design-review gates remain unavailable because this session has no sub-agent tool. Local reviews and executable checks are recorded instead.
 
 ## Phase 2 — Implementation checklist
 
@@ -1341,3 +1340,75 @@ The new transport never calls a dialer or delegates. Existing HTTP-server tests 
   Its subject is `003: review gate 1 checkpoint`. The final report supplies its SHA and final status/log.
 - All requested review-fix checks passed. No required review-fix check remains blocked.
 - V1 remains `not started`. Independent review acceptance remains pending. No push or milestone completion occurs here.
+
+
+## Phase 3 — V1 and Factory completion gate
+
+**Result: PASS.** The full verification suite, requirement-to-evidence audit, and repository-state gate passed. The milestone checkbox now agrees with the completed checkpoint.
+
+### Requirement-to-evidence table
+
+| Requirement | Evidence | Result |
+|---|---|---|
+| R1 — Route source GETs through Telemetry REST | `TestRunWithEndpointsRoutesSources` (`cmd/bs/main_test.go:180`); `TestRunWithAPIUsesFixedTelemetryHost` (`cmd/bs/main_test.go:36`); `TestRunWithAPIKeepsSignatureAndUptimeRouting` (`cmd/bs/main_test.go:72`). The direct check also verifies routing. | PASS |
+| R2 — Use only the Telemetry API token | `TestSourcesListQueryAndAuth` (`cmd/bs/sources_test.go:165`); `TestSourcesListMissingTelemetryToken` (`cmd/bs/sources_test.go:342`); `TestSourcesGetEscapedOpaqueIDAndAuth` (`cmd/bs/sources_test.go:262`); `TestSourcesGetMissingTelemetryToken` (`cmd/bs/sources_test.go:318`); argument-order tests at lines 198 and 297. | PASS |
+| R3 — Validate list pagination | `TestParseSourcesListArgs` (`cmd/bs/sources_test.go:101`); `TestParseSourcesListArgsRejectsInvalid` (`:147`); `TestSourcesListQueryAndAuth` (`:165`); `TestSourcesListInvalidArgumentsBeforeCredentials` (`:198`). | PASS |
+| R4 — Validate get IDs and timeout flags | `TestParseSourcesGetArgs` (`cmd/bs/sources_test.go:219`); `TestParseSourcesGetArgsRejectsInvalid` (`:251`); `TestSourcesGetEscapedOpaqueIDAndAuth` (`:262`); `TestSourcesGetInvalidArgumentsBeforeCredentials` (`:297`). | PASS |
+| R5 — Preserve response bodies unchanged | `TestSourcesRoutedRawResponses` (`cmd/bs/sources_test.go:17`) covers both commands, status classes, raw bodies, channels, request count, and redirects. `TestSourcesRoutedLocalFailures` (`:68`) covers transport, timeout, and body-read failures. | PASS |
+| R6 — Integrate source usage and help | `TestRunWithEndpointsSourcesHelp` (`cmd/bs/main_test.go:93`); `TestRunWithEndpointsSourcesInvalidUsage` (`:135`); `TestRunWithEndpointsSourcesHelpWithDummyCredentialMakesNoRequest` (`:162`). | PASS |
+| R7 — Warn without token permission claims | `TestRunWithEndpointsSourcesHelp` (`cmd/bs/main_test.go:93`) asserts warning text and rejects unsupported claims for both command help pages. `/tmp/factory-003/check-sources.sh` also checks the exact warning. | PASS |
+| R8 — Update records and verify | `/tmp/factory-003/check-records.sh` passed memory links and line limits, anchor parity, README coverage, and changelog fragment shape. The four required Go commands passed. | PASS |
+| R9 — Exclude later milestone behavior | `/tmp/factory-003/check-sources.sh` and `/tmp/factory-003/check-records.sh` passed checks for no source redaction, pagination loop, logs/SQL implementation, or repository-root `bs` binary. `TestRunWithAPIKeepsSignatureAndUptimeRouting` (`cmd/bs/main_test.go:72`) verifies Uptime compatibility. | PASS |
+| Milestone 003 acceptance | The route tests above verify one request through the fixed Telemetry REST host with the separate token and shared request path. The parser tests verify the approved ID and pagination rules. Raw-response and help tests verify unchanged output and the generic secret warning. | PASS |
+
+### Verification commands and outputs
+
+Toolchain: `PATH=$HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64/bin:$PATH GOTOOLCHAIN=local GOPROXY=off`. This is a local workaround and is not recorded in `.mem/`.
+
+```text
+$ GOFLAGS=-o=/dev/null go build ./...
+exit=0
+$ go vet ./...
+exit=0
+$ go test -count=1 ./...
+ok   github.com/jrswab/betterstack-cli/cmd/bs  2.207s
+exit=0
+$ gofmt -l cmd/bs/*.go
+exit=0
+$ test ! -e ./bs
+exit=0
+$ /tmp/factory-003/check-sources.sh
+PASS routing seam, source paths, credential isolation, pagination bounds/repeats, escaped IDs, shared raw response, exact warning, and safety harness
+ok   github.com/jrswab/betterstack-cli/cmd/bs  0.952s
+exit=0
+$ /tmp/factory-003/check-records.sh
+PASS memory index, links and line limits (10 files)
+PASS anchor-index parity (13 occurrences)
+PASS README coverage and one-bullet Added fragment
+PASS unchanged provenance, no logs/SQL implementation, no repo binary
+exit=0
+$ git diff --check HEAD~1..HEAD
+(exit 0, no output)
+```
+
+Environmental limitation: `make help`, `make docs-check`, and `make fragments-check` each exited 2 with `No rule to make target`. The repository has no Makefile. The direct checks above passed.
+
+### Completion-gate repository evidence
+
+- Validated HEAD: `93ebe69c2daaa5bbc8e544ab7c543b31e00007e2`. It is the expected restart commit.
+- Committed implementation: `032b5464cb941449b5e1a0a6ea5a175e5134bcaf`. Review-fix commit: `af68c57f9930835d51c3679d9c31fb3a04e8c56e`.
+- `git status --porcelain` before the render contained exactly the five baseline paths and no modified or staged files:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Baseline fingerprint before render matched the required value: `38aa6b80387cfee47600181bdbcfc84279f60c56668a60ab4b094233c9ee8ce8`.
+- Post-render fingerprint command: `find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum`
+- Post-render fingerprint: `0eb137ab6c83c23488e7785e0c25a9bdb33ebb32c23fddb1e4d83a4f08ed3fe5  -`
+- Relevant implementation and review-fix work is committed. The checkpoint, implementation checklist, and one-character milestone checkbox render were uncommitted when this gate was recorded.
+- The checkpoint was written through a temporary file and atomic rename. The final local commit stages only the implementation checklist and checkpoint. The milestone source remains untracked and is not staged. No push, live request, real credential, or repository-root binary was used.
