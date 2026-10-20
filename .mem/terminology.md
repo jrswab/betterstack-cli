@@ -7,6 +7,7 @@
 - **Command handler (anchor role `command-handler`)** - `monitorsList`, `monitorsGet`, `incidentsList`, `incidentsGet`, or `incidentsTimeline`, which validates arguments and builds an Uptime endpoint. Avoid: request executor.
 - **Request executor (anchor role `request-executor`)** - `doMonitorsRequest`, the shared bearer-authenticated GET and raw-response path for all five handlers. Avoid: monitor-only client.
 - **Uptime configuration boundary (anchor role `config`)** - the const block in `cmd/bs/monitors.go` defining `defaultAPIBaseURL`, `defaultTimeout`, and `tokenEnvVar`. Avoid: runtime endpoint override.
+- **Telemetry configuration boundary (anchor surface `telemetry`, role `config`)** - `defaultTelemetryRESTBaseURL` in `cmd/bs/main.go`, the fixed Telemetry REST host passed by `runWithAPI`. No Telemetry route is active. Avoid: runtime endpoint override.
 - **Incident target** - a scheme-less opaque ID or an accepted dashboard URL resolved by `resolveIncidentTarget`. Avoid: numeric-only bare ID.
 - **Dashboard URL** - the HTTPS `incidents.betterstack.com/team/<team-id>/incidents/<incident-id>` form with a nonempty team segment and terminal ASCII digits. Avoid: arbitrary incident URL.
 - **Metadata pair** - a repeatable incident-list `--metadata key=value` filter with a nonempty, case-sensitive key. Avoid: raw query flag.

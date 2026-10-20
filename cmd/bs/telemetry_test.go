@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"net/http"
+	"strings"
+	"testing"
+)
 
 // TestRedactSecrets covers literal Telemetry credentials and overlap, empty,
 // case-sensitive, repeated-match, and replacement-marker behavior.
@@ -88,6 +92,11 @@ func TestRedactSecrets(t *testing.T) {
 			text: "user REDACTED pass", token: "REDACTED", username: "user", password: "pass",
 			want: "[REDACTED] [REDACTED] [REDACTED]",
 		},
+		{
+			name: "shorter secret matches replacement marker",
+			text: "token usEr", token: "token", username: "E",
+			want: "[REDACTED] us[REDACTED]r",
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -95,5 +104,20 @@ func TestRedactSecrets(t *testing.T) {
 				t.Errorf("redactSecrets() = %q, want %q", got, tc.want)
 			}
 		})
+	}
+}
+
+// TestRedactSecretsBasicAuthEncoding uses the HTTP Basic-auth header as the
+// encoding reference with credentials that distinguish standard from URL base64.
+func TestRedactSecretsBasicAuthEncoding(t *testing.T) {
+	const username, password = "user", "~???"
+	req := &http.Request{Header: make(http.Header)}
+	req.SetBasicAuth(username, password)
+	encoded := strings.TrimPrefix(req.Header.Get("Authorization"), "Basic ")
+	if !strings.ContainsAny(encoded, "+/") {
+		t.Fatalf("Basic-auth encoding = %q, want '+' or '/'", encoded)
+	}
+	if got := redactSecrets(encoded, "", username, password); got != "[REDACTED]" {
+		t.Errorf("redactSecrets() = %q, want %q", got, "[REDACTED]")
 	}
 }

@@ -10,6 +10,9 @@ import (
 	"strings"
 )
 
+// @anchor:telemetry:config
+const defaultTelemetryRESTBaseURL = "https://telemetry.betterstack.com"
+
 func main() {
 	os.Exit(runWithAPI(os.Args[1:], os.Stdout, os.Stderr, defaultAPIBaseURL, newHTTPClient()))
 }
@@ -20,12 +23,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 	return runWithAPI(args, stdout, stderr, defaultAPIBaseURL, newHTTPClient())
 }
 
-// runWithAPI is the test-only injection seam (spec R9). Tests supply the base
-// URL and HTTP client so every request stays on a local mock server. No flag,
-// environment variable, or file changes these values at runtime.
+// runWithAPI preserves the Uptime injection interface for production and tests.
+// Tests supply a loopback base URL and HTTP client. No flag, environment
+// variable, or file changes the production endpoint or client at runtime.
 // @anchor:uptime:router
 func runWithAPI(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
-	return runWithEndpoints(args, stdout, stderr, baseURL, "https://telemetry.betterstack.com", "", client)
+	return runWithEndpoints(args, stdout, stderr, baseURL, defaultTelemetryRESTBaseURL, "", client)
 }
 
 // runWithEndpoints accepts distinct test endpoints without adding production
