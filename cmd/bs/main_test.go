@@ -18,6 +18,55 @@ func invoke(args ...string) (code int, stdout, stderr string) {
 	return code, out.String(), err.String()
 }
 
+// recordingRoundTripper captures requests and returns an in-memory response without dialing.
+type recordingRoundTripper struct {
+	requests []*http.Request
+}
+
+// RoundTrip records the request without delegating to a network transport.
+func (r *recordingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	r.requests = append(r.requests, req)
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Body:       io.NopCloser(strings.NewReader("recorded response")),
+	}, nil
+}
+
+// TestRunWithAPIUsesFixedTelemetryHost verifies production Telemetry routing and Uptime injection without network access.
+func TestRunWithAPIUsesFixedTelemetryHost(t *testing.T) {
+	if defaultTelemetryRESTBaseURL != "https://telemetry.betterstack.com" {
+		t.Errorf("defaultTelemetryRESTBaseURL = %q, want https://telemetry.betterstack.com", defaultTelemetryRESTBaseURL)
+	}
+	t.Setenv(telemetryTokenEnvVar, "dummy-telemetry-token")
+	t.Setenv(tokenEnvVar, testToken)
+	const uptimeBaseURL = "http://127.0.0.1:12345/uptime"
+	cases := []struct {
+		args                      []string
+		scheme, host, path, token string
+	}{
+		{[]string{"sources", "list"}, "https", "telemetry.betterstack.com", "/api/v2/sources", "dummy-telemetry-token"},
+		{[]string{"monitors", "list"}, "http", "127.0.0.1:12345", "/uptime/api/v2/monitors", testToken},
+	}
+	for _, tc := range cases {
+		t.Run(strings.Join(tc.args, " "), func(t *testing.T) {
+			transport := &recordingRoundTripper{}
+			client := &http.Client{Transport: transport}
+			var out, err bytes.Buffer
+			code := runWithAPI(tc.args, &out, &err, uptimeBaseURL, client)
+			if code != 0 || out.String() != "recorded response" || err.Len() != 0 || len(transport.requests) != 1 {
+				t.Fatalf("code = %d, stdout = %q, stderr = %q, requests = %d", code, out.String(), err.String(), len(transport.requests))
+			}
+			req := transport.requests[0]
+			if req.Method != http.MethodGet || req.URL.Scheme != tc.scheme || req.URL.Host != tc.host || req.URL.Path != tc.path || req.URL.RawQuery != "" {
+				t.Fatalf("request = %s %s, want GET %s://%s%s", req.Method, req.URL, tc.scheme, tc.host, tc.path)
+			}
+			if req.Header.Get("Authorization") != "Bearer "+tc.token {
+				t.Error("request did not use the expected dummy credential")
+			}
+		})
+	}
+}
+
 // TestRunWithAPIKeepsSignatureAndUptimeRouting preserves the Uptime injection
 // interface and raw response behavior against a guarded loopback server.
 func TestRunWithAPIKeepsSignatureAndUptimeRouting(t *testing.T) {
