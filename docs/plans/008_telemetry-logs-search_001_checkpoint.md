@@ -5,7 +5,7 @@ The checkpoint owns task state. The implementation checklist renders task boxes 
 ## Identity
 
 - Milestone ID: `001` (S0).
-- Milestone source: `docs/plans/008_telemetry-logs-search_milestones.md`. This protected baseline path remains untouched and unchecked.
+- Milestone source: `docs/plans/008_telemetry-logs-search_milestones.md`. The completion gate authorizes only its 001 checkbox character. It remains untracked and unstaged.
 - Repository root: `/home/jaron/dev/betterstack-cli/master`.
 - Branch: `master`.
 - Phase 3 setup HEAD: `1e4a9104a3f07a4f3ce8ff47a782ebf917d5b20c`.
@@ -32,14 +32,16 @@ The checkpoint owns task state. The implementation checklist renders task boxes 
 
 ## State
 
-- Lane: `full`, retained from planning. This run executes the resolved S0 records checklist only.
-- Current phase: `execute`, stopped after review gate 1 re-run 2 finding L1 and the Request executor capitalization fix.
-- Current task: none. A1–A4 remain passed. V1 remains unstarted.
-- Task states: A1 `passed` (committed in `43b250786351384ff20b8b8ae3dd1bf99693f033`); A2 `passed` (committed in `7cda359d378913f308088ba4dde5aedd007a2345`); A3 `passed` (committed in `43b250786351384ff20b8b8ae3dd1bf99693f033`); A4 `passed` (committed in `7cda359d378913f308088ba4dde5aedd007a2345`); V1 `not started`.
-- Milestone checkbox: `unchecked`. The user excludes rendering this protected baseline file.
-- Last completed gate: requested L1 documentation checks passed against HEAD `c0a389fe39fe24ae62a31a5a2f705d02a7e0e5c0` with uncommitted fixes. This is not V1.
-- Next action: stop after the authorized `001: fix review finding L1` local commit. V1 requires a separate authorized invocation.
-- Authorization: explicit-path local commits on `master` only. No push, live API request, credential use, or milestone 002+ work.
+- Lane: `full`. This invocation retries V1 for S0 records, then runs the Factory completion gate.
+- Current phase: `complete`. V1 retry and the Factory completion gate passed.
+- Current task: V1 `passed`. The prior verifier failures remain in the historical evidence.
+- Task states: A1 `passed` and A3 `passed` (implementation commit `43b250786351384ff20b8b8ae3dd1bf99693f033`); A2 `passed` and A4 `passed` (implementation commit `7cda359d378913f308088ba4dde5aedd007a2345`); V1 `passed` at verification HEAD `a53c168aaed7b1c7da31026587bbb74016aea69f`.
+- Milestone checkbox: `checked`. The V1 checkbox and milestone 001 checkbox render their passed gates.
+- Last completed gate: the once-only Factory completion battery, R1–R7 evidence table, status accounting, and pre-render baseline fingerprint audit passed.
+- Next action: start milestone 002 (S1).
+- Verification HEAD: `a53c168aaed7b1c7da31026587bbb74016aea69f`, branch `master`. The local completion commit contains only implement/checkpoint changes.
+- Final baseline status: the same five untracked paths, with only the authorized 001 checkbox byte changed. The post-render fingerprint is `5f6cf5609b4c769043291850953b4728031c3cad1c8a9fd6611cca60ffa064a8`.
+- Authorization: local commits on `master` only. The completion gate may change only the 001 milestone checkbox character after all prerequisites pass. No push is authorized.
 
 ## Previous planning evidence
 
@@ -2420,8 +2422,8 @@ a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4  -
 
 **Changes:** The following before/after text quotes the changed sentences. No function is added or modified.
 
-- `.mem/practices.md:20` before: "[Testing](uptime/testing.md) documents the Command routing boundary and its limits."
-- `.mem/practices.md:20` after: "[Testing](uptime/testing.md) documents the Command routing boundary, the loopback-only network guard, and the guard's limits."
+- `.mem/practices.md:20` before: `"[Testing](uptime/testing.md) documents the Command routing boundary and its limits."`
+- `.mem/practices.md:20` after: `"[Testing](uptime/testing.md) documents the Command routing boundary, the loopback-only network guard, and the guard's limits."`
 - `.mem/summary.md:3` before: "The request executor sends a bearer-authenticated GET, applies a 30-second default timeout, disables redirects, and passes response bodies unchanged to stdout for 2xx or stderr otherwise."
 - `.mem/summary.md:3` after: "The Request executor sends a bearer-authenticated GET, applies a 30-second default timeout, disables redirects, and passes response bodies unchanged to stdout for 2xx or stderr otherwise."
 - `.mem/uptime/requests.md:17` before: "After checking `err`, the request executor sets authentication:"
@@ -2639,3 +2641,2210 @@ The terminal report supplies final verification outputs, the commit SHA, final s
 The checkpoint cannot contain its own eventual commit SHA without another self-referential commit.
 V1 remains unstarted. All task boxes and all five protected baseline paths remain unchanged and unstaged.
 No further milestone work or push is authorized.
+
+
+## V1 attempt — failed verifier command, completion stopped
+
+**Result:** V1 stopped because the inline R5 scope audit had a Python syntax error.
+The outer runner interpreted a newline escape before passing the command to Python.
+That inserted a literal newline inside a single-quoted string at line 18.
+The audit parsed no statements and verified no R5 assertion. This is a verifier error, not a demonstrated implementation failure.
+The user requires stopping checkbox rendering after any check failure, so I did not retry the audit or run the completion gate.
+The runner exited 1 with this diagnostic after the command output:
+
+```text
+V1 FAILED: expected exit 0, got 1. No task or milestone checkbox was changed.
+```
+
+**Preservation:** HEAD remains `a53c168aaed7b1c7da31026587bbb74016aea69f` on `master`.
+A1–A4 remain passed, V1 remains unchecked, and the milestone source still has unchecked 001 and 002 entries.
+The baseline fingerprint matches `a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4` before and after the attempt.
+No baseline path, implementation checklist, specification, source, or test changed.
+Only this checkpoint records the stopped attempt. Its update uses a temporary file and atomic rename.
+No commit, staging, push, live request, or ambient credential use occurred.
+
+**Verification setup:** The runner removes credential variables without reading their values.
+All Go commands use this local setup. Only build changes GOFLAGS to avoid creating a root binary.
+
+```sh
+unset BETTERSTACK_UPTIME_API_TOKEN BETTERSTACK_API_TOKEN GOROOT
+export PATH=/home/jaron/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64/bin:$PATH
+export GOTOOLCHAIN=local GOPROXY=off GOFLAGS=
+```
+
+**Requirement evidence:** This table does not assert full completion.
+
+| Requirement | Actual evidence | Result |
+|---|---|---|
+| R1 | Exactly nine memory files and map entries. All 61 relative links target Git-tracked files. Every Uptime topic and practices has an example. The summary has a Mermaid flow. The maximum is 53 lines. I compared memory with production files, help tests, the safety harness, and routing helpers. | Partial V1 check PASS |
+| R2 | Exactly eight anchors immediately precede the required declarations. Eight TAGS.md entries match, including configuration and five handlers. Every Go file equals `61902fd` after removing eight anchor lines. | Partial V1 check PASS |
+| R3 | The only fragment has one Added heading, a blank line, and one factual Uptime records bullet. Five plain tracked repo-root paths resolve. No front matter, extra heading, Markdown link, or Telemetry claim exists. CHANGELOG.md is unchanged. | Partial V1 check PASS |
+| R4 | LOG.md and the tracked log.d/.gitkeep marker have zero bytes. The marker is the only directory entry. | Partial V1 check PASS |
+| R5 | The source-only comparison passed. The exact range allowlist and baseline-status audit could not parse. Later fingerprint capture confirms the baseline remains unchanged. | NOT VERIFIED, failed audit command |
+| R6 | V1 build, vet, cached tests, and gofmt passed. Gofmt printed no paths. The runner stopped before the final whitespace and staged-path checks. The Factory uncached battery did not run. | INCOMPLETE |
+| R7 | This section records actual commands, outputs, exit codes, limitations, and the failure boundary. The source checkbox remains unchecked. The review nit remains unresolved because the runner wrote nothing before failure. | INCOMPLETE |
+| Milestone 001 acceptance | Memory, anchor index, fragment, and empty provenance checks passed. No Makefile exists. The complete preservation and completion gate did not pass. | NOT COMPLETE |
+
+**Limits and decisions:** No applicable Factory CLI, repository verifier, shared verifier, Makefile, or Markdown formatter/linter configuration exists.
+The existing repository script performs live probes. I did not run it.
+The user protects `.agents/` and restricts writes, so inline checks replace the new-script fallback.
+The three unavailable Make targets remain environmental limitations. The spec authorizes direct checks, not parser equivalence.
+No dependency, runtime function, or symptom patch was added.
+Ladder rung 1 excludes new tests, memory updates, fragments, provenance entries, README changes, and Makefile creation.
+Ladder rung 2 uses installed Go/Git tools and Python standard-library checks.
+The user requires the failed run to stop, so I rejected a retry and any checkbox render.
+The failed command appears as text below because it intentionally preserves invalid Python syntax as evidence.
+
+### Actual V1 command evidence
+
+Each JSON output preserves the exact stdout or stderr bytes, including final newlines and tabs.
+The source diff was captured again for evidence after the failure. No source changed between captures.
+All other records below transcribe the actual first attempt output.
+
+Command:
+```sh
+git rev-parse HEAD
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"a53c168aaed7b1c7da31026587bbb74016aea69f\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+git branch --show-current
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"master\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+git status --porcelain
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"?? .agents/\n?? .wayfinder/\n?? AGENTS.md\n?? docs/plans/008_telemetry-logs-search_milestones.md\n?? verify-incident-id.sh\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+git diff --cached --name-only
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+git log --oneline -3
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"a53c168 001: fix review finding L1\nc0a389f 001: fix review re-run findings N1-N3\n0dd18c5 001: record review gate 1 fixes and evidence\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+command -v factory
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 1.
+
+Command:
+```sh
+find .agents/scripts -maxdepth 1 -type f -print
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+".agents/scripts/.gitkeep\n.agents/scripts/telemetry-live-probe.sh\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+find /home/jaron/.agents/scripts -maxdepth 2 -type f \( -iname "*s0*" -o -iname "*factory*" -o -iname "*records*" \) -print
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+find . -maxdepth 3 -type f \( -name "Makefile" -o -name "makefile" -o -name "GNUmakefile" -o -iname "*markdownlint*" -o -iname "*prettier*" -o -name ".editorconfig" \) -print
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+make help
+```
+
+Stdout: empty.
+
+Stderr (verbatim bytes, reversible JSON):
+```json
+"make: *** No rule to make target 'help'.  Stop.\n"
+```
+
+Exit: 2.
+
+Command:
+```sh
+make docs-check
+```
+
+Stdout: empty.
+
+Stderr (verbatim bytes, reversible JSON):
+```json
+"make: *** No rule to make target 'docs-check'.  Stop.\n"
+```
+
+Exit: 2.
+
+Command:
+```sh
+make fragments-check
+```
+
+Stdout: empty.
+
+Stderr (verbatim bytes, reversible JSON):
+```json
+"make: *** No rule to make target 'fragments-check'.  Stop.\n"
+```
+
+Exit: 2.
+
+Command:
+```sh
+go version
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"go version go1.26.9 linux/amd64\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+go env GOROOT GOTOOLCHAIN GOPROXY GOFLAGS
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"/home/jaron/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64\nlocal\noff\n\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+GOFLAGS=-o=/dev/null go build ./...
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+go vet ./...
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+go test ./...
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"ok  \tgithub.com/jrswab/betterstack-cli/cmd/bs\t(cached)\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+gofmt -l cmd/bs/*.go
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+python3 - <<'PY'
+from pathlib import Path
+import re
+import subprocess
+
+repo = Path.cwd().resolve()
+root = Path('.mem')
+expected = {
+    'summary.md', 'terminology.md', 'practices.md', 'mem-map.md',
+    'uptime/summary.md', 'uptime/commands.md', 'uptime/requests.md',
+    'uptime/incidents.md', 'uptime/testing.md',
+}
+actual = {str(p.relative_to(root)) for p in root.rglob('*') if p.is_file()}
+assert actual == expected, (actual, expected)
+map_links = re.findall(r'\[[^\]]+\]\(([^)]+)\)', (root / 'mem-map.md').read_text())
+assert len(map_links) == 9 and set(map_links) == expected, map_links
+
+def check_link(path, link):
+    assert not link.startswith(('/', 'http:', 'https:')), (path, link)
+    target = (path.parent / link).resolve()
+    assert target.is_file(), (path, link)
+    relative = str(target.relative_to(repo))
+    subprocess.run(['git', 'ls-files', '--error-unmatch', '--', relative], check=True, capture_output=True)
+
+link_count = 0
+for name in sorted(expected):
+    path = root / name
+    text = path.read_text()
+    assert len(text.splitlines()) <= 250, name
+    assert text.endswith('\n'), name
+    assert all(line == line.rstrip() for line in text.splitlines()), name
+    assert text.count('```') % 2 == 0, name
+    for link in re.findall(r'\[[^\]]+\]\(([^)]+)\)', text):
+        check_link(path, link)
+        link_count += 1
+    if name.startswith('uptime/') or name == 'practices.md':
+        assert re.search(r'```(?:go|sh|text)\n\S[\s\S]*?\n```', text), name
+    assert '/home/jaron/go/' not in text and 'GOTOOLCHAIN' not in text, name
+assert '```mermaid\nflowchart TD\n' in (root / 'uptime/summary.md').read_text()
+try:
+    check_link(root / 'practices.md', '../AGENTS.md')
+except subprocess.CalledProcessError as error:
+    assert error.returncode == 1, error.returncode
+else:
+    raise AssertionError('R1 accepted an existing untracked link target')
+print('R1 PASS: exactly nine memory files and nine map entries')
+print(f'R1 PASS: {link_count} relative links resolve to Git-tracked files')
+print('R1 PASS: existing untracked AGENTS.md target is rejected (git exit 1)')
+print('R1 PASS: topic examples, Mermaid flow, balanced fences, and 250-line limits')
+print('R1 PASS: local toolchain override is absent from memory')
+PY
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"R1 PASS: exactly nine memory files and nine map entries\nR1 PASS: 61 relative links resolve to Git-tracked files\nR1 PASS: existing untracked AGENTS.md target is rejected (git exit 1)\nR1 PASS: topic examples, Mermaid flow, balanced fences, and 250-line limits\nR1 PASS: local toolchain override is absent from memory\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+wc -l .mem/summary.md .mem/terminology.md .mem/practices.md .mem/mem-map.md .mem/uptime/summary.md .mem/uptime/commands.md .mem/uptime/requests.md .mem/uptime/incidents.md .mem/uptime/testing.md
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"    3 .mem/summary.md\n   16 .mem/terminology.md\n   26 .mem/practices.md\n   16 .mem/mem-map.md\n   35 .mem/uptime/summary.md\n   53 .mem/uptime/commands.md\n   37 .mem/uptime/requests.md\n   39 .mem/uptime/incidents.md\n   39 .mem/uptime/testing.md\n  264 total\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+python3 - <<'PY'
+from collections import Counter
+from pathlib import Path
+import re
+import subprocess
+
+constants = ('defaultAPIBaseURL', 'defaultTimeout', 'tokenEnvVar')
+expected = [
+    ('uptime:router', 'cmd/bs/main.go', ('runWithAPI',)),
+    ('uptime:config', 'cmd/bs/monitors.go', constants),
+    ('uptime:command-handler', 'cmd/bs/monitors.go', ('monitorsList',)),
+    ('uptime:command-handler', 'cmd/bs/monitors.go', ('monitorsGet',)),
+    ('uptime:request-executor', 'cmd/bs/monitors.go', ('doMonitorsRequest',)),
+    ('uptime:command-handler', 'cmd/bs/incidents.go', ('incidentsList',)),
+    ('uptime:command-handler', 'cmd/bs/incidents.go', ('incidentsGet',)),
+    ('uptime:command-handler', 'cmd/bs/incidents.go', ('incidentsTimeline',)),
+]
+occurrences = []
+for path in sorted(Path('cmd').rglob('*.go')):
+    text = path.read_text()
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if '@anchor' not in line:
+            continue
+        assert not path.name.endswith('_test.go'), path
+        tag = re.fullmatch(r'// @anchor:(uptime:[a-z-]+)', line)
+        assert tag, (path, i + 1)
+        if tag[1] == 'uptime:config':
+            assert lines[i + 1] == 'const ('
+            symbols = tuple(re.match(r'\s*(\w+)\s*=', entry)[1] for entry in lines[i + 2:i + 5])
+            assert lines[i + 5] == ')'
+        else:
+            declaration = re.match(r'func (\w+)\(', lines[i + 1])
+            assert declaration, (path, i + 1)
+            symbols = (declaration[1],)
+        occurrences.append((tag[1], str(path), symbols))
+    original = subprocess.check_output(['git', 'show', '61902fd:' + str(path)])
+    without_new_anchor = ''.join(line for line in text.splitlines(keepends=True) if '@anchor' not in line)
+    assert without_new_anchor.encode() == original, path
+assert Counter(occurrences) == Counter(expected), occurrences
+entries = []
+for line in Path('TAGS.md').read_text().splitlines():
+    if not line.startswith('| `'):
+        continue
+    cells = [cell.strip() for cell in line.strip('|').split('|')]
+    assert len(cells) == 4 and all(cells), line
+    tag = re.fullmatch(r'`(uptime:[a-z-]+)`', cells[0])
+    source = re.fullmatch(r'\[(cmd/bs/\w+\.go)\]\(\1\)', cells[1])
+    assert tag and source, line
+    symbols = tuple(re.findall(r'`(\w+)`', cells[2]))
+    subprocess.run(['git', 'ls-files', '--error-unmatch', '--', source[1]], check=True, capture_output=True)
+    entries.append((tag[1], source[1], symbols))
+assert Counter(entries) == Counter(expected), entries
+assert sum(tag == 'uptime:command-handler' for tag, _, _ in entries) == 5
+assert subprocess.check_output(['git', 'diff', '61902fd', '--numstat', '--', 'cmd/bs'], text=True) == '3\t0\tcmd/bs/incidents.go\n1\t0\tcmd/bs/main.go\n4\t0\tcmd/bs/monitors.go\n'
+print('ANCHORS PASS: exactly eight source occurrences match TAGS.md, including five command handlers')
+print('ANCHORS PASS: config anchor immediately precedes the three-constant block; tests remain untagged')
+print('SOURCE PASS: all Go source equals 61902fd after removing exactly eight anchor comments')
+PY
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"ANCHORS PASS: exactly eight source occurrences match TAGS.md, including five command handlers\nANCHORS PASS: config anchor immediately precedes the three-constant block; tests remain untagged\nSOURCE PASS: all Go source equals 61902fd after removing exactly eight anchor comments\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+grep -n '@anchor' $(find cmd/bs -maxdepth 1 -name '*.go' ! -name '*_test.go' | sort)
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"cmd/bs/incidents.go:50:// @anchor:uptime:command-handler\ncmd/bs/incidents.go:82:// @anchor:uptime:command-handler\ncmd/bs/incidents.go:332:// @anchor:uptime:command-handler\ncmd/bs/main.go:30:// @anchor:uptime:router\ncmd/bs/monitors.go:15:// @anchor:uptime:config\ncmd/bs/monitors.go:29:// @anchor:uptime:command-handler\ncmd/bs/monitors.go:55:// @anchor:uptime:command-handler\ncmd/bs/monitors.go:81:// @anchor:uptime:request-executor\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+git diff 61902fd -- cmd/bs
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"diff --git a/cmd/bs/incidents.go b/cmd/bs/incidents.go\nindex 121a744..47ba39f 100644\n--- a/cmd/bs/incidents.go\n+++ b/cmd/bs/incidents.go\n@@ -47,6 +47,7 @@ func parseIncidentsGetArgs(args []string) (string, time.Duration, error) {\n // incidentsGet implements `bs incidents get <id-or-url> [--timeout <d>]`:\n // argument and target validation run before the credential check, then exactly\n // one bearer-authenticated GET uses the shared 002 response contract.\n+// @anchor:uptime:command-handler\n func incidentsGet(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {\n \t// Read the token before validation only so local diagnostics can redact\n \t// it; the missing-token failure still occurs after a valid argument vector.\n@@ -78,6 +79,7 @@ func incidentsGet(args []string, stdout, stderr io.Writer, baseURL string, clien\n // exactly one bearer-authenticated GET to the incident's timeline endpoint uses\n // the shared 002 response contract. The body is opaque: no pagination, no\n // completeness promise, and any timeline_truncated item passes through raw.\n+// @anchor:uptime:command-handler\n func incidentsTimeline(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {\n \t// Read the token before validation only so local diagnostics can redact\n \t// it; the missing-token failure still occurs after a valid argument vector.\n@@ -327,6 +329,7 @@ func duplicateMetadataKey(pairs []metadataPair) (string, bool) {\n // bearer-authenticated GET to the v3 incidents endpoint sends the parsed flags\n // through the shared 002 response contract. The CLI never follows pagination\n // links (spec R7).\n+// @anchor:uptime:command-handler\n func incidentsList(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {\n \t// Read the token before validation only so local diagnostics can redact\n \t// it; the missing-token failure still occurs after a valid argument vector.\ndiff --git a/cmd/bs/main.go b/cmd/bs/main.go\nindex 48031a7..c6a0783 100644\n--- a/cmd/bs/main.go\n+++ b/cmd/bs/main.go\n@@ -27,6 +27,7 @@ func run(args []string, stdout, stderr io.Writer) int {\n // runWithAPI is the test-only injection seam (spec R9). Tests supply the base\n // URL and HTTP client so every request stays on a local mock server. No flag,\n // environment variable, or file changes these values at runtime.\n+// @anchor:uptime:router\n func runWithAPI(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {\n \tif help, ok := helpFor(args); ok {\n \t\tfmt.Fprint(stdout, help)\ndiff --git a/cmd/bs/monitors.go b/cmd/bs/monitors.go\nindex b9355fa..ae80996 100644\n--- a/cmd/bs/monitors.go\n+++ b/cmd/bs/monitors.go\n@@ -12,6 +12,7 @@ import (\n \t\"time\"\n )\n \n+// @anchor:uptime:config\n const (\n \tdefaultAPIBaseURL = \"https://incidents.betterstack.com\"\n \tdefaultTimeout    = 30 * time.Second\n@@ -25,6 +26,7 @@ func newHTTPClient() *http.Client { return &http.Client{} }\n // monitorsGet implements `bs monitors get <id> [--timeout <duration>]`:\n // exactly one bearer-authenticated GET, raw success body on stdout, raw\n // non-2xx body on stderr, and token-free local failure messages.\n+// @anchor:uptime:command-handler\n func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {\n \t// The token is read before argument validation only so locally generated\n \t// diagnostics can redact it. The missing-token failure still happens only\n@@ -50,6 +52,7 @@ func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client\n // bearer-authenticated GET, the parsed flags encoded as query parameters,\n // raw success body on stdout, raw non-2xx body on stderr, and token-free\n // local failure messages. The CLI never follows pagination links.\n+// @anchor:uptime:command-handler\n func monitorsList(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {\n \ttoken := os.Getenv(tokenEnvVar)\n \n@@ -75,6 +78,7 @@ func monitorsList(args []string, stdout, stderr io.Writer, baseURL string, clien\n // the shared 002 response contract used by both monitor commands: raw 2xx body\n // to stdout, raw non-2xx body to stderr, redirects not followed, and\n // token-free local diagnostics.\n+// @anchor:uptime:request-executor\n func doMonitorsRequest(endpoint, token string, timeout time.Duration, stdout, stderr io.Writer, client *http.Client) int {\n \tctx, cancel := context.WithTimeout(context.Background(), timeout)\n \tdefer cancel()\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+python3 - <<'PY'
+from pathlib import Path
+import re
+import subprocess
+
+path = Path('changelog.d/008-telemetry-logs-search-001.md')
+text = path.read_text()
+lines = text.splitlines()
+assert len(lines) == 3 and lines[0] == '### Added' and lines[1] == ''
+assert lines[2].startswith('- ') and lines[2][2:].strip()
+assert text.endswith('\n') and all(line == line.rstrip() for line in lines)
+assert sum(line.startswith('### ') for line in lines) == 1
+assert not any(line.startswith(('---', '## [', '# ')) for line in lines)
+assert not re.search(r'\[[^\]]+\]\([^)]+\)', text)
+cited = re.findall(r'`([^`]+)`', lines[2])
+expected = {'.mem/mem-map.md', '.mem/uptime/summary.md', 'TAGS.md', 'LOG.md', 'log.d/.gitkeep'}
+assert len(cited) == 5 and set(cited) == expected, cited
+for target in cited:
+    assert not target.startswith(('/', '../', './')) and Path(target).is_file(), target
+    subprocess.run(['git', 'ls-files', '--error-unmatch', '--', target], check=True, capture_output=True)
+assert 'Uptime CLI' in lines[2] and 'Telemetry' not in text and 'eight Uptime boundary anchors' in text
+assert {p.name for p in path.parent.iterdir()} == {path.name}
+assert subprocess.check_output(['git', 'diff', '61902fd', '--name-only', '--', 'CHANGELOG.md']) == b''
+print('R3 PASS: one Added heading, blank line, and one factual Uptime records bullet')
+print('R3 PASS: five plain repo-root paths resolve to Git-tracked files; no Markdown links')
+print('R3 PASS: eight anchors cited; no front matter, release section, or extra category')
+print('R3 PASS: only the required fragment exists; CHANGELOG.md is unchanged')
+PY
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"R3 PASS: one Added heading, blank line, and one factual Uptime records bullet\nR3 PASS: five plain repo-root paths resolve to Git-tracked files; no Markdown links\nR3 PASS: eight anchors cited; no front matter, release section, or extra category\nR3 PASS: only the required fragment exists; CHANGELOG.md is unchanged\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+test -f LOG.md && test ! -s LOG.md
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+test -d log.d && test -f log.d/.gitkeep && test ! -s log.d/.gitkeep && test "$(ls -A log.d)" = .gitkeep
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+ls -A log.d
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+".gitkeep\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+wc -c LOG.md log.d/.gitkeep
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"0 LOG.md\n0 log.d/.gitkeep\n0 total\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+git ls-files --error-unmatch -- LOG.md log.d/.gitkeep
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"LOG.md\nlog.d/.gitkeep\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```text
+python3 - <<'CHECK'
+from pathlib import Path
+import subprocess
+
+expected = {
+    '.mem/summary.md', '.mem/terminology.md', '.mem/practices.md', '.mem/mem-map.md',
+    '.mem/uptime/summary.md', '.mem/uptime/commands.md', '.mem/uptime/requests.md',
+    '.mem/uptime/incidents.md', '.mem/uptime/testing.md', 'TAGS.md', 'LOG.md',
+    'changelog.d/008-telemetry-logs-search-001.md', 'log.d/.gitkeep',
+    'cmd/bs/main.go', 'cmd/bs/monitors.go', 'cmd/bs/incidents.go',
+    'docs/plans/008_telemetry-logs-search_001_spec.md',
+    'docs/plans/008_telemetry-logs-search_001_implement.md',
+    'docs/plans/008_telemetry-logs-search_001_checkpoint.md',
+}
+changed = set(subprocess.check_output(['git', 'diff', '--name-only', '61902fd..HEAD'], text=True).splitlines())
+assert changed == expected, changed
+baseline = ['.agents/', '.wayfinder/', 'AGENTS.md', 'docs/plans/008_telemetry-logs-search_milestones.md', 'verify-incident-id.sh']
+status = subprocess.check_output(['git', 'status', '--porcelain'], text=True)
+assert status == ''.join('?? ' + name + '
+' for name in baseline), status
+assert subprocess.check_output(['git', 'diff', '--cached', '--name-only']) == b''
+assert subprocess.check_output(['git', 'diff', 'HEAD', '--name-only']) == b''
+assert subprocess.check_output(['git', 'diff', '61902fd', '--', 'README.md', 'CHANGELOG.md', 'go.mod', 'go.sum', '.gitignore', 'cmd/bs/help.go', 'cmd/bs/*_test.go']) == b''
+for name in baseline:
+    assert subprocess.check_output(['git', 'ls-files', '--', name]) == b'', name
+assert not any(Path(name).exists() for name in ('Makefile', 'makefile', 'GNUmakefile', 'bs'))
+assert Path('docs/plans/008_telemetry-logs-search_milestones.md').read_text().count('- [ ] 001:') == 1
+print('R5 PASS: 19 milestone paths match the exact implementation and planning allowlist')
+print('R5 PASS: tests, help, README, CHANGELOG, module, and ignored-file rules equal 61902fd')
+print('R5 PASS: no Telemetry code, Makefile, root binary, staged path, or tracked worktree change')
+print('R5/R7 PASS: exactly five baseline paths remain untracked and unchanged; milestone 001 remains unchecked')
+CHECK
+```
+
+Stdout: empty.
+
+Stderr (verbatim bytes, reversible JSON):
+```json
+"  File \"<stdin>\", line 18\n    assert status == ''.join('?? ' + name + '\n                                            ^\nSyntaxError: unterminated string literal (detected at line 18)\n"
+```
+
+Exit: 1.
+
+Command:
+```sh
+find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4  -\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+git status --porcelain
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"?? .agents/\n?? .wayfinder/\n?? AGENTS.md\n?? docs/plans/008_telemetry-logs-search_milestones.md\n?? verify-incident-id.sh\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+git rev-parse HEAD
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"a53c168aaed7b1c7da31026587bbb74016aea69f\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+grep -n '00[12]:' docs/plans/008_telemetry-logs-search_milestones.md | head
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"49:- [ ] 001: S0 \u2014 Establish repository records for the current Uptime CLI. Acceptance: `.mem/` documents the current Uptime CLI and enables all Telemetry slices; `@anchor` tags cover `runWithAPI`, Uptime command-handler, and `doMonitorsRequest` boundaries, `TAGS.md` matches those tags, `changelog.d/` exists with valid fragments, `LOG.md` and `log.d/` exist and are empty, and no Makefile is added. Affected files: `.mem/**`, `cmd/bs/main.go`, `cmd/bs/monitors.go`, `cmd/bs/incidents.go`, `TAGS.md`, `changelog.d/**`, `LOG.md`, `log.d/`. Decision: [ticket 08](../../.wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md). Verification: `go build ./...`; `go vet ./...`; `go test ./...`; `gofmt -l cmd/bs/*.go`.\n50:- [ ] 002: S1 \u2014 Add the Telemetry endpoint seam and secret redaction. Acceptance: tests can route source and SQL requests through `runWithEndpoints` while existing callers retain the `runWithAPI` signature; `redactSecrets` removes the Telemetry API token, SQL username, SQL password, and base64-encoded `username:password` from diagnostic output. This enabling seam supports S2 source requests and S4 SQL execution. Affected files: `cmd/bs/main.go`, relevant `cmd/bs/*.go` implementation and tests. Decisions: [ticket 02](../../.wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md), [ticket 11](../../.wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md). Verification: `go build ./...`; `go vet ./...`; `go test ./...`; `gofmt -l cmd/bs/*.go`.\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+### Final evidence audit — failed comparison, no retry
+
+The final artifact audit passed Markdown whitespace/fence checks, stored shell/Python syntax checks, and JSON decoding.
+It then rejected the historical-section comparison. It removed the final newline from only the original comparison operand.
+That is a verifier comparison error. I constructed the checkpoint by copying the original historical section without changing its contents.
+I did not retry this second failed verifier. No completion gate, checkbox render, staging, or commit followed.
+
+The audit's stdout was empty. Its stderr follows verbatim. It exited 1:
+
+```text
+Traceback (most recent call last):
+  File "<stdin>", line 22, in <module>
+AssertionError
+```
+
+The failed comparison statement was:
+
+```text
+assert text.split('## Previous planning evidence\n', 1)[1].split('\n\n## V1 attempt —', 1)[0] == original.split('## Previous planning evidence\n', 1)[1].rstrip('\n')
+```
+
+Subsequent read-only Git commands showed that both whitespace checks passed.
+The changed-path list contained only this checkpoint. The index remained empty.
+HEAD and the baseline fingerprint remained unchanged. Both milestone entries remained unchecked.
+No new commit SHA exists for this invocation. The current SHA is `a53c168aaed7b1c7da31026587bbb74016aea69f`.
+The requested completion commit was not created.
+
+**Final handoff:** Only `docs/plans/008_telemetry-logs-search_001_checkpoint.md` changed.
+No function was added or modified. The implementation checklist, spec, and milestone source remain unchanged.
+The two Testing quote code spans remain a pending review nit.
+No new dependency or symptom patch exists.
+The next safe action remains a newly authorized V1 retry, not milestone 002.
+The milestone 002 prerequisite is a passing V1 and Factory completion gate.
+
+### Final Git evidence
+
+These commands ran after the failure checkpoint update and before this final evidence append.
+The append changes no status path, baseline content, HEAD, index, or milestone checkbox.
+Every output below uses reversible JSON to preserve its exact bytes.
+
+Command:
+```sh
+git diff --check
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+git diff --cached --check
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+git diff --name-only HEAD
+```
+
+Stdout (verbatim bytes):
+```json
+"docs/plans/008_telemetry-logs-search_001_checkpoint.md\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+git diff --cached --name-only
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+git rev-parse HEAD
+```
+
+Stdout (verbatim bytes):
+```json
+"a53c168aaed7b1c7da31026587bbb74016aea69f\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+git status --porcelain
+```
+
+Stdout (verbatim bytes):
+```json
+" M docs/plans/008_telemetry-logs-search_001_checkpoint.md\n?? .agents/\n?? .wayfinder/\n?? AGENTS.md\n?? docs/plans/008_telemetry-logs-search_milestones.md\n?? verify-incident-id.sh\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+git log --oneline -3
+```
+
+Stdout (verbatim bytes):
+```json
+"a53c168 001: fix review finding L1\nc0a389f 001: fix review re-run findings N1-N3\n0dd18c5 001: record review gate 1 fixes and evidence\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+grep -n '00[12]:' docs/plans/008_telemetry-logs-search_milestones.md | head
+```
+
+Stdout (verbatim bytes):
+```json
+"49:- [ ] 001: S0 \u2014 Establish repository records for the current Uptime CLI. Acceptance: `.mem/` documents the current Uptime CLI and enables all Telemetry slices; `@anchor` tags cover `runWithAPI`, Uptime command-handler, and `doMonitorsRequest` boundaries, `TAGS.md` matches those tags, `changelog.d/` exists with valid fragments, `LOG.md` and `log.d/` exist and are empty, and no Makefile is added. Affected files: `.mem/**`, `cmd/bs/main.go`, `cmd/bs/monitors.go`, `cmd/bs/incidents.go`, `TAGS.md`, `changelog.d/**`, `LOG.md`, `log.d/`. Decision: [ticket 08](../../.wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md). Verification: `go build ./...`; `go vet ./...`; `go test ./...`; `gofmt -l cmd/bs/*.go`.\n50:- [ ] 002: S1 \u2014 Add the Telemetry endpoint seam and secret redaction. Acceptance: tests can route source and SQL requests through `runWithEndpoints` while existing callers retain the `runWithAPI` signature; `redactSecrets` removes the Telemetry API token, SQL username, SQL password, and base64-encoded `username:password` from diagnostic output. This enabling seam supports S2 source requests and S4 SQL execution. Affected files: `cmd/bs/main.go`, relevant `cmd/bs/*.go` implementation and tests. Decisions: [ticket 02](../../.wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md), [ticket 11](../../.wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md). Verification: `go build ./...`; `go vet ./...`; `go test ./...`; `gofmt -l cmd/bs/*.go`.\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+Command:
+```sh
+find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum
+```
+
+Stdout (verbatim bytes):
+```json
+"a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4  -\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+## V1 retry — authorized after verifier failures
+
+**Scope:** The user authorizes a V1 retry, the Factory completion gate, and one local commit on master.
+The prior V1 failure record remains historical. The retry does not rewrite its failed commands or outputs.
+The two Testing quotations now use code spans. No source or memory behavior changes.
+
+**Method:** Each direct-check script is written under `/tmp/factory-001/` with a quoted heredoc, then run as a file.
+The transcript includes each script's complete content, command, stdout, stderr, and exit code.
+JSON strings preserve exact output bytes, including tabs and final newlines. Comparisons normalize trailing newlines on both operands.
+The retry permits up to three attempts per verifier check. All retry checks so far passed on their first attempt.
+
+**Assumptions and decisions:**
+
+- The user's current completion authorization supersedes the spec's earlier no-render boundary only after completion prerequisites pass.
+- The specification remains unchanged as historical phase scope. The implementation checklist renders V1 from the current checkpoint.
+- The single-byte milestone render stays untracked and unstaged. Every other baseline byte must remain unchanged.
+- `61902fd` is the pre-S0 source baseline. The scope audit accepts the pre-existing dirty failure checkpoint at retry HEAD `a53c168`.
+- Six topic examples means five Uptime topics plus practices. The root summary, map, and terminology are not code-example topics.
+- Ladder rung 1 excludes runtime changes, new tests, new memory, README edits, extra changelog fragments, provenance entries, and Makefile creation.
+- Ladder rung 1 excludes milestone 002 implementation, live requests, credential use, and pushes from this invocation.
+- Ladder rung 2 uses installed Go/Git tools and Python's standard library. No dependency is added.
+- No applicable Factory CLI or verifier script exists. The repository's only non-marker script performs live probes and is not run.
+- The user restricts writes to `/tmp/factory-001/` and the named artifacts. This replaces the repository script-directory fallback for this invocation.
+- The cached Go 1.26.9 toolchain avoids launcher downloads. Only build sets `GOFLAGS=-o=/dev/null` to avoid a root binary.
+- Credentials are unset by name without inspecting their values. Existing tests use fixed dummy credentials and the unchanged loopback-only network guard.
+- No Markdown formatter or linter configuration exists. Direct whitespace, fence, tracked-link, and stored-command syntax checks supply document verification.
+- The existing S0 changelog fragment covers the records change. The retry adds verification evidence, not another product change.
+- TAGS.md needs no update because no anchor changes. Memory needs no update because no behavior or structure changes.
+- No symptom patch exists. File-based scripts fix the verifier quoting at its source, rather than bypassing R5.
+- Normalizing both comparison operands fixes the historical evidence audit, rather than weakening its content comparison.
+
+**Source grounding:** I read all nine memory files, TAGS.md, the fragment, empty provenance records, production handlers, and help.
+I also read the full help/usage tests and safety harness, the routing helpers, and representative loopback request/query tests.
+Memory agrees with the five routes, exact help forms, shared request/output contract, timeout, credential checks, incident targets, and metadata encoding.
+The testing topic separates `invoke` → `run`, `invokeAPI` → `runWithAPI`, direct handlers, and the network guard's bypass limits.
+The Mermaid flow describes routing and shared requests. Code examples match the inspected source and tests.
+No production CLI or live-probe script is executed. Go tests use their existing local mocks and credential-removal probe.
+
+**Environmental limitations:** `make help`, `make docs-check`, and `make fragments-check` each exit 2 because their targets are absent.
+No Makefile exists, and S0 excludes adding one. Direct checks implement the spec's settled substitute, not absent-parser equivalence.
+The transcript records each unavailable target's actual output and exit code. No unavailable target is reported as passed.
+
+**Verification setup:**
+
+```sh
+unset BETTERSTACK_UPTIME_API_TOKEN BETTERSTACK_API_TOKEN GOROOT
+export PATH=/home/jaron/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64/bin:$PATH
+export GOTOOLCHAIN=local GOPROXY=off GOFLAGS=
+```
+
+### Retry command evidence
+
+#### retry-head
+
+Command:
+```sh
+git rev-parse HEAD
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"a53c168aaed7b1c7da31026587bbb74016aea69f\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### retry-branch
+
+Command:
+```sh
+git branch --show-current
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"master\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### retry-status
+
+Command:
+```sh
+git status --porcelain
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+" M docs/plans/008_telemetry-logs-search_001_checkpoint.md\n?? .agents/\n?? .wayfinder/\n?? AGENTS.md\n?? docs/plans/008_telemetry-logs-search_milestones.md\n?? verify-incident-id.sh\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### retry-index
+
+Command:
+```sh
+git diff --cached --name-only
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+#### toolchain
+
+Command:
+```sh
+go version
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"go version go1.26.9 linux/amd64\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### toolchain-env
+
+Command:
+```sh
+go env GOROOT GOTOOLCHAIN GOPROXY GOFLAGS
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"/home/jaron/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64\nlocal\noff\n\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### v1-build
+
+Command:
+```sh
+GOFLAGS=-o=/dev/null go build ./...
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+#### v1-vet
+
+Command:
+```sh
+go vet ./...
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+#### v1-test
+
+Command:
+```sh
+go test ./...
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"ok  \tgithub.com/jrswab/betterstack-cli/cmd/bs\t(cached)\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### v1-gofmt
+
+Command:
+```sh
+gofmt -l cmd/bs/*.go
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+#### r1
+
+Command:
+```sh
+cat > /tmp/factory-001/r1.py <<'EOF'
+from pathlib import Path
+import re
+import subprocess
+
+repo = Path.cwd().resolve()
+root = Path('.mem')
+expected = {
+    'summary.md', 'terminology.md', 'practices.md', 'mem-map.md',
+    'uptime/summary.md', 'uptime/commands.md', 'uptime/requests.md',
+    'uptime/incidents.md', 'uptime/testing.md',
+}
+assert {str(p.relative_to(root)) for p in root.rglob('*') if p.is_file()} == expected
+map_links = re.findall(r'\[[^\]]+\]\(([^)]+)\)', (root / 'mem-map.md').read_text())
+assert len(map_links) == 9 and set(map_links) == expected
+links = 0
+maximum = 0
+for name in sorted(expected):
+    path = root / name
+    text = path.read_text()
+    maximum = max(maximum, len(text.splitlines()))
+    assert len(text.splitlines()) <= 250, name
+    assert text.endswith('\n') and all(line == line.rstrip() for line in text.splitlines()), name
+    assert text.count('```') % 2 == 0, name
+    if name.startswith('uptime/') or name == 'practices.md':
+        assert re.search(r'```(?:go|sh|text)\n\S[\s\S]*?\n```', text), name
+    for link in re.findall(r'\[[^\]]+\]\(([^)]+)\)', text):
+        assert not link.startswith(('/', 'http:', 'https:')), (name, link)
+        target = (path.parent / link).resolve()
+        assert target.is_file(), (name, link)
+        subprocess.run(['git', 'ls-files', '--error-unmatch', '--', str(target.relative_to(repo))], check=True, capture_output=True)
+        links += 1
+assert '```mermaid\nflowchart TD\n' in (root / 'uptime/summary.md').read_text()
+print('R1 PASS: exactly nine memory files and nine map links')
+print(f'R1 PASS: {links} relative links resolve to Git-tracked files')
+print(f'R1 PASS: all six topic examples, Mermaid flow, balanced fences, maximum {maximum} lines (limit 250)')
+EOF
+python3 /tmp/factory-001/r1.py
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"R1 PASS: exactly nine memory files and nine map links\nR1 PASS: 61 relative links resolve to Git-tracked files\nR1 PASS: all six topic examples, Mermaid flow, balanced fences, maximum 53 lines (limit 250)\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### r2
+
+Command:
+```sh
+cat > /tmp/factory-001/r2.py <<'EOF'
+from collections import Counter
+from pathlib import Path
+import re
+import subprocess
+
+expected = [
+    ('uptime:router', 'cmd/bs/main.go', ('runWithAPI',), 'Command routing boundary'),
+    ('uptime:config', 'cmd/bs/monitors.go', ('defaultAPIBaseURL', 'defaultTimeout', 'tokenEnvVar'), 'Uptime configuration boundary'),
+    ('uptime:command-handler', 'cmd/bs/monitors.go', ('monitorsList',), 'Monitors list command handler'),
+    ('uptime:command-handler', 'cmd/bs/monitors.go', ('monitorsGet',), 'Monitors get command handler'),
+    ('uptime:request-executor', 'cmd/bs/monitors.go', ('doMonitorsRequest',), 'Request executor'),
+    ('uptime:command-handler', 'cmd/bs/incidents.go', ('incidentsList',), 'Incidents list command handler'),
+    ('uptime:command-handler', 'cmd/bs/incidents.go', ('incidentsGet',), 'Incidents get command handler'),
+    ('uptime:command-handler', 'cmd/bs/incidents.go', ('incidentsTimeline',), 'Incidents timeline command handler'),
+]
+occurrences = []
+for path in sorted(Path('cmd/bs').glob('*.go')):
+    text = path.read_text()
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if '@anchor' not in line:
+            continue
+        assert not path.name.endswith('_test.go'), path
+        tag = re.fullmatch(r'// @anchor:(uptime:[a-z-]+)', line)
+        assert tag, (path, i + 1)
+        if tag[1] == 'uptime:config':
+            assert lines[i + 1] == 'const (' and lines[i + 5] == ')'
+            symbols = tuple(re.match(r'\s*(\w+)\s*=', entry)[1] for entry in lines[i + 2:i + 5])
+        else:
+            declaration = re.match(r'func (\w+)\(', lines[i + 1])
+            assert declaration, (path, i + 1)
+            symbols = (declaration[1],)
+        occurrences.append((tag[1], str(path), symbols))
+    stripped = ''.join(line for line in text.splitlines(keepends=True) if '@anchor' not in line)
+    assert stripped.encode() == subprocess.check_output(['git', 'show', '61902fd:' + str(path)]), path
+assert Counter(occurrences) == Counter(row[:3] for row in expected)
+entries = []
+for line in Path('TAGS.md').read_text().splitlines():
+    if not line.startswith('| `'):
+        continue
+    cells = [cell.strip() for cell in line.strip('|').split('|')]
+    assert len(cells) == 4 and all(cells), line
+    tag = re.fullmatch(r'`(uptime:[a-z-]+)`', cells[0])
+    source = re.fullmatch(r'\[(cmd/bs/\w+\.go)\]\(\1\)', cells[1])
+    assert tag and source, line
+    entries.append((tag[1], source[1], tuple(re.findall(r'`(\w+)`', cells[2])), cells[3]))
+assert Counter(entries) == Counter(expected)
+assert subprocess.check_output(['git', 'diff', '61902fd', '--numstat', '--', 'cmd/bs'], text=True).rstrip('\n') == '3\t0\tcmd/bs/incidents.go\n1\t0\tcmd/bs/main.go\n4\t0\tcmd/bs/monitors.go'.rstrip('\n')
+print('R2 PASS: exactly eight anchors immediately precede the specified declarations, including configuration')
+print('R2 PASS: exactly eight TAGS.md entries match anchors, symbols, sources, and boundary names')
+print('R2/R5 PASS: all Go files equal 61902fd after removing only eight anchor comments; tests remain untagged')
+EOF
+python3 /tmp/factory-001/r2.py
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"R2 PASS: exactly eight anchors immediately precede the specified declarations, including configuration\nR2 PASS: exactly eight TAGS.md entries match anchors, symbols, sources, and boundary names\nR2/R5 PASS: all Go files equal 61902fd after removing only eight anchor comments; tests remain untagged\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### r3
+
+Command:
+```sh
+cat > /tmp/factory-001/r3.py <<'EOF'
+from pathlib import Path
+import re
+import subprocess
+
+path = Path('changelog.d/008-telemetry-logs-search-001.md')
+text = path.read_text()
+lines = text.splitlines()
+assert len(lines) == 3 and lines[0] == '### Added' and lines[1] == ''
+assert lines[2].startswith('- ') and lines[2][2:].strip()
+assert text.endswith('\n') and all(line == line.rstrip() for line in lines)
+assert sum(line.startswith('### ') for line in lines) == 1
+assert not any(line.startswith(('---', '## [', '# ')) for line in lines)
+assert not re.search(r'\[[^\]]+\]\([^)]+\)', text)
+cited = re.findall(r'`([^`]+)`', lines[2])
+assert len(cited) == 5 and set(cited) == {'.mem/mem-map.md', '.mem/uptime/summary.md', 'TAGS.md', 'LOG.md', 'log.d/.gitkeep'}
+for target in cited:
+    assert not target.startswith(('/', '../', './')) and Path(target).is_file(), target
+    subprocess.run(['git', 'ls-files', '--error-unmatch', '--', target], check=True, capture_output=True)
+assert 'Uptime CLI' in text and 'eight Uptime boundary anchors' in text and 'Telemetry' not in text
+assert {p.name for p in path.parent.iterdir()} == {path.name}
+assert subprocess.check_output(['git', 'diff', '61902fd', '--', 'CHANGELOG.md']) == b''
+print('R3 PASS: one Added heading, blank line, and one factual Uptime records bullet')
+print('R3 PASS: five plain repo-root paths are tracked; no Markdown link, front matter, release, or extra category')
+print('R3 PASS: only the required fragment exists; CHANGELOG.md is unchanged; no Telemetry claim')
+EOF
+python3 /tmp/factory-001/r3.py
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"R3 PASS: one Added heading, blank line, and one factual Uptime records bullet\nR3 PASS: five plain repo-root paths are tracked; no Markdown link, front matter, release, or extra category\nR3 PASS: only the required fragment exists; CHANGELOG.md is unchanged; no Telemetry claim\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### r4
+
+Command:
+```sh
+cat > /tmp/factory-001/r4.py <<'EOF'
+from pathlib import Path
+import subprocess
+
+assert Path('LOG.md').is_file() and Path('LOG.md').stat().st_size == 0
+assert Path('log.d').is_dir() and {p.name for p in Path('log.d').iterdir()} == {'.gitkeep'}
+assert Path('log.d/.gitkeep').is_file() and Path('log.d/.gitkeep').stat().st_size == 0
+for name in ('LOG.md', 'log.d/.gitkeep'):
+    subprocess.run(['git', 'ls-files', '--error-unmatch', '--', name], check=True, capture_output=True)
+    assert subprocess.check_output(['git', 'show', 'HEAD:' + name]) == b''
+print('R4 PASS: tracked LOG.md and log.d/.gitkeep are zero bytes in worktree and HEAD')
+print('R4 PASS: log.d contains only .gitkeep; no provenance entry exists')
+EOF
+python3 /tmp/factory-001/r4.py
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"R4 PASS: tracked LOG.md and log.d/.gitkeep are zero bytes in worktree and HEAD\nR4 PASS: log.d contains only .gitkeep; no provenance entry exists\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### r5
+
+Command:
+```sh
+cat > /tmp/factory-001/r5.py <<'EOF'
+from pathlib import Path
+import subprocess
+
+expected = {
+    '.mem/summary.md', '.mem/terminology.md', '.mem/practices.md', '.mem/mem-map.md',
+    '.mem/uptime/summary.md', '.mem/uptime/commands.md', '.mem/uptime/requests.md',
+    '.mem/uptime/incidents.md', '.mem/uptime/testing.md', 'TAGS.md', 'LOG.md',
+    'changelog.d/008-telemetry-logs-search-001.md', 'log.d/.gitkeep',
+    'cmd/bs/main.go', 'cmd/bs/monitors.go', 'cmd/bs/incidents.go',
+    'docs/plans/008_telemetry-logs-search_001_spec.md',
+    'docs/plans/008_telemetry-logs-search_001_implement.md',
+    'docs/plans/008_telemetry-logs-search_001_checkpoint.md',
+}
+changed = set(subprocess.check_output(['git', 'diff', '--name-only', '61902fd..HEAD'], text=True).splitlines())
+assert changed == expected, changed
+baseline = ['.agents/', '.wayfinder/', 'AGENTS.md', 'docs/plans/008_telemetry-logs-search_milestones.md', 'verify-incident-id.sh']
+status = subprocess.check_output(['git', 'status', '--porcelain'], text=True).rstrip('\n').splitlines()
+assert status == [' M docs/plans/008_telemetry-logs-search_001_checkpoint.md'] + ['?? ' + name for name in baseline], status
+assert subprocess.check_output(['git', 'diff', '--cached', '--name-only']) == b''
+assert subprocess.check_output(['git', 'diff', 'HEAD', '--name-only'], text=True).splitlines() == ['docs/plans/008_telemetry-logs-search_001_checkpoint.md']
+assert subprocess.check_output(['git', 'diff', '61902fd', '--', 'README.md', 'CHANGELOG.md', 'go.mod', 'go.sum', '.gitignore', 'cmd/bs/help.go', 'cmd/bs/*_test.go']) == b''
+for name in baseline:
+    assert subprocess.check_output(['git', 'ls-files', '--', name]) == b'', name
+assert not any(Path(name).exists() for name in ('Makefile', 'makefile', 'GNUmakefile', 'bs'))
+assert Path('docs/plans/008_telemetry-logs-search_milestones.md').read_bytes() == Path('/tmp/factory-001/milestones-before.md').read_bytes()
+command = 'find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum'
+fingerprint = subprocess.check_output(['bash', '-o', 'pipefail', '-c', command], text=True).split()[0]
+assert fingerprint == 'a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4', fingerprint
+print('R5 PASS: exactly 19 committed milestone paths match the implementation and planning allowlist')
+print('R5 PASS: tests, help, README, CHANGELOG, module, and ignored-file rules equal 61902fd')
+print('R5 PASS: only the failure checkpoint is dirty; the index is empty; no Telemetry code, Makefile, or binary')
+print('R5 PASS: exactly five baseline paths remain untouched, untracked, and unstaged')
+print('R5 PASS: baseline fingerprint ' + fingerprint)
+EOF
+python3 /tmp/factory-001/r5.py
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"R5 PASS: exactly 19 committed milestone paths match the implementation and planning allowlist\nR5 PASS: tests, help, README, CHANGELOG, module, and ignored-file rules equal 61902fd\nR5 PASS: only the failure checkpoint is dirty; the index is empty; no Telemetry code, Makefile, or binary\nR5 PASS: exactly five baseline paths remain untouched, untracked, and unstaged\nR5 PASS: baseline fingerprint a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### make-help
+
+Command:
+```sh
+make help
+```
+
+Stdout: empty.
+
+Stderr (verbatim bytes, reversible JSON):
+```json
+"make: *** No rule to make target 'help'.  Stop.\n"
+```
+
+Exit: 2.
+
+#### make-docs
+
+Command:
+```sh
+make docs-check
+```
+
+Stdout: empty.
+
+Stderr (verbatim bytes, reversible JSON):
+```json
+"make: *** No rule to make target 'docs-check'.  Stop.\n"
+```
+
+Exit: 2.
+
+#### make-fragments
+
+Command:
+```sh
+make fragments-check
+```
+
+Stdout: empty.
+
+Stderr (verbatim bytes, reversible JSON):
+```json
+"make: *** No rule to make target 'fragments-check'.  Stop.\n"
+```
+
+Exit: 2.
+
+#### v1-whitespace
+
+Command:
+```sh
+git diff --check
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+#### v1-cached-whitespace
+
+Command:
+```sh
+git diff --cached --check
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+#### committed-paths
+
+Command:
+```sh
+git diff --name-only 61902fd..HEAD
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+".mem/mem-map.md\n.mem/practices.md\n.mem/summary.md\n.mem/terminology.md\n.mem/uptime/commands.md\n.mem/uptime/incidents.md\n.mem/uptime/requests.md\n.mem/uptime/summary.md\n.mem/uptime/testing.md\nLOG.md\nTAGS.md\nchangelog.d/008-telemetry-logs-search-001.md\ncmd/bs/incidents.go\ncmd/bs/main.go\ncmd/bs/monitors.go\ndocs/plans/008_telemetry-logs-search_001_checkpoint.md\ndocs/plans/008_telemetry-logs-search_001_implement.md\ndocs/plans/008_telemetry-logs-search_001_spec.md\nlog.d/.gitkeep\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### source-diff
+
+Command:
+```sh
+git diff 61902fd -- cmd/bs
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"diff --git a/cmd/bs/incidents.go b/cmd/bs/incidents.go\nindex 121a744..47ba39f 100644\n--- a/cmd/bs/incidents.go\n+++ b/cmd/bs/incidents.go\n@@ -47,6 +47,7 @@ func parseIncidentsGetArgs(args []string) (string, time.Duration, error) {\n // incidentsGet implements `bs incidents get <id-or-url> [--timeout <d>]`:\n // argument and target validation run before the credential check, then exactly\n // one bearer-authenticated GET uses the shared 002 response contract.\n+// @anchor:uptime:command-handler\n func incidentsGet(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {\n \t// Read the token before validation only so local diagnostics can redact\n \t// it; the missing-token failure still occurs after a valid argument vector.\n@@ -78,6 +79,7 @@ func incidentsGet(args []string, stdout, stderr io.Writer, baseURL string, clien\n // exactly one bearer-authenticated GET to the incident's timeline endpoint uses\n // the shared 002 response contract. The body is opaque: no pagination, no\n // completeness promise, and any timeline_truncated item passes through raw.\n+// @anchor:uptime:command-handler\n func incidentsTimeline(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {\n \t// Read the token before validation only so local diagnostics can redact\n \t// it; the missing-token failure still occurs after a valid argument vector.\n@@ -327,6 +329,7 @@ func duplicateMetadataKey(pairs []metadataPair) (string, bool) {\n // bearer-authenticated GET to the v3 incidents endpoint sends the parsed flags\n // through the shared 002 response contract. The CLI never follows pagination\n // links (spec R7).\n+// @anchor:uptime:command-handler\n func incidentsList(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {\n \t// Read the token before validation only so local diagnostics can redact\n \t// it; the missing-token failure still occurs after a valid argument vector.\ndiff --git a/cmd/bs/main.go b/cmd/bs/main.go\nindex 48031a7..c6a0783 100644\n--- a/cmd/bs/main.go\n+++ b/cmd/bs/main.go\n@@ -27,6 +27,7 @@ func run(args []string, stdout, stderr io.Writer) int {\n // runWithAPI is the test-only injection seam (spec R9). Tests supply the base\n // URL and HTTP client so every request stays on a local mock server. No flag,\n // environment variable, or file changes these values at runtime.\n+// @anchor:uptime:router\n func runWithAPI(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {\n \tif help, ok := helpFor(args); ok {\n \t\tfmt.Fprint(stdout, help)\ndiff --git a/cmd/bs/monitors.go b/cmd/bs/monitors.go\nindex b9355fa..ae80996 100644\n--- a/cmd/bs/monitors.go\n+++ b/cmd/bs/monitors.go\n@@ -12,6 +12,7 @@ import (\n \t\"time\"\n )\n \n+// @anchor:uptime:config\n const (\n \tdefaultAPIBaseURL = \"https://incidents.betterstack.com\"\n \tdefaultTimeout    = 30 * time.Second\n@@ -25,6 +26,7 @@ func newHTTPClient() *http.Client { return &http.Client{} }\n // monitorsGet implements `bs monitors get <id> [--timeout <duration>]`:\n // exactly one bearer-authenticated GET, raw success body on stdout, raw\n // non-2xx body on stderr, and token-free local failure messages.\n+// @anchor:uptime:command-handler\n func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {\n \t// The token is read before argument validation only so locally generated\n \t// diagnostics can redact it. The missing-token failure still happens only\n@@ -50,6 +52,7 @@ func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client\n // bearer-authenticated GET, the parsed flags encoded as query parameters,\n // raw success body on stdout, raw non-2xx body on stderr, and token-free\n // local failure messages. The CLI never follows pagination links.\n+// @anchor:uptime:command-handler\n func monitorsList(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {\n \ttoken := os.Getenv(tokenEnvVar)\n \n@@ -75,6 +78,7 @@ func monitorsList(args []string, stdout, stderr io.Writer, baseURL string, clien\n // the shared 002 response contract used by both monitor commands: raw 2xx body\n // to stdout, raw non-2xx body to stderr, redirects not followed, and\n // token-free local diagnostics.\n+// @anchor:uptime:request-executor\n func doMonitorsRequest(endpoint, token string, timeout time.Duration, stdout, stderr io.Writer, client *http.Client) int {\n \tctx, cancel := context.WithTimeout(context.Background(), timeout)\n \tdefer cancel()\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### memory-lines
+
+Command:
+```sh
+wc -l .mem/summary.md .mem/terminology.md .mem/practices.md .mem/mem-map.md .mem/uptime/summary.md .mem/uptime/commands.md .mem/uptime/requests.md .mem/uptime/incidents.md .mem/uptime/testing.md
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"    3 .mem/summary.md\n   16 .mem/terminology.md\n   26 .mem/practices.md\n   16 .mem/mem-map.md\n   35 .mem/uptime/summary.md\n   53 .mem/uptime/commands.md\n   37 .mem/uptime/requests.md\n   39 .mem/uptime/incidents.md\n   39 .mem/uptime/testing.md\n  264 total\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### r6
+
+Command:
+```sh
+cat > /tmp/factory-001/r6.py <<'EOF'
+from pathlib import Path
+import json
+import re
+import subprocess
+
+root = Path('/tmp/factory-001')
+records = [json.loads(line) for line in (root / 'evidence.jsonl').read_text().splitlines()]
+by_label = {record['label']: record for record in records}
+for label in ('v1-build', 'v1-vet', 'v1-test', 'v1-gofmt', 'r1', 'r2', 'r3', 'r4', 'r5', 'v1-whitespace', 'v1-cached-whitespace'):
+    assert by_label[label]['exit'] == 0, label
+assert by_label['v1-gofmt']['stdout'] == '' and by_label['v1-gofmt']['stderr'] == ''
+for label in ('r1', 'r2', 'r3', 'r4', 'r5'):
+    record = by_label[label]
+    source = Path(record['command'].split()[1]).read_text()
+    assert source.rstrip('\n') == record['script'].rstrip('\n'), label
+    compile(source, record['command'], 'exec')
+subprocess.run(['git', 'diff', '--check'], check=True)
+assert subprocess.check_output(['git', 'diff', '--cached', '--name-only']) == b''
+assert subprocess.check_output(['git', 'diff', 'HEAD', '--name-only'], text=True).splitlines() == ['docs/plans/008_telemetry-logs-search_001_checkpoint.md']
+text = Path('docs/plans/008_telemetry-logs-search_001_checkpoint.md').read_text()
+for record in records:
+    section = text.split('#### ' + record['label'] + '\n', 1)[1].split('\n#### ', 1)[0]
+    assert record['command'] in section and 'Exit: ' + str(record['exit']) + '.' in section, record['label']
+    for channel in ('stdout', 'stderr'):
+        if record[channel]:
+            assert json.dumps(record[channel], ensure_ascii=False) in section, record['label']
+    if 'script' in record:
+        assert record['script'].rstrip('\n') in section, record['label']
+print('R6 PASS: V1 build, vet, tests, empty gofmt, R1-R5, and whitespace commands exited 0')
+print('R6 PASS: the index is empty; only the checkpoint is dirty; file-based scripts compile')
+print('R6 PASS: checkpoint transcripts match every captured command, script, output byte, and exit code')
+EOF
+python3 /tmp/factory-001/r6.py
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"R6 PASS: V1 build, vet, tests, empty gofmt, R1-R5, and whitespace commands exited 0\nR6 PASS: the index is empty; only the checkpoint is dirty; file-based scripts compile\nR6 PASS: checkpoint transcripts match every captured command, script, output byte, and exit code\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### r7
+
+Command:
+```sh
+cat > /tmp/factory-001/r7.py <<'EOF'
+from pathlib import Path
+import json
+import re
+
+path = Path('docs/plans/008_telemetry-logs-search_001_checkpoint.md')
+text = path.read_text()
+before = Path('/tmp/factory-001/checkpoint-before.md').read_text()
+for sentence in (
+    '[Testing](uptime/testing.md) documents the Command routing boundary and its limits.',
+    "[Testing](uptime/testing.md) documents the Command routing boundary, the loopback-only network guard, and the guard's limits.",
+):
+    before = before.replace('"' + sentence + '"', '`"' + sentence + '"`')
+history = text.split('## Previous planning evidence\n', 1)[1].split('\n## V1 retry —', 1)[0]
+original_history = before.split('## Previous planning evidence\n', 1)[1]
+assert history.rstrip('\n') == original_history.rstrip('\n')
+assert '## V1 attempt — failed verifier command, completion stopped' in history
+assert 'SyntaxError: unterminated string literal' in history
+assert '### Final evidence audit — failed comparison, no retry' in history
+records = [json.loads(line) for line in Path('/tmp/factory-001/evidence.jsonl').read_text().splitlines()]
+for label, target in (('make-help', 'help'), ('make-docs', 'docs-check'), ('make-fragments', 'fragments-check')):
+    record, = [record for record in records if record['label'] == label]
+    assert record['exit'] == 2 and record['stdout'] == ''
+    assert record['stderr'].rstrip('\n') == ("make: *** No rule to make target '" + target + "'.  Stop.").rstrip('\n')
+assert 'No unavailable target is reported as passed.' in text
+assert 'No production CLI or live-probe script is executed.' in text
+milestones = Path('docs/plans/008_telemetry-logs-search_milestones.md').read_text()
+assert milestones.count('- [ ] 001:') == 1 and milestones.count('- [ ] 002:') == 1
+assert Path('docs/plans/008_telemetry-logs-search_001_implement.md').read_text().count('- [ ] V1:') == 1
+print('R7 PASS: prior failure history is unchanged except the two authorized Testing code spans')
+print('R7 PASS: both historical comparison operands normalize trailing newlines')
+print('R7 PASS: all three absent Make targets are environmental limitations with actual exit 2 evidence')
+print('R7 PASS: V1 and milestone remain unchecked before their gates; no unresolved spec question or live check')
+EOF
+python3 /tmp/factory-001/r7.py
+```
+
+Stdout: empty.
+
+Stderr (verbatim bytes, reversible JSON):
+```json
+"Traceback (most recent call last):\n  File \"/tmp/factory-001/r7.py\", line 15, in <module>\n    assert history.rstrip('\\n') == original_history.rstrip('\\n')\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+```
+
+Exit: 1.
+
+#### r7-attempt-2
+
+Command:
+```sh
+cat > /tmp/factory-001/r7.py <<'EOF'
+from pathlib import Path
+import json
+import re
+
+path = Path('docs/plans/008_telemetry-logs-search_001_checkpoint.md')
+text = path.read_text()
+before = Path('/tmp/factory-001/checkpoint-before.md').read_text()
+for label, sentence in (
+    ('before', '[Testing](uptime/testing.md) documents the Command routing boundary and its limits.'),
+    ('after', "[Testing](uptime/testing.md) documents the Command routing boundary, the loopback-only network guard, and the guard's limits."),
+):
+    old_line = '- `.mem/practices.md:20` ' + label + ': "' + sentence + '"'
+    new_line = '- `.mem/practices.md:20` ' + label + ': `"' + sentence + '"`'
+    assert before.count(old_line) == 1
+    before = before.replace(old_line, new_line)
+history = text.split('## Previous planning evidence\n', 1)[1].split('\n## V1 retry —', 1)[0]
+original_history = before.split('## Previous planning evidence\n', 1)[1]
+assert history.rstrip('\n') == original_history.rstrip('\n')
+assert '## V1 attempt — failed verifier command, completion stopped' in history
+assert 'SyntaxError: unterminated string literal' in history
+assert '### Final evidence audit — failed comparison, no retry' in history
+records = [json.loads(line) for line in Path('/tmp/factory-001/evidence.jsonl').read_text().splitlines()]
+for label, target in (('make-help', 'help'), ('make-docs', 'docs-check'), ('make-fragments', 'fragments-check')):
+    record, = [record for record in records if record['label'] == label]
+    assert record['exit'] == 2 and record['stdout'] == ''
+    assert record['stderr'].rstrip('\n') == ("make: *** No rule to make target '" + target + "'.  Stop.").rstrip('\n')
+assert 'No unavailable target is reported as passed.' in text
+assert 'No production CLI or live-probe script is executed.' in text
+milestones = Path('docs/plans/008_telemetry-logs-search_milestones.md').read_text()
+assert milestones.count('- [ ] 001:') == 1 and milestones.count('- [ ] 002:') == 1
+assert Path('docs/plans/008_telemetry-logs-search_001_implement.md').read_text().count('- [ ] V1:') == 1
+print('R7 PASS: prior failure history is unchanged except the two authorized Testing code spans')
+print('R7 PASS: both historical comparison operands normalize trailing newlines')
+print('R7 PASS: all three absent Make targets are environmental limitations with actual exit 2 evidence')
+print('R7 PASS: V1 and milestone remain unchecked before their gates; no unresolved spec question or live check')
+EOF
+python3 /tmp/factory-001/r7.py
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"R7 PASS: prior failure history is unchanged except the two authorized Testing code spans\nR7 PASS: both historical comparison operands normalize trailing newlines\nR7 PASS: all three absent Make targets are environmental limitations with actual exit 2 evidence\nR7 PASS: V1 and milestone remain unchecked before their gates; no unresolved spec question or live check\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+### V1 retry result — passed
+
+**Verifier retry:** R7 attempt 1 exited 1 from the verifier's expected-history construction, not an implementation change.
+Its global quote replacement also changed the same quotation inside a stored historical command.
+A read-only diff showed exactly the two authorized code-span changes in the actual history.
+R7 attempt 2 restricts the replacement to the two unique before/after lines. It passed with exit 0.
+Both attempts retain their full scripts and actual outputs above. Both comparison operands remove only trailing newlines.
+All other V1 direct checks passed on their first attempt. No implementation check failed.
+
+**Gate:** The V1 battery, R1–R7 direct checks, changed-path audit, empty-index audit, and whitespace checks passed.
+The checkpoint now records V1 as passed. The implementation checklist may render its V1 checkbox.
+The milestone source remains unchecked. The Factory completion gate has not yet run.
+The later completion gate alone authorizes the milestone render after an uncached battery and renewed baseline accounting.
+
+#### completion-build
+
+Command:
+```sh
+GOFLAGS=-o=/dev/null go build ./...
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+#### completion-vet
+
+Command:
+```sh
+go vet ./...
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+#### completion-test
+
+Command:
+```sh
+go test -count=1 ./...
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"ok  \tgithub.com/jrswab/betterstack-cli/cmd/bs\t2.095s\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### completion-gofmt
+
+Command:
+```sh
+gofmt -l cmd/bs/*.go
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+## Factory completion gate — requirement evidence and pre-render accounting
+
+**Battery:** The completion battery ran once after V1 passed. Build, vet, uncached tests, and gofmt each exited 0.
+Gofmt printed no paths. The commands and exact outputs appear above under `completion-build` through `completion-gofmt`.
+The V1 test result was cached. The distinct completion test uses `-count=1` and records an actual uncached result.
+
+**Milestone 001 acceptance text:**
+
+> `.mem/` documents the current Uptime CLI and enables all Telemetry slices; `@anchor` tags cover `runWithAPI`, Uptime command-handler, and `doMonitorsRequest` boundaries, `TAGS.md` matches those tags, `changelog.d/` exists with valid fragments, `LOG.md` and `log.d/` exist and are empty, and no Makefile is added.
+
+**Requirement → evidence table:**
+
+| Requirement | Requirement evidence | Result |
+|---|---|---|
+| R1 — Current Uptime memory | `r1`: exactly nine memory files and nine map entries. All 61 relative links resolve to Git-tracked files. Six topic examples, Mermaid flow, and balanced fences pass. Maximum length is 53 lines, below 250. Source grounding confirms all five routes, help, requests, credentials, incident targets/metadata, and test safety. | PASS |
+| R2 — Anchors and index | `r2`: eight anchors immediately precede the specified declarations, including configuration and five command handlers. Eight TAGS.md occurrence entries match source paths, symbols, and boundary names. Tests contain no anchors. | PASS |
+| R3 — Changelog fragment | `r3`: only the named fragment exists. One Added heading, blank line, and factual Uptime bullet pass. Five plain tracked repo-root paths resolve. No Markdown link, front matter, release section, extra category, or Telemetry claim exists. CHANGELOG.md is unchanged. | PASS |
+| R4 — Empty provenance | `r4`: LOG.md and the tracked log.d/.gitkeep marker have zero bytes in worktree and HEAD. The marker is the only log.d entry. No provenance entry exists. | PASS |
+| R5 — Scope and behavior | `r2`, `r5`, and `committed-paths`: exactly 19 committed S0 implementation/planning paths. All Go files equal 61902fd after removing only eight anchor comments. Tests, help, README, module, and ignore rules are unchanged. All five baseline paths remain untouched, untracked, and unstaged before completion render. | PASS |
+| R6 — Verification | `v1-build` through `v1-gofmt`, `r1`–`r6`, `v1-whitespace`, and the once-only completion battery all pass. Gofmt output is empty. Index is empty before staging. The later artifact/staging audit must accept only implement/checkpoint paths before commit. | PASS |
+| R7 — Evidence and boundary | `r7-attempt-2`: prior failure history remains intact except the authorized quote code spans. Checkpoint records actual commands, scripts, outputs, exits, status, limitations, and next action. Make targets are unavailable, not passed. No unresolved specification question, Telemetry work, live request, or credential use exists. V1 leaves the milestone unchecked until the separately authorized completion gate. | PASS |
+| Milestone 001 acceptance | R1 supplies current Uptime records for later slices. R2 supplies exact boundary/index coverage, including configuration. R3 supplies the valid fragment. R4 establishes empty provenance records. R5 excludes a Makefile and behavior changes. The completion battery passes. Pre-render status and fingerprint checks follow this table before the milestone checkbox may change. | PASS |
+
+**Pre-render accounting:** The source milestone remains unchecked until the following completion prerequisite audit passes.
+The only tracked changes permitted here are the implementation V1 checkbox and checkpoint evidence/state/quote correction.
+The baseline fingerprint must still equal `a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4`.
+No baseline path may be staged. After rendering, a new fingerprint must reflect exactly the one authorized checkbox byte.
+
+#### completion-status
+
+Command:
+```sh
+git status --porcelain
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+" M docs/plans/008_telemetry-logs-search_001_checkpoint.md\n M docs/plans/008_telemetry-logs-search_001_implement.md\n?? .agents/\n?? .wayfinder/\n?? AGENTS.md\n?? docs/plans/008_telemetry-logs-search_milestones.md\n?? verify-incident-id.sh\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### completion-fingerprint
+
+Command:
+```sh
+find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4  -\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### completion-prerequisites
+
+Command:
+```sh
+cat > /tmp/factory-001/completion.py <<'EOF'
+from pathlib import Path
+import json
+import re
+import subprocess
+
+root = Path('/tmp/factory-001')
+records = [json.loads(line) for line in (root / 'evidence.jsonl').read_text().splitlines()]
+for label in ('completion-build', 'completion-vet', 'completion-test', 'completion-gofmt'):
+    record, = [record for record in records if record['label'] == label]
+    assert record['exit'] == 0 and record['stderr'] == '', label
+    if label != 'completion-test':
+        assert record['stdout'] == '', label
+    else:
+        assert '(cached)' not in record['stdout'] and record['command'] == 'go test -count=1 ./...'
+checkpoint = Path('docs/plans/008_telemetry-logs-search_001_checkpoint.md').read_text()
+table = checkpoint.split('**Requirement → evidence table:**\n', 1)[1].split('**Pre-render accounting:**', 1)[0]
+rows = [line for line in table.splitlines() if re.match(r'^\| (?:R[1-7] —|Milestone 001 acceptance)', line)]
+assert len(rows) == 8 and all(line.endswith('| PASS |') for line in rows)
+for number in range(1, 8):
+    assert sum(line.startswith('| R' + str(number) + ' —') for line in rows) == 1
+milestones = Path('docs/plans/008_telemetry-logs-search_milestones.md')
+assert milestones.read_bytes() == (root / 'milestones-before.md').read_bytes()
+acceptance = next(line for line in milestones.read_text().splitlines() if line.startswith('- [ ] 001:')).split('Acceptance: ', 1)[1].split(' Affected files:', 1)[0]
+assert acceptance in checkpoint
+state = checkpoint.split('## State\n', 1)[1].split('## Previous planning evidence\n', 1)[0]
+assert 'V1 `passed`' in state and 'Milestone checkbox: `unchecked`' in state
+assert Path('docs/plans/008_telemetry-logs-search_001_implement.md').read_text().count('- [x] V1:') == 1
+expected_changes = ['docs/plans/008_telemetry-logs-search_001_checkpoint.md', 'docs/plans/008_telemetry-logs-search_001_implement.md']
+baseline = ['.agents/', '.wayfinder/', 'AGENTS.md', 'docs/plans/008_telemetry-logs-search_milestones.md', 'verify-incident-id.sh']
+status = subprocess.check_output(['git', 'status', '--porcelain'], text=True)
+assert status.rstrip('\n').splitlines() == [' M ' + name for name in expected_changes] + ['?? ' + name for name in baseline], status
+assert subprocess.check_output(['git', 'diff', 'HEAD', '--name-only'], text=True).splitlines() == expected_changes
+assert subprocess.check_output(['git', 'diff', '--cached', '--name-only']) == b''
+for name in baseline:
+    assert subprocess.check_output(['git', 'ls-files', '--', name]) == b'', name
+command = 'find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum'
+fingerprint = subprocess.check_output(['bash', '-o', 'pipefail', '-c', command], text=True).split()[0]
+assert fingerprint == 'a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4', fingerprint
+subprocess.run(['git', 'diff', '--check'], check=True)
+print('COMPLETION PASS: the once-only build/vet/uncached-test/gofmt battery passed with empty gofmt output')
+print('COMPLETION PASS: R1-R7 and exact milestone 001 acceptance text have eight PASS evidence rows')
+print('COMPLETION PASS: only implement/checkpoint are dirty; the index is empty; five baseline paths remain untracked')
+print('COMPLETION PASS: pre-render baseline fingerprint ' + fingerprint)
+print('COMPLETION PASS: milestone 001 remains unchecked; its one-byte render is now authorized')
+EOF
+python3 /tmp/factory-001/completion.py
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"COMPLETION PASS: the once-only build/vet/uncached-test/gofmt battery passed with empty gofmt output\nCOMPLETION PASS: R1-R7 and exact milestone 001 acceptance text have eight PASS evidence rows\nCOMPLETION PASS: only implement/checkpoint are dirty; the index is empty; five baseline paths remain untracked\nCOMPLETION PASS: pre-render baseline fingerprint a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4\nCOMPLETION PASS: milestone 001 remains unchecked; its one-byte render is now authorized\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### render-check
+
+Command:
+```sh
+cat > /tmp/factory-001/render-check.py <<'EOF'
+from pathlib import Path
+import json
+import subprocess
+
+root = Path('/tmp/factory-001')
+records = [json.loads(line) for line in (root / 'evidence.jsonl').read_text().splitlines()]
+assert any(record['label'] == 'completion-prerequisites' and record['exit'] == 0 for record in records)
+path = Path('docs/plans/008_telemetry-logs-search_milestones.md')
+before = (root / 'milestones-before.md').read_bytes()
+after = path.read_bytes()
+assert before.count(b'- [ ] 001:') == 1
+assert after == before.replace(b'- [ ] 001:', b'- [x] 001:', 1)
+assert len(before) == len(after) and sum(a != b for a, b in zip(before, after)) == 1
+assert after.count(b'- [ ] 002:') == 1
+assert subprocess.check_output(['git', 'ls-files', '--', str(path)]) == b''
+assert subprocess.check_output(['git', 'diff', '--cached', '--name-only']) == b''
+command = 'find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum'
+fingerprint = subprocess.check_output(['bash', '-o', 'pipefail', '-c', command], text=True).split()[0]
+assert fingerprint != 'a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4'
+(root / 'post-render-fingerprint').write_text(fingerprint + '\n')
+print('RENDER PASS: exactly one milestone byte changed, space to x in 001; 002 remains unchecked')
+print('RENDER PASS: the milestone source stays untracked and unstaged; the index is empty')
+print('RENDER PASS: post-render baseline fingerprint ' + fingerprint)
+EOF
+python3 /tmp/factory-001/render-check.py
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"RENDER PASS: exactly one milestone byte changed, space to x in 001; 002 remains unchecked\nRENDER PASS: the milestone source stays untracked and unstaged; the index is empty\nRENDER PASS: post-render baseline fingerprint 5f6cf5609b4c769043291850953b4728031c3cad1c8a9fd6611cca60ffa064a8\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### post-render-fingerprint
+
+Command:
+```sh
+find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"5f6cf5609b4c769043291850953b4728031c3cad1c8a9fd6611cca60ffa064a8  -\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### milestone-render
+
+Command:
+```sh
+grep -n -- '- \[.\] 00[12]:' docs/plans/008_telemetry-logs-search_milestones.md | cut -c1-60
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"49:- [x] 001: S0 — Establish repository records for the cu\n50:- [ ] 002: S1 — Add the Telemetry endpoint seam and sec\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### artifact-audit
+
+Command:
+```sh
+cat > /tmp/factory-001/artifacts.py <<'EOF'
+from pathlib import Path
+import json
+import re
+import subprocess
+import sys
+
+root = Path('/tmp/factory-001')
+expected = ['docs/plans/008_telemetry-logs-search_001_checkpoint.md', 'docs/plans/008_telemetry-logs-search_001_implement.md']
+assert subprocess.check_output(['git', 'diff', 'a53c168', '--name-only'], text=True).splitlines() == expected
+if len(sys.argv) > 1:
+    assert subprocess.check_output(['git', 'diff', '--cached', '--name-only'], text=True).splitlines() == expected
+    assert subprocess.check_output(['git', 'diff', '--name-only']) == b''
+for name in expected:
+    text = Path(name).read_text()
+    assert text.endswith('\n') and not text.endswith('\n\n'), name
+    assert all(line == line.rstrip() for line in text.splitlines()), name
+    assert sum(bool(re.fullmatch(r'```[a-z]*', line)) for line in text.splitlines()) % 2 == 0, name
+checkpoint = Path(expected[0]).read_text()
+for shell in re.findall(r'```sh\n(.*?)\n```', checkpoint, re.S):
+    result = subprocess.run(['bash', '-n'], input=shell, text=True, capture_output=True)
+    assert result.returncode == 0, result.stderr
+    if shell.startswith("python3 - <<'PY'\n"):
+        compile(shell.split('\n', 1)[1].rsplit('\nPY', 1)[0], '<historical checkpoint command>', 'exec')
+    elif shell.startswith('cat > /tmp/factory-001/'):
+        source = shell.split(" <<'EOF'\n", 1)[1].rsplit('\nEOF\n', 1)[0]
+        compile(source, '<file-based checkpoint command>', 'exec')
+for value in re.findall(r'```json\n(.*?)\n```', checkpoint, re.S):
+    assert isinstance(json.loads(value), str)
+records = [json.loads(line) for line in (root / 'evidence.jsonl').read_text().splitlines()]
+for record in records:
+    section = checkpoint.split('#### ' + record['label'] + '\n', 1)[1].split('\n#### ', 1)[0]
+    assert record['command'] in section and 'Exit: ' + str(record['exit']) + '.' in section, record['label']
+    for channel in ('stdout', 'stderr'):
+        if record[channel]:
+            assert json.dumps(record[channel], ensure_ascii=False) in section, record['label']
+        else:
+            assert channel.capitalize() + ': empty.' in section, record['label']
+    if 'script' in record:
+        assert record['script'].rstrip('\n') in section, record['label']
+original = (root / 'checkpoint-before.md').read_text().split('## Previous planning evidence\n', 1)[1]
+for label, sentence in (
+    ('before', '[Testing](uptime/testing.md) documents the Command routing boundary and its limits.'),
+    ('after', "[Testing](uptime/testing.md) documents the Command routing boundary, the loopback-only network guard, and the guard's limits."),
+):
+    old = '- `.mem/practices.md:20` ' + label + ': "' + sentence + '"'
+    new = '- `.mem/practices.md:20` ' + label + ': `"' + sentence + '"`'
+    assert original.count(old) == 1
+    original = original.replace(old, new)
+history = checkpoint.split('## Previous planning evidence\n', 1)[1].split('\n## V1 retry —', 1)[0]
+assert history.rstrip('\n') == original.rstrip('\n')
+state = checkpoint.split('## State\n', 1)[1].split('## Previous planning evidence\n', 1)[0]
+assert 'Current phase: `complete`' in state and 'Milestone checkbox: `checked`' in state
+assert 'V1 `passed`' in state and 'Next action: start milestone 002 (S1).' in state
+checklist = Path(expected[1]).read_text()
+original_checklist = subprocess.check_output(['git', 'show', 'a53c168:' + expected[1]], text=True)
+assert checklist.rstrip('\n') == original_checklist.replace('- [ ] V1:', '- [x] V1:', 1).rstrip('\n')
+assert re.findall(r'^- \[([ x])\] (A[1-4]|V1):', checklist, re.M) == [('x', 'A1'), ('x', 'A2'), ('x', 'A3'), ('x', 'A4'), ('x', 'V1')]
+milestones = Path('docs/plans/008_telemetry-logs-search_milestones.md')
+assert milestones.read_bytes() == (root / 'milestones-before.md').read_bytes().replace(b'- [ ] 001:', b'- [x] 001:', 1)
+for name in ('.agents/', '.wayfinder/', 'AGENTS.md', str(milestones), 'verify-incident-id.sh'):
+    assert subprocess.check_output(['git', 'ls-files', '--', name]) == b'', name
+command = 'find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum'
+fingerprint = subprocess.check_output(['bash', '-o', 'pipefail', '-c', command], text=True).split()[0]
+assert fingerprint.rstrip('\n') == (root / 'post-render-fingerprint').read_text().rstrip('\n')
+assert subprocess.check_output(['git', 'diff', 'a53c168', '--', 'docs/plans/008_telemetry-logs-search_001_spec.md', 'cmd', '.mem', 'TAGS.md', 'LOG.md', 'log.d', 'changelog.d', 'README.md']) == b''
+subprocess.run(['git', 'diff', '--check'], check=True)
+subprocess.run(['git', 'diff', '--cached', '--check'], check=True)
+print('ARTIFACT PASS: only implement/checkpoint changed; Markdown whitespace/fences and stored shell/Python/JSON parse')
+print('ARTIFACT PASS: every retry script/output/exit matches the transcript, including failed R7 attempt 1')
+print('ARTIFACT PASS: failure history is preserved; V1 and milestone render complete checkpoint state')
+print('ARTIFACT PASS: milestone has only the authorized byte change; baseline fingerprint matches the post-render value')
+if len(sys.argv) > 1:
+    print('STAGING PASS: exactly implement/checkpoint are staged; no unstaged tracked change or baseline path is staged')
+EOF
+python3 /tmp/factory-001/artifacts.py
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"ARTIFACT PASS: only implement/checkpoint changed; Markdown whitespace/fences and stored shell/Python/JSON parse\nARTIFACT PASS: every retry script/output/exit matches the transcript, including failed R7 attempt 1\nARTIFACT PASS: failure history is preserved; V1 and milestone render complete checkpoint state\nARTIFACT PASS: milestone has only the authorized byte change; baseline fingerprint matches the post-render value\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+## Completion result and commit boundary
+
+**Result:** Milestone 001 is complete. The checkpoint phase is complete, V1 is passed, and milestone 001 is checked.
+Milestone 002 remains unchecked. The next action is to start milestone 002 (S1).
+The two Testing quotations use code spans. The prior uncommitted failure record remains in this commit as history.
+
+**Baseline:** The pre-render fingerprint matched `a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4`.
+The post-render fingerprint is `5f6cf5609b4c769043291850953b4728031c3cad1c8a9fd6611cca60ffa064a8`.
+It changed because the fingerprint includes the milestone source's file-content hash.
+The render replaced only the space with `x` inside the 001 checkbox. The file length and every other byte remain unchanged.
+The post-render fingerprint check excludes any other baseline change. All five baseline paths remain untracked and unstaged.
+
+**Files and functions:**
+
+- `docs/plans/008_telemetry-logs-search_001_implement.md` changes only the V1 checkbox from unchecked to checked.
+- `docs/plans/008_telemetry-logs-search_001_checkpoint.md` updates active state, fixes two quote code spans, and appends retry/completion evidence.
+- `docs/plans/008_telemetry-logs-search_milestones.md` changes only the 001 checkbox character. It stays untracked and is never staged.
+- `/tmp/factory-001/` contains the file-based verifiers, transcript writer, append helper, captured evidence, and pre-edit copies.
+- No repository function is added or modified. All temporary Python scripts use top-level standard-library code.
+- The spec, runtime source, tests, memory, anchors, index, fragment, README, and empty provenance records remain unchanged during this retry.
+
+**Verification and limits:** V1 and the once-only completion battery passed. R7 and the staged artifact audit each needed two attempts.
+R7 attempt 1 was a verifier-only history-construction error. R7 attempt 2 fixed its exact-line matching and passed.
+The staged artifact audit's first attempt had a verifier-only transcript ordering error. Its second attempt passed after recording pending evidence.
+No implementation failure occurred. Every other direct check passed on its first attempt.
+The three absent Make targets remain environmental limitations. No Markdown formatter/linter is configured.
+The artifact audit checks Markdown whitespace/fences, shell/Python syntax, JSON decoding, transcripts, history, scope, and checkpoint/render consistency.
+No new dependency, runtime symptom patch, live request, credential use, push, or milestone 002 implementation exists.
+The assumptions, ladder skips, script-directory exception, and verifier trade-offs are recorded in the retry introduction.
+
+**Commit boundary:** Only the implementation checklist and checkpoint are staged explicitly for `001: V1 and completion gate`.
+The staged audit and `git diff --cached --check` must pass before the local commit.
+The final evidence append uses a temporary file and rename, followed by explicit restaging and the same artifact/whitespace audits.
+The terminal handoff supplies the final commit SHA, final status, final log, and shortened milestone checkbox output.
+The checkpoint cannot contain its own eventual commit SHA without a self-referential second commit.
+
+#### stage-artifacts
+
+Command:
+```sh
+git add -- docs/plans/008_telemetry-logs-search_001_implement.md docs/plans/008_telemetry-logs-search_001_checkpoint.md
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+#### staged-paths
+
+Command:
+```sh
+git diff --cached --name-only
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"docs/plans/008_telemetry-logs-search_001_checkpoint.md\ndocs/plans/008_telemetry-logs-search_001_implement.md\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### staged-artifact-audit
+
+Command:
+```sh
+cat > /tmp/factory-001/artifacts.py <<'EOF'
+from pathlib import Path
+import json
+import re
+import subprocess
+import sys
+
+root = Path('/tmp/factory-001')
+expected = ['docs/plans/008_telemetry-logs-search_001_checkpoint.md', 'docs/plans/008_telemetry-logs-search_001_implement.md']
+assert subprocess.check_output(['git', 'diff', 'a53c168', '--name-only'], text=True).splitlines() == expected
+if len(sys.argv) > 1:
+    assert subprocess.check_output(['git', 'diff', '--cached', '--name-only'], text=True).splitlines() == expected
+    assert subprocess.check_output(['git', 'diff', '--name-only']) == b''
+for name in expected:
+    text = Path(name).read_text()
+    assert text.endswith('\n') and not text.endswith('\n\n'), name
+    assert all(line == line.rstrip() for line in text.splitlines()), name
+    assert sum(bool(re.fullmatch(r'```[a-z]*', line)) for line in text.splitlines()) % 2 == 0, name
+checkpoint = Path(expected[0]).read_text()
+for shell in re.findall(r'```sh\n(.*?)\n```', checkpoint, re.S):
+    result = subprocess.run(['bash', '-n'], input=shell, text=True, capture_output=True)
+    assert result.returncode == 0, result.stderr
+    if shell.startswith("python3 - <<'PY'\n"):
+        compile(shell.split('\n', 1)[1].rsplit('\nPY', 1)[0], '<historical checkpoint command>', 'exec')
+    elif shell.startswith('cat > /tmp/factory-001/'):
+        source = shell.split(" <<'EOF'\n", 1)[1].rsplit('\nEOF\n', 1)[0]
+        compile(source, '<file-based checkpoint command>', 'exec')
+for value in re.findall(r'```json\n(.*?)\n```', checkpoint, re.S):
+    assert isinstance(json.loads(value), str)
+records = [json.loads(line) for line in (root / 'evidence.jsonl').read_text().splitlines()]
+for record in records:
+    section = checkpoint.split('#### ' + record['label'] + '\n', 1)[1].split('\n#### ', 1)[0]
+    assert record['command'] in section and 'Exit: ' + str(record['exit']) + '.' in section, record['label']
+    for channel in ('stdout', 'stderr'):
+        if record[channel]:
+            assert json.dumps(record[channel], ensure_ascii=False) in section, record['label']
+        else:
+            assert channel.capitalize() + ': empty.' in section, record['label']
+    if 'script' in record:
+        assert record['script'].rstrip('\n') in section, record['label']
+original = (root / 'checkpoint-before.md').read_text().split('## Previous planning evidence\n', 1)[1]
+for label, sentence in (
+    ('before', '[Testing](uptime/testing.md) documents the Command routing boundary and its limits.'),
+    ('after', "[Testing](uptime/testing.md) documents the Command routing boundary, the loopback-only network guard, and the guard's limits."),
+):
+    old = '- `.mem/practices.md:20` ' + label + ': "' + sentence + '"'
+    new = '- `.mem/practices.md:20` ' + label + ': `"' + sentence + '"`'
+    assert original.count(old) == 1
+    original = original.replace(old, new)
+history = checkpoint.split('## Previous planning evidence\n', 1)[1].split('\n## V1 retry —', 1)[0]
+assert history.rstrip('\n') == original.rstrip('\n')
+state = checkpoint.split('## State\n', 1)[1].split('## Previous planning evidence\n', 1)[0]
+assert 'Current phase: `complete`' in state and 'Milestone checkbox: `checked`' in state
+assert 'V1 `passed`' in state and 'Next action: start milestone 002 (S1).' in state
+checklist = Path(expected[1]).read_text()
+original_checklist = subprocess.check_output(['git', 'show', 'a53c168:' + expected[1]], text=True)
+assert checklist.rstrip('\n') == original_checklist.replace('- [ ] V1:', '- [x] V1:', 1).rstrip('\n')
+assert re.findall(r'^- \[([ x])\] (A[1-4]|V1):', checklist, re.M) == [('x', 'A1'), ('x', 'A2'), ('x', 'A3'), ('x', 'A4'), ('x', 'V1')]
+milestones = Path('docs/plans/008_telemetry-logs-search_milestones.md')
+assert milestones.read_bytes() == (root / 'milestones-before.md').read_bytes().replace(b'- [ ] 001:', b'- [x] 001:', 1)
+for name in ('.agents/', '.wayfinder/', 'AGENTS.md', str(milestones), 'verify-incident-id.sh'):
+    assert subprocess.check_output(['git', 'ls-files', '--', name]) == b'', name
+command = 'find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum'
+fingerprint = subprocess.check_output(['bash', '-o', 'pipefail', '-c', command], text=True).split()[0]
+assert fingerprint.rstrip('\n') == (root / 'post-render-fingerprint').read_text().rstrip('\n')
+assert subprocess.check_output(['git', 'diff', 'a53c168', '--', 'docs/plans/008_telemetry-logs-search_001_spec.md', 'cmd', '.mem', 'TAGS.md', 'LOG.md', 'log.d', 'changelog.d', 'README.md']) == b''
+subprocess.run(['git', 'diff', '--check'], check=True)
+subprocess.run(['git', 'diff', '--cached', '--check'], check=True)
+print('ARTIFACT PASS: only implement/checkpoint changed; Markdown whitespace/fences and stored shell/Python/JSON parse')
+print('ARTIFACT PASS: every retry script/output/exit matches the transcript, including failed R7 attempt 1')
+print('ARTIFACT PASS: failure history is preserved; V1 and milestone render complete checkpoint state')
+print('ARTIFACT PASS: milestone has only the authorized byte change; baseline fingerprint matches the post-render value')
+if len(sys.argv) > 1:
+    print('STAGING PASS: exactly implement/checkpoint are staged; no unstaged tracked change or baseline path is staged')
+EOF
+python3 /tmp/factory-001/artifacts.py staged
+```
+
+Stdout: empty.
+
+Stderr (verbatim bytes, reversible JSON):
+```json
+"Traceback (most recent call last):\n  File \"/tmp/factory-001/artifacts.py\", line 31, in <module>\n    section = checkpoint.split('#### ' + record['label'] + '\\n', 1)[1].split('\\n#### ', 1)[0]\n              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^\nIndexError: list index out of range\n"
+```
+
+Exit: 1.
+
+### Staged artifact audit retry — verifier ordering correction
+
+**Attempt 1:** The staged artifact audit exited 1 with an IndexError while locating a not-yet-appended transcript section.
+The runner recorded the staging command and staged-path output in evidence.jsonl, then audited before appending those records to the checkpoint.
+This ordering error affected only the verifier. The earlier artifact audit and completion prerequisites passed.
+No implementation, baseline, phase, or checkbox correction was needed.
+
+**Correction:** The transcript writer now appends the pending records before the runner repeats explicit staging and the staged audit.
+The staged audit still compares every recorded script, output byte, and exit code with the checkpoint.
+Attempt 2 uses the same verifier script against the fully recorded checkpoint. It does not bypass any assertion.
+This section and both attempts preserve the failure and correction as history.
+R7 needed two attempts, and the staged artifact audit needed two attempts. No check reaches a third attempt.
+The once-only completion battery is not repeated because the failure is verifier-only and changes no Go source.
+
+#### staged-artifact-audit-attempt-2
+
+Command:
+```sh
+cat > /tmp/factory-001/artifacts.py <<'EOF'
+from pathlib import Path
+import json
+import re
+import subprocess
+import sys
+
+root = Path('/tmp/factory-001')
+expected = ['docs/plans/008_telemetry-logs-search_001_checkpoint.md', 'docs/plans/008_telemetry-logs-search_001_implement.md']
+assert subprocess.check_output(['git', 'diff', 'a53c168', '--name-only'], text=True).splitlines() == expected
+if len(sys.argv) > 1:
+    assert subprocess.check_output(['git', 'diff', '--cached', '--name-only'], text=True).splitlines() == expected
+    assert subprocess.check_output(['git', 'diff', '--name-only']) == b''
+for name in expected:
+    text = Path(name).read_text()
+    assert text.endswith('\n') and not text.endswith('\n\n'), name
+    assert all(line == line.rstrip() for line in text.splitlines()), name
+    assert sum(bool(re.fullmatch(r'```[a-z]*', line)) for line in text.splitlines()) % 2 == 0, name
+checkpoint = Path(expected[0]).read_text()
+for shell in re.findall(r'```sh\n(.*?)\n```', checkpoint, re.S):
+    result = subprocess.run(['bash', '-n'], input=shell, text=True, capture_output=True)
+    assert result.returncode == 0, result.stderr
+    if shell.startswith("python3 - <<'PY'\n"):
+        compile(shell.split('\n', 1)[1].rsplit('\nPY', 1)[0], '<historical checkpoint command>', 'exec')
+    elif shell.startswith('cat > /tmp/factory-001/'):
+        source = shell.split(" <<'EOF'\n", 1)[1].rsplit('\nEOF\n', 1)[0]
+        compile(source, '<file-based checkpoint command>', 'exec')
+for value in re.findall(r'```json\n(.*?)\n```', checkpoint, re.S):
+    assert isinstance(json.loads(value), str)
+records = [json.loads(line) for line in (root / 'evidence.jsonl').read_text().splitlines()]
+for record in records:
+    section = checkpoint.split('#### ' + record['label'] + '\n', 1)[1].split('\n#### ', 1)[0]
+    assert record['command'] in section and 'Exit: ' + str(record['exit']) + '.' in section, record['label']
+    for channel in ('stdout', 'stderr'):
+        if record[channel]:
+            assert json.dumps(record[channel], ensure_ascii=False) in section, record['label']
+        else:
+            assert channel.capitalize() + ': empty.' in section, record['label']
+    if 'script' in record:
+        assert record['script'].rstrip('\n') in section, record['label']
+original = (root / 'checkpoint-before.md').read_text().split('## Previous planning evidence\n', 1)[1]
+for label, sentence in (
+    ('before', '[Testing](uptime/testing.md) documents the Command routing boundary and its limits.'),
+    ('after', "[Testing](uptime/testing.md) documents the Command routing boundary, the loopback-only network guard, and the guard's limits."),
+):
+    old = '- `.mem/practices.md:20` ' + label + ': "' + sentence + '"'
+    new = '- `.mem/practices.md:20` ' + label + ': `"' + sentence + '"`'
+    assert original.count(old) == 1
+    original = original.replace(old, new)
+history = checkpoint.split('## Previous planning evidence\n', 1)[1].split('\n## V1 retry —', 1)[0]
+assert history.rstrip('\n') == original.rstrip('\n')
+state = checkpoint.split('## State\n', 1)[1].split('## Previous planning evidence\n', 1)[0]
+assert 'Current phase: `complete`' in state and 'Milestone checkbox: `checked`' in state
+assert 'V1 `passed`' in state and 'Next action: start milestone 002 (S1).' in state
+checklist = Path(expected[1]).read_text()
+original_checklist = subprocess.check_output(['git', 'show', 'a53c168:' + expected[1]], text=True)
+assert checklist.rstrip('\n') == original_checklist.replace('- [ ] V1:', '- [x] V1:', 1).rstrip('\n')
+assert re.findall(r'^- \[([ x])\] (A[1-4]|V1):', checklist, re.M) == [('x', 'A1'), ('x', 'A2'), ('x', 'A3'), ('x', 'A4'), ('x', 'V1')]
+milestones = Path('docs/plans/008_telemetry-logs-search_milestones.md')
+assert milestones.read_bytes() == (root / 'milestones-before.md').read_bytes().replace(b'- [ ] 001:', b'- [x] 001:', 1)
+for name in ('.agents/', '.wayfinder/', 'AGENTS.md', str(milestones), 'verify-incident-id.sh'):
+    assert subprocess.check_output(['git', 'ls-files', '--', name]) == b'', name
+command = 'find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum'
+fingerprint = subprocess.check_output(['bash', '-o', 'pipefail', '-c', command], text=True).split()[0]
+assert fingerprint.rstrip('\n') == (root / 'post-render-fingerprint').read_text().rstrip('\n')
+assert subprocess.check_output(['git', 'diff', 'a53c168', '--', 'docs/plans/008_telemetry-logs-search_001_spec.md', 'cmd', '.mem', 'TAGS.md', 'LOG.md', 'log.d', 'changelog.d', 'README.md']) == b''
+subprocess.run(['git', 'diff', '--check'], check=True)
+subprocess.run(['git', 'diff', '--cached', '--check'], check=True)
+print('ARTIFACT PASS: only implement/checkpoint changed; Markdown whitespace/fences and stored shell/Python/JSON parse')
+print('ARTIFACT PASS: every retry script/output/exit matches the transcript, including failed R7 attempt 1')
+print('ARTIFACT PASS: failure history is preserved; V1 and milestone render complete checkpoint state')
+print('ARTIFACT PASS: milestone has only the authorized byte change; baseline fingerprint matches the post-render value')
+if len(sys.argv) > 1:
+    print('STAGING PASS: exactly implement/checkpoint are staged; no unstaged tracked change or baseline path is staged')
+EOF
+python3 /tmp/factory-001/artifacts.py staged
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"ARTIFACT PASS: only implement/checkpoint changed; Markdown whitespace/fences and stored shell/Python/JSON parse\nARTIFACT PASS: every retry script/output/exit matches the transcript, including failed R7 attempt 1\nARTIFACT PASS: failure history is preserved; V1 and milestone render complete checkpoint state\nARTIFACT PASS: milestone has only the authorized byte change; baseline fingerprint matches the post-render value\nSTAGING PASS: exactly implement/checkpoint are staged; no unstaged tracked change or baseline path is staged\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
+
+#### precommit-diff-check
+
+Command:
+```sh
+git diff --check
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+#### precommit-cached-check
+
+Command:
+```sh
+git diff --cached --check
+```
+
+Stdout: empty.
+
+Stderr: empty.
+
+Exit: 0.
+
+#### precommit-status
+
+Command:
+```sh
+git status --porcelain
+```
+
+Stdout (verbatim bytes, reversible JSON):
+```json
+"M  docs/plans/008_telemetry-logs-search_001_checkpoint.md\nM  docs/plans/008_telemetry-logs-search_001_implement.md\n?? .agents/\n?? .wayfinder/\n?? AGENTS.md\n?? docs/plans/008_telemetry-logs-search_milestones.md\n?? verify-incident-id.sh\n"
+```
+
+Stderr: empty.
+
+Exit: 0.
