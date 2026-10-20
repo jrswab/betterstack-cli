@@ -1,8 +1,12 @@
 # Uptime testing
 
-## Injected command boundary
+## Command entry points
 
-Tests call `runWithAPI` through `invokeAPI` with captured stdout/stderr, a loopback `httptest.NewServer` URL, and an HTTP client. They verify routing, path escaping, bearer headers, query translation, raw output, exit codes, invalid arguments, timeouts, and disabled redirects. [main_test.go](../../cmd/bs/main_test.go) checks exact help forms and invalid usage. [monitors_test.go](../../cmd/bs/monitors_test.go) defines `invokeAPI` and the fixed dummy `testToken`.
+[main_test.go](../../cmd/bs/main_test.go) uses `invoke` → `run(args, stdout, stderr)` to capture output for exact help forms and invalid usage. `run` supplies the production base URL and `newHTTPClient()` before delegating to `runWithAPI` in [main.go](../../cmd/bs/main.go). It does not inject a loopback endpoint.
+
+`runWithAPI` routes help and recognized commands before falling through to `usageError`. The hard-coded resource gate in `usageError` recognizes only `incidents` and `monitors` for `resourceUsageError` diagnostics. `knownAction` accepts incidents list/get/timeline and monitors list/get, returning false for other resources. Later resources must extend this resource gate and action inventory, alongside routing and `helpFor`. Routed commands use their own argument parsers before HTTP execution.
+
+Routing tests use `invokeAPI` to call `runWithAPI` with captured stdout/stderr, a loopback `httptest.NewServer` URL, and an HTTP client. [monitors_test.go](../../cmd/bs/monitors_test.go) defines `invokeAPI` and the fixed dummy `testToken`. Other tests call handlers directly through helpers such as `invokeMonitorsList` and `invokeIncidentsList`. These tests verify path escaping, bearer headers, query translation, raw output, exit codes, invalid arguments, timeouts, and disabled redirects.
 
 This existing test pattern authenticates only to a local mock server:
 

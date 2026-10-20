@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// @anchor:uptime:config
 const (
 	defaultAPIBaseURL = "https://incidents.betterstack.com"
 	defaultTimeout    = 30 * time.Second

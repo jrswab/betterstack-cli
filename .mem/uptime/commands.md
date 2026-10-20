@@ -1,5 +1,13 @@
 # Uptime commands
 
+## Entry points and usage diagnostics
+
+`main` calls `runWithAPI` directly. The compatibility entry point `run(args, stdout, stderr)` supplies `defaultAPIBaseURL` and `newHTTPClient()` to `runWithAPI`. It does not accept an injected endpoint or client.
+
+`runWithAPI` checks help and dispatches recognized commands before falling through to `usageError`. The router writes that diagnostic to stderr and returns 1. `usageError` handles missing commands, invalid root help, unknown options, and unknown resources. Its hard-coded resource gate recognizes only `incidents` and `monitors` for delegation to `resourceUsageError`. That helper uses `knownAction`: incidents accepts `list`, `get`, and `timeline`; monitors accepts `list` and `get`; other resources return false. Routed commands validate their remaining arguments in their handlers, not in this fallthrough.
+
+Later resources must extend the resource gate in `usageError` and the action inventory in `knownAction`, alongside routing and `helpFor`. Without this gate update, the diagnostic fallthrough classifies the new resource as unknown.
+
 ## Routes and endpoints
 
 [runWithAPI](../../cmd/bs/main.go) checks exact help forms first, then routes these five commands. Endpoints use the base URL `https://incidents.betterstack.com` from [monitors.go](../../cmd/bs/monitors.go).

@@ -21,6 +21,6 @@ Tests use dummy tokens and loopback `httptest` servers. `TestMain` clears inheri
 
 ## Repository records
 
-[AGENTS.md](../AGENTS.md) defines repository conventions. Memory records present behavior and links back to source. Changelog fragments use a category heading and factual bullets with repository paths. Historical plans are not the source of current runtime behavior.
+`AGENTS.md` defines repository conventions. Memory records present behavior and links back to source. Changelog fragments use a category heading and factual bullets with repository paths. Historical plans are not the source of current runtime behavior.
 
 Related: [memory map](mem-map.md), [terminology](terminology.md), and [commands](uptime/commands.md).
