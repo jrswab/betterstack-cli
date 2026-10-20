@@ -27,18 +27,18 @@ The checkpoint owns task state. The milestone source remains untracked and is ne
 ## Artifacts
 
 - Spec: `docs/plans/008_telemetry-logs-search_002_spec.md`.
-- Implementation checklist: none in Phase 1.
+- Implementation checklist: `docs/plans/008_telemetry-logs-search_002_implement.md`.
 - Checkpoint: `docs/plans/008_telemetry-logs-search_002_checkpoint.md`.
 
 ## State
 
 - Lane: `full` — the milestone adds credential redaction, a security behavior, and a new test/endpoint seam that changes internal contracts.
-- Current phase: `implement`.
-- Current task: implementation checklist and S1 implementation.
-- Task states: restart validation for 001 `passed`; S1 specification `complete`; implementation `not started`.
+- Current phase: `execute`.
+- Current task: execute the S1 implementation checklist.
+- Task states: implementation checklist `complete`; A1 `not started`; A2 `not started`; A3 `not started`; V1 `not started`.
 - Milestone checkbox: `unchecked`.
-- Last completed gate: 001 restart validation passed. The 002 specification was compared with milestone 002 and the linked closed-ticket decisions. Timestamp: `2026-11-19`.
-- Next action: create the S1 implementation checklist, then start S1 implementation.
+- Last completed gate: S1 implementation checklist written and validated. This commit closes the checklist phase.
+- Next action: execute A1 and A2, then A3 and V1 in dependency order.
 
 ## Step 0 — Restart validation for milestone 001
 
@@ -102,4 +102,28 @@ The specification targets only milestone `002` (S1). Its acceptance covers `runW
 
 ## Commit gate
 
-Only `docs/plans/008_telemetry-logs-search_002_checkpoint.md` and `docs/plans/008_telemetry-logs-search_002_spec.md` may be staged. Commit as `002: S1 spec and checkpoint`. Do not stage or modify the five baseline paths. Do not push.
+Only `docs/plans/008_telemetry-logs-search_002_implement.md` and `docs/plans/008_telemetry-logs-search_002_checkpoint.md` may be staged. Commit as `002: S1 implementation checklist`. Do not stage or modify the five baseline paths. Do not push.
+
+## Phase 2 — Implementation checklist
+
+- Result: complete. `docs/plans/008_telemetry-logs-search_002_implement.md` contains the ordered checklist and R1–R7 coverage map. Every task box remains unchecked.
+- The checklist assigns A1 to test-first `runWithEndpoints` and compatibility coverage, A2 to test-first `redactSecrets` behavior, A3 to implementation and applicable repository records, and V1 to final acceptance and commit checks.
+- A1 and A2 can run in parallel. A3 depends on both. V1 depends on A1–A3 and gates the implementation commit.
+- Implementation signature assumptions: `runWithEndpoints(args, stdout, stderr, uptimeBaseURL, telemetryRESTBaseURL, telemetrySQLURL string, client *http.Client) int`; `redactSecrets(text, telemetryToken, sqlUsername, sqlPassword string) string`. The spec does not prescribe exact signatures.
+- Direct checks must be files under `/tmp/factory-002/`, written with quoted shell heredocs and run as scripts. Inline Python is not allowed.
+- Every implementation task names `GOFLAGS=-o=/dev/null go build ./...`, `go vet ./...`, `go test -count=1 ./...`, and `gofmt -l cmd/bs/*.go`.
+- A3 requires the changelog fragment and all applicable anchor, memory, README, and provenance records in the same implementation commit as code and tests.
+- No unresolved design blocker is known. S1 cannot test actual Telemetry REST or SQL request routing because those commands belong to later milestones. Record any new unresolved issue as `BLOCKED` without pausing.
+- No Go build, vet, test, or formatting check ran in this planning phase. No live request or real credential was used.
+
+### Phase 2 commands and outputs
+
+- `command -v factory || true`: no output.
+- `make help`: exit 2; stderr was `make: *** No rule to make target 'help'.  Stop.`
+- `git diff --check`: passed with no output before staging.
+- `git diff --cached --name-only`: exactly `docs/plans/008_telemetry-logs-search_002_checkpoint.md` and `docs/plans/008_telemetry-logs-search_002_implement.md`.
+- `git diff --cached --check`: passed with no output before restoring this checkpoint's Phase 1 history. Rerun after staging the final checkpoint.
+
+### Phase 2 commit boundary
+
+Stage only `docs/plans/008_telemetry-logs-search_002_implement.md` and `docs/plans/008_telemetry-logs-search_002_checkpoint.md`. Run `git diff --cached --check`, then commit as `002: S1 implementation checklist`. Do not push or edit the milestone source. Preserve all five baseline untracked paths.
