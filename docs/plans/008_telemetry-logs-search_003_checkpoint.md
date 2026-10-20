@@ -1142,3 +1142,202 @@ exit=0
 - After the artifact commit, the final report supplies its actual SHA, final status, and three-entry log. The checkpoint cannot contain its own commit SHA.
 - Required verification passed on the final code: `GOFLAGS=-o=/dev/null go build ./...`, `go vet ./...`, `go test -count=1 ./...`, empty `gofmt -l cmd/bs/*.go`, direct scripts, anchor parity, and unstaged/staged whitespace checks. Exact outputs appear above.
 - Unaddressed execution items: V1 (explicit stop boundary), independent auto-review/design-review gates (BLOCKED), unavailable make targets. No implemented S2 behavior requirement remains unaddressed.
+
+
+## Review gate 1 — CHANGES REQUESTED (F1 low) and fixes
+
+**Result:** The supplied review requested changes for review finding F1 (low) and nit N1. Both fixes passed local checks.
+Independent acceptance of these fixes remains pending. This entry does not claim a review pass.
+V1 remains `not started`. All checklist and milestone checkboxes remain unchanged.
+
+### Scope and fixes
+
+- Starting HEAD: `7824d2330533f0515059e43424101e035b2ac784` on `master` (`003: S2 implementation checkpoint`).
+- Authorization: local commits only. No push, live requests, ambient credential use, or baseline untracked path changes.
+- `cmd/bs/main_test.go:22`: add `recordingRoundTripper` and `recordingRoundTripper.RoundTrip` at line 27.
+  The transport records requests and returns a canned 200 body entirely in memory. It has no dialer or underlying transport.
+- `cmd/bs/main_test.go:36`: add `TestRunWithAPIUsesFixedTelemetryHost`.
+  Line 37 asserts `defaultTelemetryRESTBaseURL == "https://telemetry.betterstack.com"` independently of routing.
+  Lines 44–66 assert one GET through `runWithAPI`, HTTPS, `telemetry.betterstack.com`, `/api/v2/sources`, and the dummy Telemetry Bearer token.
+  The same test asserts `monitors list` uses the passed Uptime base URL, including its port and path prefix, and the dummy Uptime token.
+- `docs/plans/008_telemetry-logs-search_003_implement.md:44`: N1 changes only the V1 artifact commit subject.
+  The unique subject is `003: V1 and completion gate`, matching the milestone 002 convention.
+  The checklist's original subject already belongs to `f59b602`. No box changes occurred.
+- `.mem/uptime/testing.md:11,33`: document the new test and its non-dialing transport.
+  This file lists routing tests and network restrictions, so it must describe the new in-memory test accurately.
+- `cmd/bs/main.go` and `cmd/bs/safety_test.go` remain byte-for-byte unchanged from the starting HEAD.
+  The loopback-only network guard remains active. Focused guard tests and the full suite pass.
+
+### Root cause, assumptions, decisions, and skips
+
+- Root cause: existing source tests injected the REST endpoint through `runWithEndpoints`.
+  Existing `runWithAPI` compatibility coverage tested only Uptime, leaving the production Telemetry constant and its delegation unguarded.
+  The new test covers both gaps. No production defect or symptom patch was introduced or changed.
+- Assumption: use the task's supplied review disposition as gate evidence. Independent review acceptance remains a later action.
+- Decision: inject a recording RoundTripper rather than allowlist a production hostname in the network guard.
+  This observes production URL construction without DNS, dialing, real requests, or network-guard changes.
+- Decision: use an Uptime base URL with a port and path prefix to prove the full injected base URL survives.
+  A host-only assertion would miss accidental prefix removal.
+- Decision: adapt the existing scratch mutation runner to `/tmp/factory-003/mut-f1/`.
+  It copies only `go.mod` and `cmd`, replaces one exact match, and requires a behavioral test failure.
+  The repository never receives either mutation. An exit caused by compilation alone does not count as a kill.
+- Dependencies: none. Go standard-library HTTP interfaces and in-memory readers cover the test (ladder rung 2).
+- Skip (ladder rung 1 and explicit stop boundary): do not run V1 or its direct source/record acceptance scripts.
+  The required commands below verify this review fix only. No checklist or milestone checkbox is rendered.
+- Skip (ladder rung 1 and authorized-path scope): do not add changelog, README, anchor-index, or provenance edits.
+  Production behavior and anchors remain unchanged. The testing memory update is the only applicable authorized record change.
+- Skip (ladder rung 1): do not add test infrastructure under `.agents/` or the shared toolbox.
+  Existing `go` and `/tmp/factory-003/run-check.sh` cover verification. New scratch adaptation stays under the authorized temporary path.
+- Documentation tooling: `make help` exited 2 because no target exists.
+  No Makefile, Markdown formatter, or Markdown linter configuration exists. Direct checks validate memory links and the N1-only edit.
+
+### Mutation gate
+
+Both mutations now fail the new test. Each scratch runner exits 0 after confirming the behavioral kill.
+Each mutated `go test` exits 1. Neither mutation touches the repository.
+
+| Mutation | Scratch copy | Result |
+|---|---|---|
+| `runWithAPI` passes `baseURL, baseURL, ""` | `/tmp/factory-003/mut-f1/F1-uptime` | KILLED, test exit 1 |
+| Telemetry REST constant changes to `https://example.com` | `/tmp/factory-003/mut-f1/F1-host` | KILLED, test exit 1 |
+
+### Focused baseline output
+
+```text
+$ go test -count=1 -run \^TestRunWithAPIUsesFixedTelemetryHost\$ ./cmd/bs
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	0.006s
+exit=0
+```
+
+### F1 Uptime-delegation mutation output
+
+```text
+$ go test -count=1 -run \^TestRunWithAPIUsesFixedTelemetryHost\$ ./cmd/bs
+--- FAIL: TestRunWithAPIUsesFixedTelemetryHost (0.00s)
+    --- FAIL: TestRunWithAPIUsesFixedTelemetryHost/sources_list (0.00s)
+        main_test.go:61: request = GET http://127.0.0.1:12345/uptime/api/v2/sources, want GET https://telemetry.betterstack.com/api/v2/sources
+FAIL
+FAIL	github.com/jrswab/betterstack-cli/cmd/bs	0.007s
+FAIL
+exit=1
+```
+
+The scratch runner then printed `KILLED: F1-uptime` and exited 0.
+
+### F1 host-constant mutation output
+
+```text
+$ go test -count=1 -run \^TestRunWithAPIUsesFixedTelemetryHost\$ ./cmd/bs
+--- FAIL: TestRunWithAPIUsesFixedTelemetryHost (0.00s)
+    main_test.go:38: defaultTelemetryRESTBaseURL = "https://example.com", want https://telemetry.betterstack.com
+    --- FAIL: TestRunWithAPIUsesFixedTelemetryHost/sources_list (0.00s)
+        main_test.go:61: request = GET https://example.com/api/v2/sources, want GET https://telemetry.betterstack.com/api/v2/sources
+FAIL
+FAIL	github.com/jrswab/betterstack-cli/cmd/bs	0.006s
+FAIL
+exit=1
+```
+
+The scratch runner then printed `KILLED: F1-host` and exited 0.
+
+### Build output
+
+```text
+$ env GOFLAGS=-o=/dev/null go build ./...
+exit=0
+```
+
+### Vet output
+
+```text
+$ go vet ./...
+exit=0
+```
+
+### Full test output
+
+```text
+$ go test -count=1 ./...
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	2.012s
+exit=0
+```
+
+### Formatting output (no paths)
+
+```text
+$ gofmt -l cmd/bs/help.go cmd/bs/incidents.go cmd/bs/incidents_test.go cmd/bs/main.go cmd/bs/main_test.go cmd/bs/monitors.go cmd/bs/monitors_test.go cmd/bs/safety_test.go cmd/bs/sources.go cmd/bs/sources_test.go cmd/bs/telemetry.go cmd/bs/telemetry_test.go
+exit=0
+```
+
+### Whitespace output
+
+```text
+$ git diff --check
+exit=0
+```
+
+### Loopback-only guard and credential-harness output
+
+```text
+$ go test -count=1 -run TestLoopbackOnlyTransport\|TestGuardDialContext\|TestSafety ./cmd/bs
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	0.574s
+exit=0
+```
+
+### Authorized scope and memory output
+
+```text
+$ python3 /tmp/factory-003/check-f1-scope.py
+PASS allowed paths, unchanged baseline untracked path list, N1-only checklist edit, and unchanged production/network guard
+PASS memory links and line limit (41 lines), and no repository bs binary
+exit=0
+```
+
+### Fix commit and staged-path output
+
+```text
+$ bash /tmp/factory-003/commit-f1.sh
+PASS allowed paths, unchanged baseline untracked path list, N1-only checklist edit, and unchanged production/network guard
+PASS memory links and line limit (41 lines), and no repository bs binary
+git diff --check exit=0
+Staged paths:
+.mem/uptime/testing.md
+cmd/bs/main_test.go
+docs/plans/008_telemetry-logs-search_003_implement.md
+git diff --cached --check exit=0
+[master af68c57] 003: fix review finding F1
+ 3 files changed, 53 insertions(+), 2 deletions(-)
+af68c57f9930835d51c3679d9c31fb3a04e8c56e
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+exit=0
+```
+
+### Additional safety evidence
+
+```text
+$ go version
+go version go1.26.9 linux/amd64
+exit=0
+$ git diff --exit-code 7824d23 -- cmd/bs/main.go cmd/bs/safety_test.go
+exit=0
+$ test ! -e bs
+exit=0
+```
+
+All Go checks used the authorized Go 1.26.9 toolchain, `GOTOOLCHAIN=local`, and `GOPROXY=off`.
+The runner removed API and SQL credential variables before each command. Tests set fake values explicitly.
+The new transport never calls a dialer or delegates. Existing HTTP-server tests remain loopback-only.
+
+### Commit and stop boundary
+
+- Fix commit: `af68c57f9930835d51c3679d9c31fb3a04e8c56e` (`003: fix review finding F1`).
+- The fix commit contains only the test, N1 subject correction, and authorized testing memory update.
+- Checkpoint publication uses a temporary file under `/tmp/factory-003/` followed by `mv`.
+- The separate checkpoint commit stages only `docs/plans/008_telemetry-logs-search_003_checkpoint.md`.
+  Its subject is `003: review gate 1 checkpoint`. The final report supplies its SHA and final status/log.
+- All requested review-fix checks passed. No required review-fix check remains blocked.
+- V1 remains `not started`. Independent review acceptance remains pending. No push or milestone completion occurs here.
