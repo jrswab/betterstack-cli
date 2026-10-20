@@ -5,7 +5,8 @@
 - Scope: milestone 002 only; do not implement source requests or SQL execution
 - Requirement coverage: R1 → A1 and V1; R2 → A1 and V1; R3 → A2 and V1; R4–R5 → A1, A2, and V1; R6 → A3; R7 → V1
 - State: the checkpoint owns task state. Task boxes below are rendered from its passed task states.
-- Factory Phase 3 override: execute A1–A3, commit implementation and records together, then commit checkpoint/render separately. Stop before V1. Do not modify the milestone source.
+- Factory Phase 3 override (completed): execute A1–A3, commit implementation and records together, then commit checkpoint/render separately. Stop before V1. Do not modify the milestone source.
+- Factory V1/completion override: implementation and review are committed and the milestone review gate passed. Run V1 and the completion gate. After all gates pass, render V1 and only the milestone 002 checkbox character. Commit only this checklist and the checkpoint as `002: V1 and completion gate`.
 
 ## Section 1: Context Summary
 
@@ -31,7 +32,7 @@ The checkpoint records state for A1–A3 and V1. A1 and A2 can proceed in parall
 
 ### Slice D — Final acceptance and commit gate
 
-- [ ] V1: After A1–A3, run `GOFLAGS=-o=/dev/null go build ./...`, `go vet ./...`, `go test -count=1 ./...`, and `gofmt -l cmd/bs/*.go` (expect no paths). Run `/tmp/factory-002/check-endpoints.sh`, `/tmp/factory-002/check-redaction.sh`, and `/tmp/factory-002/check-records.sh`. Confirm R1–R7 against the spec. Confirm existing Uptime raw-response tests pass unchanged, `TestMain` and the loopback-only network guard remain intact, no current response path calls `redactSecrets`, and no live request or real credential was used. Run `git diff --check`, stage only approved S1 code, tests, and repository-record paths explicitly, inspect `git diff --cached --name-only`, and run `git diff --cached --check`. Record exact command outputs and unavailable checks in the checkpoint. Commit the complete S1 change only after all checks pass. Do not edit or render the milestone source checkbox. Map to R1–R7.
+- [x] V1: After A1–A3, run `GOFLAGS=-o=/dev/null go build ./...`, `go vet ./...`, `go test -count=1 ./...`, and `gofmt -l cmd/bs/*.go` (expect no paths). Run `/tmp/factory-002/check-endpoints.sh`, `/tmp/factory-002/check-redaction.sh`, and `/tmp/factory-002/check-records.sh`. Confirm R1–R7 against the spec. Confirm existing Uptime raw-response tests pass unchanged, `TestMain` and the loopback-only network guard remain intact, no current response path calls `redactSecrets`, and no live request or real credential was used. Run `git diff --check`, stage only approved S1 code, tests, and repository-record paths explicitly, inspect `git diff --cached --name-only`, and run `git diff --cached --check`. Record exact command outputs and unavailable checks in the checkpoint. Commit the complete S1 change only after all checks pass. Do not edit or render the milestone source checkbox. Map to R1–R7.
 
 ## Requirement Coverage Map
 

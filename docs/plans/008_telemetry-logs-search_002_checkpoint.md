@@ -5,10 +5,10 @@ The checkpoint owns task state. The milestone source remains untracked and is ne
 ## Identity
 
 - Milestone ID: `002` (S1).
-- Milestone source: `docs/plans/008_telemetry-logs-search_milestones.md`. Phase 3 does not modify or render this baseline untracked file.
+- Milestone source: `docs/plans/008_telemetry-logs-search_milestones.md`. The completion invocation authorizes only its milestone 002 checkbox render. The source remains untracked and is never staged.
 - Repository root: `/home/jaron/dev/betterstack-cli/master`.
 - Branch: `master`.
-- Current HEAD: `ec4ad10a0e2533846a4b81638580d2ced1982144` (review-fix commit and review checkpoint verification parent).
+- Current verification HEAD: `d9bf3eb909a75cdafe690aef169fe54d02f2f40a` (passed milestone review gate and V1/completion verification parent). Resolve the completion commit with `git rev-parse HEAD` after committing.
 - Baseline `git status --porcelain` (verbatim):
 
 ```text
@@ -33,12 +33,12 @@ The checkpoint owns task state. The milestone source remains untracked and is ne
 ## State
 
 - Lane: `full` — the milestone adds credential redaction, a security behavior, and a new test/endpoint seam that changes internal contracts.
-- Current phase: `execute`.
-- Current task: fix review findings F1, F2, N1, and N2 only, then stop before V1.
-- Task states: implementation checklist `complete`; A1 `passed`; A2 `passed`; A3 `passed`; V1 `not started`.
-- Milestone checkbox: `unchecked`.
-- Last completed gate: Review gate 1 fixes and local checks passed. The orchestrator must confirm the fixes through re-review.
-- Next action: stop before V1. The orchestrator must re-review the fixes before a future invocation runs V1.
+- Current phase: `complete`.
+- Current task: none.
+- Task states: implementation checklist `complete`; A1 `passed`; A2 `passed`; A3 `passed`; V1 `passed`.
+- Milestone checkbox: `checked`.
+- Last completed gate: V1 and the Factory completion gate passed. The orchestrator supplied the passed milestone review gate for `e9140cf..d9bf3eb`.
+- Next action: start milestone `003` (S2).
 
 ## Step 0 — Restart validation for milestone 001
 
@@ -1165,3 +1165,700 @@ Its parent must be the fix commit above, and it must change only this checkpoint
 The final response records both actual commit SHAs, final status, and `git log --oneline -3`.
 Final command evidence stays under `/tmp/factory-002/review1-final-*` after the checkpoint commit.
 This paragraph does not claim unobserved post-commit output.
+
+## Phase 3 — V1 and Factory completion gate
+
+**Result:** V1 passed, and milestone `002` is `complete` with its checkbox `checked`.
+The orchestrator supplied a passed milestone review gate for `e9140cf..d9bf3eb` and reported that all mutations were killed.
+This invocation ran V1 and the Factory completion gate, not a new review.
+The completion commit is `002: V1 and completion gate` on `master`. No push occurred.
+
+**Scope:** The invocation changed only the implementation checklist, this checkpoint, and one milestone-source checkbox character.
+It deleted the authorized run-created `./bs` binary and wrote scratch scripts/evidence under `/tmp/factory-002/`.
+It did not change production code, tests, the spec, repository memory, changelog, anchors, README, or provenance.
+It added or modified no production function.
+The checklist records the current invocation override and renders V1 as passed.
+This checkpoint replaces stale top-level state and records verification evidence through a temporary file and `mv`.
+
+**Binary origin:** “This run” means the complete milestone 002 Factory run, including implementation and review invocations.
+Checkpoint lines 779–780 record an extra `bs` binary at the review start, outside the original five-path baseline.
+The Identity baseline and post-implementation status do not list `bs`.
+The setup validation parent `e9140cf` has timestamp `2026-10-20T13:53:52-04:00`.
+The A1–A3 checkpoint commit `895b214` has timestamp `2026-10-20T14:32:15-04:00`.
+The binary birth time is `2026-10-20 14:34:12.752519348 -0400`.
+Its modification time is `2026-10-20 14:34:13.211523383 -0400`, after both baselines and before review-start evidence.
+Its SHA-256 matches the checkpoint's review-start binary: `05f15eaee64aba81cffa73843076919eaf60eb001f4862e3ef3da2d702d76501`.
+The provenance script confirmed this ordering and checksum before `rm ./bs` ran successfully with exit `0` and no output.
+The invocation did not execute the binary. Its origin as a run-created build artifact permits only this deletion.
+
+**Verification:** V1's full Go battery and direct endpoint, redaction/response/safety, and repository-record scripts passed.
+The completion gate separately ran build, vet, uncached full tests, and formatting exactly once.
+No implementation check failed, and no verifier retry was necessary. Attempt count: `1`.
+The isolated-process probe skips its direct parent-process invocation by design.
+`TestSafetyHarnessStripsInheritedCredentials` compiles and runs that probe in its child process and passed.
+Existing `TestMain`, the network guard, response tests, and current request paths remain unchanged.
+All executed HTTP paths used loopback mock servers or rejected non-loopback hosts before transport/dial.
+No live API request or real credential was used.
+
+**Completion accounting:** Before any render, `git status --porcelain` contained exactly the five baseline untracked paths.
+The pre-render fingerprint matched `5f6cf5609b4c769043291850953b4728031c3cad1c8a9fd6611cca60ffa064a8`.
+The index was empty, the requirement table was complete, and completion gates 1–3 passed.
+Only then did the invocation render V1 and change `- [ ] 002:` to `- [x] 002:`.
+The milestone-source bytes changed exactly once without changing length. The source remains untracked and is never staged.
+All other protected baseline files retain their original contents.
+The post-render fingerprint is `38aa6b80387cfee47600181bdbcfc84279f60c56668a60ab4b094233c9ee8ce8`.
+
+**Environment:** Discovery found no `factory` command or applicable repository script.
+The existing `.agents/scripts/telemetry-live-probe.sh` is outside scope and did not run.
+The invocation reused `/tmp/factory-002/run-check.sh` and `verify-task.sh`.
+It rewrote direct check scripts with quoted heredocs under `/tmp/factory-002/`, as authorized.
+The endpoint verifier now recognizes the reviewed fixed-host constant instead of the obsolete inline literal.
+The record verifier now checks ten anchors and the V1/completion state instead of the earlier nine-anchor A3 state.
+These updates occurred before verification. They are verifier maintenance, not implementation fixes.
+`make help`, `make fragments-check`, and `make docs-check` each exited `2` because their targets are absent.
+No Makefile, configured Markdown formatter, or configured Markdown linter exists.
+Direct syntax, Markdown, record, link, scope, formatting, and whitespace checks passed instead.
+The invocation does not report absent targets as passed.
+
+**Decisions:** The orchestrator accepts S1's distinct endpoint inputs as the enabling seam.
+The REST/SQL inputs remain unused inside S1. Milestones 003 and 005 prove actual routing.
+The invocation rejected early Telemetry request behavior because it belongs to those milestones.
+V1 and the completion gate use separate full batteries because the user explicitly requested both.
+Atomic checkpoint replacement avoids a partially written execution record.
+The commit cannot contain its own SHA. Resolve it with `git rev-parse HEAD` after the commit.
+Its verification parent must be `d9bf3eb909a75cdafe690aef169fe54d02f2f40a`.
+The commit must change only the two named 002 execution artifacts.
+Final commit, status, log, and milestone-line evidence remains under `/tmp/factory-002/completion-final-*` and in the response.
+This paragraph does not claim unobserved post-commit output.
+
+**Skips:** Ladder rung 1 excludes source/SQL requests, SQL URL reads/validation, and response integration as downstream work.
+Ladder rung 1 leaves the spec, memory, changelog, README, anchors, and provenance unchanged because this invocation changes no implementation behavior.
+Ladder rung 1 excludes a new Makefile or Markdown tool configuration. They are unnecessary and outside the authorized write scope.
+Ladder rung 2 uses existing shell tools and the Go/Python standard libraries. No dependency was added.
+The user excludes baseline staging/deletion, additional milestone renders, live requests, and pushes.
+No symptom patch or intentional implementation ceiling was added.
+
+**Commit boundary:** Stage only `docs/plans/008_telemetry-logs-search_002_implement.md` and this checkpoint.
+Run `git diff --cached --check` before `git commit -m '002: V1 and completion gate'`.
+The final script checks actual post-commit status against the five baseline paths and checks the post-render fingerprint.
+It records the commit SHA, `git log --oneline -3`, and the requested milestone-line excerpt.
+The next action is to start milestone `003` (S2).
+
+## Requirement-to-evidence table
+
+| Requirement or milestone acceptance | Evidence | Decision |
+|---|---|---|
+| R1 — Preserve `runWithAPI`, callers, Uptime routing, help, usage, credentials, and output | `v1-direct`: the exact signature and `run`/`invoke`/`invokeAPI` match `45b1990`. Compatibility, all five Uptime routes, and zero-request help/invalid-usage tests pass. Existing handler, help, and response files remain unchanged. | PASS |
+| R2 — Accept distinct Uptime, Telemetry REST, and Telemetry SQL endpoint inputs | `v1-direct`: the signature has three separate endpoint parameters. `TestRunWithEndpointsUsesDistinctEndpoints` supplies three loopback servers and a distinct SQL path. All five Uptime routes reach only the Uptime server. | PASS under the orchestrator decision below. S1 accepts the inputs. Milestones 003 and 005 prove actual Telemetry routing. |
+| R3 — Redact all approved secret forms and edge cases | `v1-redaction`: all 16 `TestRedactSecrets` cases and `TestRedactSecretsBasicAuthEncoding` pass. Coverage includes token, username, password, standard Basic-auth encoding, global matches, overlap, case sensitivity, empty credentials, unrelated text, and marker collisions. Tests use explicit dummy strings. | PASS |
+| R4 — Keep redaction reusable and unapplied to responses | `v1-redaction`: production scans find no `redactSecrets` caller. Existing Uptime raw-success and non-2xx passthrough tests pass unchanged. Source/SQL routing and response integration are absent. | PASS |
+| R5 — Preserve fixed endpoint policy and separate credentials | `v1-direct`: the fixed Telemetry REST constant and `runWithAPI` delegation match the approved contract. Uptime configuration and handlers remain unchanged. The router has no environment read, source/SQL route, host override, or Telemetry fallback. Loopback tests use the fixed dummy Uptime token. | PASS. SQL configuration and Telemetry authentication remain downstream work, not active S1 behavior. |
+| R6 — Deliver applicable repository records with implementation | `v1-records`: commit `4ea3bab` contains code, tests, factual changelog, anchor index, and applicable memory. Ten current anchor occurrences match `TAGS.md`. Memory links, examples, diagram, line limits, and Markdown checks pass. README, provenance, memory map, and spec remain unchanged. | PASS. S1 activates no runtime configuration or setup requiring README changes. |
+| R7 — Verify locally without external access and audit staging | V1 and completion build, vet, uncached full tests, and formatting pass. `v1-redaction` passes network-guard and isolated credential-removal tests. Safety and existing response tests remain byte-identical. `v1-diff-check`, explicit staged-path audit, and cached whitespace checks pass. | PASS. Only the two authorized execution artifacts are staged. No live request, real credential, or push occurs. |
+| Milestone 002 — “tests can route source and SQL requests through `runWithEndpoints` while existing callers retain the `runWithAPI` signature” | R1/R2 evidence and the passed milestone review gate supplied by the orchestrator for `e9140cf..d9bf3eb`. The orchestrator reports that all mutations were killed. This invocation does not repeat the review. | ACCEPTED by the orchestrator. The seam accepts and carries distinct endpoint inputs at S1. Milestone 003 (S2) proves source routing. Milestone 005 (S4) proves SQL routing. S1 does not issue or store Telemetry requests. |
+| Milestone 002 — “`redactSecrets` removes the Telemetry API token, SQL username, SQL password, and base64-encoded `username:password` from diagnostic output” | R3/R4 evidence establishes direct diagnostic-text redaction. The helper has no current response-path caller. | ACCEPTED. Milestone 005 owns applying redaction to non-2xx SQL response bodies. |
+
+**Orchestrator decision:** S1 satisfies milestone 002 through the seam accepting and carrying distinct endpoint inputs.
+The REST and SQL parameters remain unused inside the S1 router.
+Milestone 003 (S2) and milestone 005 (S4) prove actual routing at their request boundaries.
+This decision does not authorize early source or SQL implementation.
+
+## V1 and completion command evidence
+
+The blocks reproduce combined stdout/stderr verbatim, with trailing newlines normalized.
+An empty block means that the command printed no output.
+Every Go command used the authorized Go 1.26.9 PATH, `GOTOOLCHAIN=local`, and `GOPROXY=off`.
+`gofmt -l cmd/bs/*.go` expanded to the paths shown below and printed no paths.
+
+### v1-bs-origin
+
+Command: `bash /tmp/factory-002/v1-provenance.sh`. Exit code: `0`.
+
+```text
+./bs | mtime=2026-10-20 14:34:13.211523383 -0400 | epoch=1792521253 | birth=2026-10-20 14:34:12.752519348 -0400 | size=8677053
+./bs: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, Go BuildID=Uo5v7-RgamvqiRysMJGG/r9BUbrJ7OsdU1qUawYH0/IvAVlp-GantjrbFim2el/24wccmmKF6QxUEAqmAME, BuildID[sha1]=34aa5ccf8482f0e4d4e81816c3ebaf8daa4232a6, with debug_info, not stripped
+05f15eaee64aba81cffa73843076919eaf60eb001f4862e3ef3da2d702d76501  ./bs
+e9140cf54d07c3ea7faa8f9776a3987846fe56f6
+2026-10-20T13:53:52-04:00
+895b214d6038f1ed7384cea199157eb0bf33cbb7
+2026-10-20T14:32:15-04:00
+PASS: ./bs was absent from the 002 setup and post-implementation baselines.
+PASS: ./bs mtime follows the 002 setup and A1-A3 commit and precedes the review-start evidence.
+PASS: ./bs checksum matches the checkpoint review-start binary. Run-created deletion is authorized.
+```
+
+### v1-bs-delete
+
+Command: `rm ./bs`. Exit code: `0`.
+
+```text
+
+```
+
+### v1-start-status
+
+Command: `git status --porcelain`. Exit code: `0`.
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+### v1-start-fingerprint
+
+Command: `bash -c find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum`. Exit code: `0`.
+
+```text
+5f6cf5609b4c769043291850953b4728031c3cad1c8a9fd6611cca60ffa064a8  -
+```
+
+### v1-make-help
+
+Command: `make help`. Exit code: `2`.
+
+```text
+make: *** No rule to make target 'help'.  Stop.
+```
+
+### v1-make-fragments
+
+Command: `make fragments-check`. Exit code: `2`.
+
+```text
+make: *** No rule to make target 'fragments-check'.  Stop.
+```
+
+### v1-make-docs
+
+Command: `make docs-check`. Exit code: `2`.
+
+```text
+make: *** No rule to make target 'docs-check'.  Stop.
+```
+
+### v1-script-syntax
+
+Command: `python3 /tmp/factory-002/v1-check-script-syntax.py`. Exit code: `0`.
+
+```text
+PASS: Python syntax /tmp/factory-002/v1-provenance.py
+PASS: Python syntax /tmp/factory-002/check-endpoints.py
+PASS: Python syntax /tmp/factory-002/check-redaction.py
+PASS: Python syntax /tmp/factory-002/check-records.py
+PASS: Python syntax /tmp/factory-002/v1-check-script-syntax.py
+PASS: Bash syntax /tmp/factory-002/v1-provenance.sh
+PASS: Bash syntax /tmp/factory-002/check-endpoints.sh
+PASS: Bash syntax /tmp/factory-002/check-redaction.sh
+PASS: Bash syntax /tmp/factory-002/check-records.sh
+PASS: Bash syntax /tmp/factory-002/run-check.sh
+PASS: Bash syntax /tmp/factory-002/verify-task.sh
+```
+
+### v1-build
+
+Command: `env GOFLAGS=-o=/dev/null go build ./...`. Exit code: `0`.
+
+```text
+
+```
+
+### v1-vet
+
+Command: `go vet ./...`. Exit code: `0`.
+
+```text
+
+```
+
+### v1-test
+
+Command: `go test -count=1 ./...`. Exit code: `0`.
+
+```text
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	1.760s
+```
+
+### v1-gofmt
+
+Command: `gofmt -l cmd/bs/help.go cmd/bs/incidents.go cmd/bs/incidents_test.go cmd/bs/main.go cmd/bs/main_test.go cmd/bs/monitors.go cmd/bs/monitors_test.go cmd/bs/safety_test.go cmd/bs/telemetry.go cmd/bs/telemetry_test.go`. Exit code: `0`.
+
+```text
+
+```
+
+### v1-direct
+
+Command: `bash /tmp/factory-002/check-endpoints.sh`. Exit code: `0`.
+
+```text
+=== RUN   TestRunWithAPIKeepsSignatureAndUptimeRouting
+--- PASS: TestRunWithAPIKeepsSignatureAndUptimeRouting (0.00s)
+=== RUN   TestRunWithEndpointsUsesDistinctEndpoints
+=== RUN   TestRunWithEndpointsUsesDistinctEndpoints/monitors_list
+=== RUN   TestRunWithEndpointsUsesDistinctEndpoints/monitors_get_789
+=== RUN   TestRunWithEndpointsUsesDistinctEndpoints/incidents_list
+=== RUN   TestRunWithEndpointsUsesDistinctEndpoints/incidents_get_123
+=== RUN   TestRunWithEndpointsUsesDistinctEndpoints/incidents_timeline_123
+--- PASS: TestRunWithEndpointsUsesDistinctEndpoints (0.00s)
+    --- PASS: TestRunWithEndpointsUsesDistinctEndpoints/monitors_list (0.00s)
+    --- PASS: TestRunWithEndpointsUsesDistinctEndpoints/monitors_get_789 (0.00s)
+    --- PASS: TestRunWithEndpointsUsesDistinctEndpoints/incidents_list (0.00s)
+    --- PASS: TestRunWithEndpointsUsesDistinctEndpoints/incidents_get_123 (0.00s)
+    --- PASS: TestRunWithEndpointsUsesDistinctEndpoints/incidents_timeline_123 (0.00s)
+=== RUN   TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage
+=== RUN   TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage/root_help
+=== RUN   TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage/resource_help
+=== RUN   TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage/command_help
+=== RUN   TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage/empty
+=== RUN   TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage/unknown_resource
+=== RUN   TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage/missing_target
+=== RUN   TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage/extra_target
+--- PASS: TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage (0.00s)
+    --- PASS: TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage/root_help (0.00s)
+    --- PASS: TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage/resource_help (0.00s)
+    --- PASS: TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage/command_help (0.00s)
+    --- PASS: TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage/empty (0.00s)
+    --- PASS: TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage/unknown_resource (0.00s)
+    --- PASS: TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage/missing_target (0.00s)
+    --- PASS: TestRunWithEndpointsAndRunWithAPIMakeNoRequestForHelpOrInvalidUsage/extra_target (0.00s)
+PASS
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	0.012s
+PASS: compatible Uptime routing, three endpoint parameters, unchanged callers and response/network boundaries; Telemetry requests remain downstream.
+```
+
+### v1-redaction
+
+Command: `bash /tmp/factory-002/check-redaction.sh`. Exit code: `0`.
+
+```text
+=== RUN   TestIncidentsGetRawSuccessBody
+=== RUN   TestIncidentsGetRawSuccessBody/included_envelope
+=== RUN   TestIncidentsGetRawSuccessBody/non-json
+=== RUN   TestIncidentsGetRawSuccessBody/own_trailing_newline
+--- PASS: TestIncidentsGetRawSuccessBody (0.00s)
+    --- PASS: TestIncidentsGetRawSuccessBody/included_envelope (0.00s)
+    --- PASS: TestIncidentsGetRawSuccessBody/non-json (0.00s)
+    --- PASS: TestIncidentsGetRawSuccessBody/own_trailing_newline (0.00s)
+=== RUN   TestIncidentsGetNon2xxPassthrough
+=== RUN   TestIncidentsGetNon2xxPassthrough/moved_permanently
+=== RUN   TestIncidentsGetNon2xxPassthrough/found
+=== RUN   TestIncidentsGetNon2xxPassthrough/temporary_redirect
+=== RUN   TestIncidentsGetNon2xxPassthrough/unauthorized
+=== RUN   TestIncidentsGetNon2xxPassthrough/not_found
+=== RUN   TestIncidentsGetNon2xxPassthrough/too_many_requests
+=== RUN   TestIncidentsGetNon2xxPassthrough/server_error
+--- PASS: TestIncidentsGetNon2xxPassthrough (0.01s)
+    --- PASS: TestIncidentsGetNon2xxPassthrough/moved_permanently (0.00s)
+    --- PASS: TestIncidentsGetNon2xxPassthrough/found (0.00s)
+    --- PASS: TestIncidentsGetNon2xxPassthrough/temporary_redirect (0.00s)
+    --- PASS: TestIncidentsGetNon2xxPassthrough/unauthorized (0.00s)
+    --- PASS: TestIncidentsGetNon2xxPassthrough/not_found (0.00s)
+    --- PASS: TestIncidentsGetNon2xxPassthrough/too_many_requests (0.00s)
+    --- PASS: TestIncidentsGetNon2xxPassthrough/server_error (0.00s)
+=== RUN   TestIncidentsTimelineRawSuccessBody
+=== RUN   TestIncidentsTimelineRawSuccessBody/heterogeneous_envelope
+=== RUN   TestIncidentsTimelineRawSuccessBody/non-json
+=== RUN   TestIncidentsTimelineRawSuccessBody/own_trailing_newline
+--- PASS: TestIncidentsTimelineRawSuccessBody (0.00s)
+    --- PASS: TestIncidentsTimelineRawSuccessBody/heterogeneous_envelope (0.00s)
+    --- PASS: TestIncidentsTimelineRawSuccessBody/non-json (0.00s)
+    --- PASS: TestIncidentsTimelineRawSuccessBody/own_trailing_newline (0.00s)
+=== RUN   TestIncidentsTimelineTruncatedPassthroughIsSilent
+--- PASS: TestIncidentsTimelineTruncatedPassthroughIsSilent (0.00s)
+=== RUN   TestIncidentsTimelineNon2xxPassthrough
+=== RUN   TestIncidentsTimelineNon2xxPassthrough/moved_permanently
+=== RUN   TestIncidentsTimelineNon2xxPassthrough/found
+=== RUN   TestIncidentsTimelineNon2xxPassthrough/temporary_redirect
+=== RUN   TestIncidentsTimelineNon2xxPassthrough/unauthorized
+=== RUN   TestIncidentsTimelineNon2xxPassthrough/not_found
+=== RUN   TestIncidentsTimelineNon2xxPassthrough/too_many_requests
+=== RUN   TestIncidentsTimelineNon2xxPassthrough/server_error
+--- PASS: TestIncidentsTimelineNon2xxPassthrough (0.00s)
+    --- PASS: TestIncidentsTimelineNon2xxPassthrough/moved_permanently (0.00s)
+    --- PASS: TestIncidentsTimelineNon2xxPassthrough/found (0.00s)
+    --- PASS: TestIncidentsTimelineNon2xxPassthrough/temporary_redirect (0.00s)
+    --- PASS: TestIncidentsTimelineNon2xxPassthrough/unauthorized (0.00s)
+    --- PASS: TestIncidentsTimelineNon2xxPassthrough/not_found (0.00s)
+    --- PASS: TestIncidentsTimelineNon2xxPassthrough/too_many_requests (0.00s)
+    --- PASS: TestIncidentsTimelineNon2xxPassthrough/server_error (0.00s)
+=== RUN   TestIncidentsListRawSuccessBody
+=== RUN   TestIncidentsListRawSuccessBody/pagination_envelope
+=== RUN   TestIncidentsListRawSuccessBody/non-json
+=== RUN   TestIncidentsListRawSuccessBody/own_trailing_newline
+--- PASS: TestIncidentsListRawSuccessBody (0.00s)
+    --- PASS: TestIncidentsListRawSuccessBody/pagination_envelope (0.00s)
+    --- PASS: TestIncidentsListRawSuccessBody/non-json (0.00s)
+    --- PASS: TestIncidentsListRawSuccessBody/own_trailing_newline (0.00s)
+=== RUN   TestIncidentsListNon2xxPassthrough
+=== RUN   TestIncidentsListNon2xxPassthrough/moved_permanently
+=== RUN   TestIncidentsListNon2xxPassthrough/found
+=== RUN   TestIncidentsListNon2xxPassthrough/temporary_redirect
+=== RUN   TestIncidentsListNon2xxPassthrough/unauthorized
+=== RUN   TestIncidentsListNon2xxPassthrough/not_found
+=== RUN   TestIncidentsListNon2xxPassthrough/too_many_requests
+=== RUN   TestIncidentsListNon2xxPassthrough/server_error
+--- PASS: TestIncidentsListNon2xxPassthrough (0.00s)
+    --- PASS: TestIncidentsListNon2xxPassthrough/moved_permanently (0.00s)
+    --- PASS: TestIncidentsListNon2xxPassthrough/found (0.00s)
+    --- PASS: TestIncidentsListNon2xxPassthrough/temporary_redirect (0.00s)
+    --- PASS: TestIncidentsListNon2xxPassthrough/unauthorized (0.00s)
+    --- PASS: TestIncidentsListNon2xxPassthrough/not_found (0.00s)
+    --- PASS: TestIncidentsListNon2xxPassthrough/too_many_requests (0.00s)
+    --- PASS: TestIncidentsListNon2xxPassthrough/server_error (0.00s)
+=== RUN   TestMonitorsGetPrintsRawBodyOnSuccess
+=== RUN   TestMonitorsGetPrintsRawBodyOnSuccess/json_without_trailing_newline
+=== RUN   TestMonitorsGetPrintsRawBodyOnSuccess/non-json
+=== RUN   TestMonitorsGetPrintsRawBodyOnSuccess/body_with_its_own_trailing_newline
+--- PASS: TestMonitorsGetPrintsRawBodyOnSuccess (0.00s)
+    --- PASS: TestMonitorsGetPrintsRawBodyOnSuccess/json_without_trailing_newline (0.00s)
+    --- PASS: TestMonitorsGetPrintsRawBodyOnSuccess/non-json (0.00s)
+    --- PASS: TestMonitorsGetPrintsRawBodyOnSuccess/body_with_its_own_trailing_newline (0.00s)
+=== RUN   TestMonitorsGetNon2xxPassthrough
+=== RUN   TestMonitorsGetNon2xxPassthrough/moved_permanently
+=== RUN   TestMonitorsGetNon2xxPassthrough/found
+=== RUN   TestMonitorsGetNon2xxPassthrough/temporary_redirect
+=== RUN   TestMonitorsGetNon2xxPassthrough/unauthorized
+=== RUN   TestMonitorsGetNon2xxPassthrough/not_found
+=== RUN   TestMonitorsGetNon2xxPassthrough/too_many_requests
+=== RUN   TestMonitorsGetNon2xxPassthrough/server_error
+--- PASS: TestMonitorsGetNon2xxPassthrough (0.00s)
+    --- PASS: TestMonitorsGetNon2xxPassthrough/moved_permanently (0.00s)
+    --- PASS: TestMonitorsGetNon2xxPassthrough/found (0.00s)
+    --- PASS: TestMonitorsGetNon2xxPassthrough/temporary_redirect (0.00s)
+    --- PASS: TestMonitorsGetNon2xxPassthrough/unauthorized (0.00s)
+    --- PASS: TestMonitorsGetNon2xxPassthrough/not_found (0.00s)
+    --- PASS: TestMonitorsGetNon2xxPassthrough/too_many_requests (0.00s)
+    --- PASS: TestMonitorsGetNon2xxPassthrough/server_error (0.00s)
+=== RUN   TestMonitorsListRawSuccessBody
+=== RUN   TestMonitorsListRawSuccessBody/pagination_object
+=== RUN   TestMonitorsListRawSuccessBody/non-json
+=== RUN   TestMonitorsListRawSuccessBody/body_with_its_own_trailing_newline
+--- PASS: TestMonitorsListRawSuccessBody (0.00s)
+    --- PASS: TestMonitorsListRawSuccessBody/pagination_object (0.00s)
+    --- PASS: TestMonitorsListRawSuccessBody/non-json (0.00s)
+    --- PASS: TestMonitorsListRawSuccessBody/body_with_its_own_trailing_newline (0.00s)
+=== RUN   TestMonitorsListNon2xxPassthrough
+=== RUN   TestMonitorsListNon2xxPassthrough/moved_permanently
+=== RUN   TestMonitorsListNon2xxPassthrough/found
+=== RUN   TestMonitorsListNon2xxPassthrough/temporary_redirect
+=== RUN   TestMonitorsListNon2xxPassthrough/unauthorized
+=== RUN   TestMonitorsListNon2xxPassthrough/not_found
+=== RUN   TestMonitorsListNon2xxPassthrough/too_many_requests
+=== RUN   TestMonitorsListNon2xxPassthrough/server_error
+--- PASS: TestMonitorsListNon2xxPassthrough (0.00s)
+    --- PASS: TestMonitorsListNon2xxPassthrough/moved_permanently (0.00s)
+    --- PASS: TestMonitorsListNon2xxPassthrough/found (0.00s)
+    --- PASS: TestMonitorsListNon2xxPassthrough/temporary_redirect (0.00s)
+    --- PASS: TestMonitorsListNon2xxPassthrough/unauthorized (0.00s)
+    --- PASS: TestMonitorsListNon2xxPassthrough/not_found (0.00s)
+    --- PASS: TestMonitorsListNon2xxPassthrough/too_many_requests (0.00s)
+    --- PASS: TestMonitorsListNon2xxPassthrough/server_error (0.00s)
+=== RUN   TestLoopbackOnlyTransportRejectsBeforeBase
+=== RUN   TestLoopbackOnlyTransportRejectsBeforeBase/incidents.betterstack.com
+=== RUN   TestLoopbackOnlyTransportRejectsBeforeBase/localhost
+=== RUN   TestLoopbackOnlyTransportRejectsBeforeBase/example.com
+=== RUN   TestLoopbackOnlyTransportRejectsBeforeBase/192.0.2.1
+=== RUN   TestLoopbackOnlyTransportRejectsBeforeBase/198.51.100.7
+=== RUN   TestLoopbackOnlyTransportRejectsBeforeBase/203.0.113.9
+=== RUN   TestLoopbackOnlyTransportRejectsBeforeBase/10.0.0.1
+=== RUN   TestLoopbackOnlyTransportRejectsBeforeBase/8.8.8.8
+=== RUN   TestLoopbackOnlyTransportRejectsBeforeBase/2001:db8::1
+--- PASS: TestLoopbackOnlyTransportRejectsBeforeBase (0.00s)
+    --- PASS: TestLoopbackOnlyTransportRejectsBeforeBase/incidents.betterstack.com (0.00s)
+    --- PASS: TestLoopbackOnlyTransportRejectsBeforeBase/localhost (0.00s)
+    --- PASS: TestLoopbackOnlyTransportRejectsBeforeBase/example.com (0.00s)
+    --- PASS: TestLoopbackOnlyTransportRejectsBeforeBase/192.0.2.1 (0.00s)
+    --- PASS: TestLoopbackOnlyTransportRejectsBeforeBase/198.51.100.7 (0.00s)
+    --- PASS: TestLoopbackOnlyTransportRejectsBeforeBase/203.0.113.9 (0.00s)
+    --- PASS: TestLoopbackOnlyTransportRejectsBeforeBase/10.0.0.1 (0.00s)
+    --- PASS: TestLoopbackOnlyTransportRejectsBeforeBase/8.8.8.8 (0.00s)
+    --- PASS: TestLoopbackOnlyTransportRejectsBeforeBase/2001:db8::1 (0.00s)
+=== RUN   TestLoopbackOnlyTransportAllowsLoopback
+=== RUN   TestLoopbackOnlyTransportAllowsLoopback/127.0.0.1
+=== RUN   TestLoopbackOnlyTransportAllowsLoopback/127.0.0.5
+=== RUN   TestLoopbackOnlyTransportAllowsLoopback/::1
+=== RUN   TestLoopbackOnlyTransportAllowsLoopback/::ffff:127.0.0.1
+--- PASS: TestLoopbackOnlyTransportAllowsLoopback (0.00s)
+    --- PASS: TestLoopbackOnlyTransportAllowsLoopback/127.0.0.1 (0.00s)
+    --- PASS: TestLoopbackOnlyTransportAllowsLoopback/127.0.0.5 (0.00s)
+    --- PASS: TestLoopbackOnlyTransportAllowsLoopback/::1 (0.00s)
+    --- PASS: TestLoopbackOnlyTransportAllowsLoopback/::ffff:127.0.0.1 (0.00s)
+=== RUN   TestGuardDialContextRejectsNonLoopback
+--- PASS: TestGuardDialContextRejectsNonLoopback (0.00s)
+=== RUN   TestSafetyGuardInstalledOnDefaultTransport
+--- PASS: TestSafetyGuardInstalledOnDefaultTransport (0.00s)
+=== RUN   TestSafetyGuardBlocksImplicitProductionClient
+--- PASS: TestSafetyGuardBlocksImplicitProductionClient (0.00s)
+=== RUN   TestSafetyGuardBlocksProductionRunWithDummyToken
+--- PASS: TestSafetyGuardBlocksProductionRunWithDummyToken (0.00s)
+=== RUN   TestSafetyGuardRejectsExplicitNonLoopbackURL
+=== RUN   TestSafetyGuardRejectsExplicitNonLoopbackURL/http://192.0.2.1:8080
+=== RUN   TestSafetyGuardRejectsExplicitNonLoopbackURL/http://198.51.100.7
+=== RUN   TestSafetyGuardRejectsExplicitNonLoopbackURL/http://203.0.113.9:9000
+=== RUN   TestSafetyGuardRejectsExplicitNonLoopbackURL/http://10.0.0.1
+=== RUN   TestSafetyGuardRejectsExplicitNonLoopbackURL/https://example.com
+=== RUN   TestSafetyGuardRejectsExplicitNonLoopbackURL/http://localhost:8080
+--- PASS: TestSafetyGuardRejectsExplicitNonLoopbackURL (0.00s)
+    --- PASS: TestSafetyGuardRejectsExplicitNonLoopbackURL/http://192.0.2.1:8080 (0.00s)
+    --- PASS: TestSafetyGuardRejectsExplicitNonLoopbackURL/http://198.51.100.7 (0.00s)
+    --- PASS: TestSafetyGuardRejectsExplicitNonLoopbackURL/http://203.0.113.9:9000 (0.00s)
+    --- PASS: TestSafetyGuardRejectsExplicitNonLoopbackURL/http://10.0.0.1 (0.00s)
+    --- PASS: TestSafetyGuardRejectsExplicitNonLoopbackURL/https://example.com (0.00s)
+    --- PASS: TestSafetyGuardRejectsExplicitNonLoopbackURL/http://localhost:8080 (0.00s)
+=== RUN   TestSafetyGuardAllowsLoopbackMock
+--- PASS: TestSafetyGuardAllowsLoopbackMock (0.00s)
+=== RUN   TestSafetyHarnessStripsInheritedCredentials
+--- PASS: TestSafetyHarnessStripsInheritedCredentials (0.60s)
+=== RUN   TestSafetyHarnessIsolatedProcessSeesNoCredentials
+    safety_test.go:404: isolated-process probe; run through TestSafetyHarnessStripsInheritedCredentials
+--- SKIP: TestSafetyHarnessIsolatedProcessSeesNoCredentials (0.00s)
+=== RUN   TestRedactSecrets
+=== RUN   TestRedactSecrets/empty_text
+=== RUN   TestRedactSecrets/all_empty_leaves_derived_colon_encoding_alone
+=== RUN   TestRedactSecrets/token_only_with_both_SQL_credentials_empty
+=== RUN   TestRedactSecrets/empty_token
+=== RUN   TestRedactSecrets/empty_username_includes_Basic_auth
+=== RUN   TestRedactSecrets/empty_password_includes_Basic_auth
+=== RUN   TestRedactSecrets/longer_password_before_token_substring
+=== RUN   TestRedactSecrets/longer_Basic_auth_before_token_substring
+=== RUN   TestRedactSecrets/longer_match_starts_inside_shorter_match
+=== RUN   TestRedactSecrets/duplicate_secrets
+=== RUN   TestRedactSecrets/case_sensitive
+=== RUN   TestRedactSecrets/no_matching_secret
+=== RUN   TestRedactSecrets/every_secret_occurrence
+=== RUN   TestRedactSecrets/literal_metacharacters
+=== RUN   TestRedactSecrets/replacement_marker_is_not_processed_again
+=== RUN   TestRedactSecrets/shorter_secret_matches_replacement_marker
+--- PASS: TestRedactSecrets (0.00s)
+    --- PASS: TestRedactSecrets/empty_text (0.00s)
+    --- PASS: TestRedactSecrets/all_empty_leaves_derived_colon_encoding_alone (0.00s)
+    --- PASS: TestRedactSecrets/token_only_with_both_SQL_credentials_empty (0.00s)
+    --- PASS: TestRedactSecrets/empty_token (0.00s)
+    --- PASS: TestRedactSecrets/empty_username_includes_Basic_auth (0.00s)
+    --- PASS: TestRedactSecrets/empty_password_includes_Basic_auth (0.00s)
+    --- PASS: TestRedactSecrets/longer_password_before_token_substring (0.00s)
+    --- PASS: TestRedactSecrets/longer_Basic_auth_before_token_substring (0.00s)
+    --- PASS: TestRedactSecrets/longer_match_starts_inside_shorter_match (0.00s)
+    --- PASS: TestRedactSecrets/duplicate_secrets (0.00s)
+    --- PASS: TestRedactSecrets/case_sensitive (0.00s)
+    --- PASS: TestRedactSecrets/no_matching_secret (0.00s)
+    --- PASS: TestRedactSecrets/every_secret_occurrence (0.00s)
+    --- PASS: TestRedactSecrets/literal_metacharacters (0.00s)
+    --- PASS: TestRedactSecrets/replacement_marker_is_not_processed_again (0.00s)
+    --- PASS: TestRedactSecrets/shorter_secret_matches_replacement_marker (0.00s)
+=== RUN   TestRedactSecretsBasicAuthEncoding
+--- PASS: TestRedactSecretsBasicAuthEncoding (0.00s)
+PASS
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	0.648s
+PASS: direct literal redaction only; existing raw responses and loopback-only network guard remain unchanged.
+```
+
+### v1-records
+
+Command: `bash /tmp/factory-002/check-records.sh`. Exit code: `0`.
+
+```text
+PASS: factual S1 changelog and applicable memory records landed with implementation in 4ea3bab.
+PASS: ten production anchor occurrences match TAGS.md by anchor, path, and symbol.
+PASS: memory links, map coverage, examples, diagram, 250-line limits, fences, whitespace, and final newlines.
+PASS: only approved execution artifacts differ from d9bf3eb; baseline paths remain untracked and the expected fingerprint matches.
+PASS: README, provenance, memory map, dependencies, and spec remain unchanged; task boxes match checkpoint state.
+cmd/bs/monitors.go:15:// @anchor:uptime:config
+cmd/bs/monitors.go:29:// @anchor:uptime:command-handler
+cmd/bs/monitors.go:55:// @anchor:uptime:command-handler
+cmd/bs/monitors.go:81:// @anchor:uptime:request-executor
+cmd/bs/incidents.go:50:// @anchor:uptime:command-handler
+cmd/bs/incidents.go:82:// @anchor:uptime:command-handler
+cmd/bs/incidents.go:332:// @anchor:uptime:command-handler
+cmd/bs/main.go:13:// @anchor:telemetry:config
+cmd/bs/main.go:29:// @anchor:uptime:router
+cmd/bs/main.go:37:// @anchor:uptime:router endpoints
+```
+
+### v1-diff-check
+
+Command: `git diff --check`. Exit code: `0`.
+
+```text
+
+```
+
+### completion-build
+
+Command: `env GOFLAGS=-o=/dev/null go build ./...`. Exit code: `0`.
+
+```text
+
+```
+
+### completion-vet
+
+Command: `go vet ./...`. Exit code: `0`.
+
+```text
+
+```
+
+### completion-test
+
+Command: `go test -count=1 ./...`. Exit code: `0`.
+
+```text
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	1.755s
+```
+
+### completion-gofmt
+
+Command: `gofmt -l cmd/bs/help.go cmd/bs/incidents.go cmd/bs/incidents_test.go cmd/bs/main.go cmd/bs/main_test.go cmd/bs/monitors.go cmd/bs/monitors_test.go cmd/bs/safety_test.go cmd/bs/telemetry.go cmd/bs/telemetry_test.go`. Exit code: `0`.
+
+```text
+
+```
+
+### completion-pre-render-status
+
+Command: `git status --porcelain`. Exit code: `0`.
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+### completion-pre-render-fingerprint
+
+Command: `bash -c find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum`. Exit code: `0`.
+
+```text
+5f6cf5609b4c769043291850953b4728031c3cad1c8a9fd6611cca60ffa064a8  -
+```
+
+### completion-pre-render-diff-check
+
+Command: `git diff --check`. Exit code: `0`.
+
+```text
+
+```
+
+### completion-pre-render-staged-paths
+
+Command: `git diff --cached --name-only`. Exit code: `0`.
+
+```text
+
+```
+
+### completion-pre-render-cached-check
+
+Command: `git diff --cached --check`. Exit code: `0`.
+
+```text
+
+```
+
+### completion-pre-render-gate
+
+Command: `python3 /tmp/factory-002/completion-pre-render.py`. Exit code: `0`.
+
+```text
+PASS: V1 full battery and direct R1-R7 checks pass. The requirement table records the orchestrator acceptance decision.
+PASS: the completion build, vet, uncached full tests, and empty formatting check ran once and pass.
+PASS: pre-render status contains exactly the five baseline paths; the baseline fingerprint matches; no path is staged.
+PASS: ./bs is absent and protected baseline content is unchanged. Completion gates 1-3 permit the checkbox render.
+```
+
+### completion-post-render-fingerprint
+
+Command: `bash -c find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum`. Exit code: `0`.
+
+```text
+38aa6b80387cfee47600181bdbcfc84279f60c56668a60ab4b094233c9ee8ce8  -
+```
+
+### completion-render-check
+
+Command: `python3 /tmp/factory-002/completion-check-render.py`. Exit code: `0`.
+
+```text
+PASS: the milestone source changed exactly one character: - [ ] 002: to - [x] 002:.
+PASS: the milestone source remains untracked; every other protected baseline file is unchanged.
+```
+
+## V1/completion explicit staging evidence
+
+The index contains only the two authorized execution artifacts.
+The milestone source remains untracked, and its render changed exactly one character.
+The final check script repeats artifact, scope, render, and whitespace checks after this evidence write.
+The final check script does not repeat the once-only completion Go battery.
+
+### completion-artifact-syntax
+
+Command: `python3 /tmp/factory-002/completion-artifact.py`. Exit code: `0`.
+
+```text
+PASS: the milestone source changed exactly one character: - [ ] 002: to - [x] 002:.
+PASS: the milestone source remains untracked; every other protected baseline file is unchanged.
+PASS: all V1/completion scripts parse; every recorded command, output, and exit code matches its evidence file.
+PASS: R1-R7, milestone acceptance, provenance, fingerprints, complete/checked state, and the 003 next action are recorded.
+```
+
+### completion-artifact-records
+
+Command: `bash /tmp/factory-002/check-records.sh`. Exit code: `0`.
+
+```text
+PASS: factual S1 changelog and applicable memory records landed with implementation in 4ea3bab.
+PASS: ten production anchor occurrences match TAGS.md by anchor, path, and symbol.
+PASS: memory links, map coverage, examples, diagram, 250-line limits, fences, whitespace, and final newlines.
+PASS: only approved execution artifacts differ from d9bf3eb; baseline paths remain untracked and the expected fingerprint matches.
+PASS: README, provenance, memory map, dependencies, and spec remain unchanged; task boxes match checkpoint state.
+cmd/bs/monitors.go:15:// @anchor:uptime:config
+cmd/bs/monitors.go:29:// @anchor:uptime:command-handler
+cmd/bs/monitors.go:55:// @anchor:uptime:command-handler
+cmd/bs/monitors.go:81:// @anchor:uptime:request-executor
+cmd/bs/incidents.go:50:// @anchor:uptime:command-handler
+cmd/bs/incidents.go:82:// @anchor:uptime:command-handler
+cmd/bs/incidents.go:332:// @anchor:uptime:command-handler
+cmd/bs/main.go:13:// @anchor:telemetry:config
+cmd/bs/main.go:29:// @anchor:uptime:router
+cmd/bs/main.go:37:// @anchor:uptime:router endpoints
+```
+
+### completion-artifact-diff-check
+
+Command: `git diff --check`. Exit code: `0`.
+
+```text
+
+```
+
+### completion-stage
+
+Command: `git add -- docs/plans/008_telemetry-logs-search_002_implement.md docs/plans/008_telemetry-logs-search_002_checkpoint.md`. Exit code: `0`.
+
+```text
+
+```
+
+### completion-staged-paths
+
+Command: `git diff --cached --name-only`. Exit code: `0`.
+
+```text
+docs/plans/008_telemetry-logs-search_002_checkpoint.md
+docs/plans/008_telemetry-logs-search_002_implement.md
+```
+
+### completion-cached-check
+
+Command: `git diff --cached --check`. Exit code: `0`.
+
+```text
+
+```
