@@ -33,12 +33,12 @@ The checkpoint owns task state. The implementation checklist renders task boxes 
 ## State
 
 - Lane: `full`, retained from planning. This run executes the resolved S0 records checklist only.
-- Current phase: `execute`, stopped after review findings F1–F5 repairs.
-- Current task: none. Review fixes are committed in `d9e294a2f54a5cb15819a9b7226028e59001a873`. A1–A4 remain passed. V1 remains unstarted.
+- Current phase: `execute`, stopped after review re-run findings N1–N3 and the duplication nit repairs.
+- Current task: none. A1–A4 remain passed. V1 remains unstarted.
 - Task states: A1 `passed` (committed in `43b250786351384ff20b8b8ae3dd1bf99693f033`); A2 `passed` (committed in `7cda359d378913f308088ba4dde5aedd007a2345`); A3 `passed` (committed in `43b250786351384ff20b8b8ae3dd1bf99693f033`); A4 `passed` (committed in `7cda359d378913f308088ba4dde5aedd007a2345`); V1 `not started`.
 - Milestone checkbox: `unchecked`. The user excludes rendering this protected baseline file.
-- Last completed gate: requested F1–F5 repair checks and post-commit R1/R3 and anchor/source checks passed at `d9e294a2f54a5cb15819a9b7226028e59001a873`. This is not V1.
-- Next action: stop after the checkpoint evidence commit. V1 requires a separate authorized invocation.
+- Last completed gate: requested review re-run documentation checks passed against HEAD `0dd18c50830f2f2237f579e1d1a7d77e50cf74d5` with uncommitted fixes. This is not V1.
+- Next action: stop after the authorized `001: fix review re-run findings N1-N3` local commit. V1 requires a separate authorized invocation.
 - Authorization: explicit-path local commits on `master` only. No push, live API request, credential use, or milestone 002+ work.
 
 ## Previous planning evidence
@@ -56,7 +56,7 @@ Phase 2 inspected `cmd/bs/main.go`, `cmd/bs/monitors.go`, `cmd/bs/incidents.go`,
 - A1 and A3 share the first commit boundary because the repository requires a changelog fragment before a commit. Their gates and checkbox renders remain separate. A3 is independent of A2 and A4.
 - New dependencies: none. Existing Go tools and Python standard-library checks suffice.
 - README and Makefile changes are excluded explicitly. Provenance rationale entries are excluded by R4. No symptom patch is applied.
-- The source contains old milestone descriptions and ordinary inline comments. S0 permits only seven added anchor comments. Existing comments remain unchanged.
+- The source contains old milestone descriptions and ordinary inline comments. S0 permits only eight added anchor comments. Existing comments remain unchanged.
 
 ### Unavailable Make targets
 
@@ -2145,3 +2145,246 @@ The separate checkpoint commit records only this evidence and current state. The
 This checkpoint cannot contain its own eventual commit SHA without another self-referential commit.
 All five protected baseline paths remain unchanged and unstaged. A1–A4 and V1 task boxes remain unchanged.
 V1 remains unstarted, and the milestone source checkbox remains untouched. No push, live request, or ambient credential use occurred.
+
+## Review gate 1 re-run — CHANGES REQUESTED (N1–N3, low) and fixes
+
+**Gate evidence:** The user supplied N1–N3 and the duplication nit for HEAD `0dd18c50830f2f2237f579e1d1a7d77e50cf74d5` on `master`.
+This invocation repairs those findings and naming variants. It does not run V1 or change any task checkbox.
+
+Command: `git rev-parse HEAD`. Stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+0dd18c50830f2f2237f579e1d1a7d77e50cf74d5
+```
+
+The initial `git status --porcelain` had empty stderr and exited 0. Stdout follows verbatim:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+The initial `git stash create` had empty stdout/stderr and exited 0. All relevant work was committed.
+The protected-path fingerprint command in Identity had empty stderr and exited 0. Stdout follows verbatim:
+
+```text
+a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4  -
+```
+
+**Fixes:**
+
+- N1: `docs/plans/008_telemetry-logs-search_001_checkpoint.md:59` now permits eight added anchor comments, including the F4 configuration anchor.
+- N2: `.mem/mem-map.md:16` uses Command routing boundary from `.mem/terminology.md:5`.
+- N3: `docs/plans/008_telemetry-logs-search_001_spec.md:12` uses Command routing boundary.
+- N3: `docs/plans/008_telemetry-logs-search_001_spec.md:15` names `run` via `invoke` for help and invalid usage.
+- N3: The same line names `runWithAPI` via `invokeAPI` with loopback `httptest` servers for HTTP routing tests.
+- Nit: `.mem/uptime/testing.md:7` links to `commands.md` instead of repeating its usage diagnostics and resource gate.
+- Naming audit: `.mem/practices.md:5,20`, `.mem/uptime/commands.md:7`, and `docs/plans/008_telemetry-logs-search_001_implement.md:14` use Command routing boundary.
+- Naming audit: `.mem/summary.md:3` and `.mem/uptime/requests.md:9,17,23,27,35` use Request executor.
+- Naming audit: `docs/plans/008_telemetry-logs-search_001_spec.md:13,20,57` uses Request executor, Command handlers, and Uptime configuration boundary.
+- Files changed: those six memory files and the three milestone artifacts. No function is added or modified.
+
+**Source verification:** `cmd/bs/main_test.go:11–14` confirms `invoke` calls `run`.
+`cmd/bs/main.go:17–53` confirms the production entry points and Command routing boundary.
+`cmd/bs/monitors_test.go:23–26,32–60` confirms `invokeAPI` calls `runWithAPI` with a loopback server.
+`cmd/bs/monitors.go:15–20,81–128` confirms the Uptime configuration boundary and Request executor.
+`cmd/bs/safety_test.go:52–69,256–326` confirms credential removal, rejection of production hosts, and loopback acceptance.
+I also searched every `cmd/bs/*_test.go` for entry points and `httptest` usage. I ran no Go tests.
+
+**Decisions and limits:**
+
+- Assumption: The checkpoint's earlier gate sections and their transcripts remain historical. Only active state and the active anchor count change.
+- Assumption: The four anchor-role names describe boundaries. Function names, diagram identifiers, action descriptions, and generic boundary references remain unchanged.
+- Trade-off: Command routing boundary keeps the map consistent with terminology. The alternative was the testing heading's Command entry points.
+- Trade-off: One commands link preserves the usage rule's source of truth. Repeating the paragraph was rejected.
+- Trade-off: The naming audit changes only explicit role-name variants. A broad rewrite of working prose was rejected.
+- Root fixes: The active count omitted F4. The map and spec used role-name variants, and the spec conflated test entry points.
+- Symptom patches: none. The duplicated paragraph is removed at its source.
+- Ladder rung 1: V1, all checkbox changes, Go checks, runtime edits, README edits, provenance entries, push, and live requests are excluded.
+- Ladder rung 1: No changelog fragment is added. The user restricts writes to memory and the three milestone artifacts.
+- Ladder rung 1: TAGS.md needs no change. Its four role names already match terminology, and its source boundaries remain unchanged.
+- Ladder rung 2: Python standard-library checks and installed Git commands cover documentation verification. No new dependency is added.
+- Script exception: No applicable Factory CLI, Make target, repository script, or shared script exists. The repository script performs live checks.
+- Script exception: The user protects `.agents/` and limits writable paths. Direct commands replace the new-script fallback.
+- Limitation: No Markdown formatter or linter configuration exists. Direct whitespace, fence, syntax, line-limit, and tracked-link checks apply.
+
+Commands `make help` and `make docs-check` each had empty stdout and exited 2. Their stderr follows verbatim:
+
+| Command | Verbatim stderr |
+|---|---|
+| `make help` | `make: *** No rule to make target 'help'.  Stop.` |
+| `make docs-check` | `make: *** No rule to make target 'docs-check'.  Stop.` |
+
+Neither unavailable target is reported as passed. No Makefile is added.
+
+### R1 direct re-run — passed
+
+This command selects only the current tracked-target R1 check recorded under Review gate 1. It runs no other gate.
+
+```sh
+python3 - <<'PY'
+from pathlib import Path
+import re
+import subprocess
+
+checkpoint = Path('docs/plans/008_telemetry-logs-search_001_checkpoint.md').read_text()
+r1 = checkpoint.split('### Current R1 direct check — tracked targets required\n', 1)[1].split('### Current R3 direct check', 1)[0]
+command, = re.findall(r'```sh\n(.*?)\n```', r1, re.S)
+result = subprocess.run(command, shell=True)
+print(f'R1 direct check exit: {result.returncode}', flush=True)
+raise SystemExit(result.returncode)
+PY
+```
+
+Stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+R1 PASS: exactly nine memory files and nine map entries
+R1 PASS: 61 relative links resolve to Git-tracked files
+R1 PASS: existing untracked AGENTS.md target is rejected (git exit 1)
+R1 PASS: topic examples, Mermaid flow, balanced fences, and 250-line limits
+R1 PASS: local toolchain override is absent from memory
+R1 direct check exit: 0
+```
+
+The added commands link raises the current link count from 60 to 61. Earlier link-count transcripts remain unchanged.
+
+Command: `wc -l .mem/summary.md .mem/terminology.md .mem/practices.md .mem/mem-map.md .mem/uptime/summary.md .mem/uptime/commands.md .mem/uptime/requests.md .mem/uptime/incidents.md .mem/uptime/testing.md`.
+Stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+    3 .mem/summary.md
+   16 .mem/terminology.md
+   26 .mem/practices.md
+   16 .mem/mem-map.md
+   35 .mem/uptime/summary.md
+   53 .mem/uptime/commands.md
+   37 .mem/uptime/requests.md
+   39 .mem/uptime/incidents.md
+   39 .mem/uptime/testing.md
+  264 total
+```
+
+### Naming and pre-checkpoint whitespace checks
+
+I inspected the broad search for role-name variants before applying the changes. TAGS.md already uses the four terminology names.
+The residual search below had empty stdout/stderr and exited 1, meaning no matches:
+
+```sh
+grep -RniE '\bseven\b|injected command boundary|routing and dependency-injection boundary|protected seam|shared HTTP request executor|HTTP executor|Uptime handler|the router writes|the executor (sets|copies|reads)|current executor|Shared execution|loopback `httptest` seam' .mem TAGS.md docs/plans/008_telemetry-logs-search_001_spec.md docs/plans/008_telemetry-logs-search_001_implement.md
+```
+
+The broader search also found the heading `Verification notes for the executor`. That heading names the agent, not the Request executor.
+It remains unchanged. Remaining `seven` occurrences in earlier checkpoint gates describe historical evidence or seven implementation paths.
+
+| Command | Stdout | Stderr | Exit |
+|---|---|---|---|
+| `git diff --check` | Empty | Empty | 0 |
+| `git diff 0dd18c5 -- cmd` | Empty | Empty | 0 |
+
+### Uncommitted repair snapshot
+
+Before this atomic checkpoint update, `git rev-parse HEAD` again returned `0dd18c50830f2f2237f579e1d1a7d77e50cf74d5`.
+The command had empty stderr and exited 0. `git status --porcelain` had empty stderr and exited 0. Stdout follows verbatim:
+
+```text
+ M .mem/mem-map.md
+ M .mem/practices.md
+ M .mem/summary.md
+ M .mem/uptime/commands.md
+ M .mem/uptime/requests.md
+ M .mem/uptime/testing.md
+ M docs/plans/008_telemetry-logs-search_001_implement.md
+ M docs/plans/008_telemetry-logs-search_001_spec.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+Command: `git stash create`. Stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+bc73d86ad7159e78550691c98c289a3d84f8573e
+```
+
+This object captures eight uncommitted documentation files before the checkpoint rewrite. It creates no stash-list entry.
+It excludes all protected untracked paths. The checkpoint update uses a temporary file and `mv`.
+Explicit staging and final documentation checks follow this update. The terminal report supplies their outputs and the commit SHA.
+The checkpoint cannot contain its own eventual commit SHA without another self-referential commit.
+
+### Checkpoint whitespace correction
+
+The first post-update documentation audit rejected an extra blank line at the checkpoint's end.
+Its stdout was empty. Its stderr follows verbatim. The command exited 1.
+
+```text
+Traceback (most recent call last):
+  File "<stdin>", line 17, in <module>
+AssertionError: docs/plans/008_telemetry-logs-search_001_checkpoint.md
+```
+
+Command: `git diff --check`. Stderr was empty. The command exited 2. Stdout follows verbatim:
+
+```text
+docs/plans/008_telemetry-logs-search_001_checkpoint.md:2320: new blank line at EOF.
+```
+
+`git diff 0dd18c5 -- cmd` still had empty stdout/stderr and exited 0.
+The protected-path fingerprint still matched Identity, with empty stderr and exit 0.
+This temporary-file update removes the extra blank line before `mv`. The correction fixes the checkpoint at its source.
+The final checks must pass before the authorized local commit. The terminal report records their outputs and commit SHA.
+V1 remains unstarted. All task boxes and the protected milestone source checkbox remain unchanged.
+
+### Corrected documentation gate — passed
+
+The documentation audit re-ran after the blank-line correction. Stderr was empty. The command exited 0.
+Stdout follows verbatim:
+
+```text
+DOCS PASS: exactly nine authorized documentation files changed
+DOCS PASS: Markdown whitespace/fences, checkpoint shell/Python syntax, and JSON outputs pass
+DOCS PASS: historical evidence and all task boxes are unchanged; V1 remains unstarted
+DOCS PASS: active anchor count is eight; cmd diff against 0dd18c5 is empty
+```
+
+The R1 direct re-run again exited 0 with the same six stdout lines recorded above and empty stderr.
+The following commands each had empty stdout/stderr and exited 0:
+
+- `git diff --check`
+- `git diff 0dd18c5 -- cmd`
+- `git diff --cached --check`
+
+Before this final evidence append, `git rev-parse HEAD` returned `0dd18c50830f2f2237f579e1d1a7d77e50cf74d5`.
+Stderr was empty. The command exited 0. `git status --porcelain` had empty stderr and exited 0. Stdout follows verbatim:
+
+```text
+ M .mem/mem-map.md
+ M .mem/practices.md
+ M .mem/summary.md
+ M .mem/uptime/commands.md
+ M .mem/uptime/requests.md
+ M .mem/uptime/testing.md
+ M docs/plans/008_telemetry-logs-search_001_checkpoint.md
+ M docs/plans/008_telemetry-logs-search_001_implement.md
+ M docs/plans/008_telemetry-logs-search_001_spec.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+Command: `git stash create`. Stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+91c1223e158a3d17b0c1cfaccba6cb8978b0013f
+```
+
+This object captures all nine uncommitted documentation files before this final evidence append. It creates no stash-list entry.
+The final append uses a temporary file and `mv`. Explicit staging and final checks precede the single authorized commit.
+The terminal report supplies the final commit SHA, status, and log. No further milestone work is authorized.

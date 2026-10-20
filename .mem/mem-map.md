@@ -13,4 +13,4 @@
 - [Commands](uptime/commands.md) lists the five handlers, endpoints, arguments, flags, and help forms.
 - [Requests](uptime/requests.md) describes credentials, timeouts, redirects, and output behavior.
 - [Incidents](uptime/incidents.md) describes dashboard URL resolution, metadata, and timeline behavior.
-- [Testing](uptime/testing.md) describes the injected command boundary and loopback-only protections.
+- [Testing](uptime/testing.md) describes the Command routing boundary and loopback-only protections.

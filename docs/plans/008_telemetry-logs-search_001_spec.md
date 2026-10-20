@@ -9,15 +9,15 @@
 ### Repository and product state
 
 - The repository is a standard-library Go CLI. The executable is `bs`, and the command package is `cmd/bs`. The current product implements Uptime API commands, not Telemetry commands. Sources: `go.mod`, `README.md`, `cmd/bs/main.go`, `cmd/bs/monitors.go`, `cmd/bs/incidents.go`, and `cmd/bs/help.go`.
-- `runWithAPI(args, stdout, stderr, baseURL, client)` is the routing and dependency-injection boundary. It routes five implemented commands: monitors list/get and incidents list/get/timeline. The current command implementations are `monitorsList`, `monitorsGet`, `incidentsList`, `incidentsGet`, and `incidentsTimeline`.
-- `doMonitorsRequest` is the shared HTTP request executor. It sends one bearer-authenticated GET, applies the 30-second default timeout unless a command overrides it, does not follow redirects, writes 2xx response bodies unchanged to stdout, and writes non-2xx response bodies unchanged to stderr. Local diagnostic paths redact the Uptime token.
+- `runWithAPI(args, stdout, stderr, baseURL, client)` is the Command routing boundary. It routes five implemented commands: monitors list/get and incidents list/get/timeline. The current command implementations are `monitorsList`, `monitorsGet`, `incidentsList`, `incidentsGet`, and `incidentsTimeline`.
+- `doMonitorsRequest` is the Request executor. It sends one bearer-authenticated GET, applies the 30-second default timeout unless a command overrides it, does not follow redirects, writes 2xx response bodies unchanged to stdout, and writes non-2xx response bodies unchanged to stderr. Local diagnostic paths redact the Uptime token.
 - Incident URL parsing and incident-list argument translation have distinct behavior worth documenting. `resolveIncidentTarget` accepts a bare target or the observed dashboard URL form and rejects other schemeful URL forms locally. Incident-list metadata accepts repeatable `key=value` values, rejects duplicate keys before a request, and maps them to nested API query parameters.
-- Tests use `runWithAPI` and loopback `httptest` servers. `cmd/bs/safety_test.go` clears inherited credentials and installs a loopback-only network guard. Test credentials are fixed dummy values. These protections must remain unchanged.
+- Tests use `run` via `invoke` in `cmd/bs/main_test.go` for help and invalid usage. HTTP routing tests use `runWithAPI` via `invokeAPI` in `cmd/bs/monitors_test.go` with loopback `httptest` servers. `cmd/bs/safety_test.go` clears inherited credentials and installs a loopback-only network guard. Test credentials are fixed dummy values. These protections must remain unchanged.
 - `README.md` contains only a project title and a generic description. No repository memory, anchor index, changelog fragments, provenance log, provenance directory, or Makefile exists. No source file currently has an `@anchor` tag. Git tracks files, not empty directories.
 
 ### Decisions and constraints
 
-- Ticket 08 is closed and records Jaron Swab's choice of Option 1: establish records for the existing Uptime CLI before any Telemetry implementation. It calls for the memory layout, anchors at the routing, Uptime handler, and HTTP executor boundaries, `TAGS.md`, changelog fragments, an empty `LOG.md`, and `log.d/`. It excludes a Makefile.
+- Ticket 08 is closed and records Jaron Swab's choice of Option 1: establish records for the existing Uptime CLI before any Telemetry implementation. It calls for the memory layout, anchors on the Command routing boundary, Command handlers, and Request executor, `TAGS.md`, changelog fragments, an empty `LOG.md`, and `log.d/`. It excludes a Makefile.
 - Ticket 08 corrects the premise that `AGENTS.md` requires a Makefile. `AGENTS.md` names `make help` as one discovery option but does not require a Makefile or target list. The repository has no Makefile. S0 must not add one.
 - Ticket 08 rejects creating records only for Telemetry code and rejects weakening `AGENTS.md`. S0 documents and tags the complete current Uptime surface. The stale `AGENTS.md` reference to `internal/handlers/gloocode/prompts/` is outside scope and remains untouched.
 - The `mem` skill requires `.mem/summary.md`, `.mem/terminology.md`, `.mem/practices.md`, `.mem/mem-map.md`, and focused domain files. Topic files describe present behavior, include a code example, and include a Mermaid diagram where flow or structure matters. Each file must remain at or below 250 lines, and every memory file must be indexed from `.mem/mem-map.md`.
@@ -54,7 +54,7 @@ The memory content must describe the current code, not planned Telemetry behavio
 
 ### R2 — Add and index the Uptime boundary anchors
 
-Add exactly eight production-code anchors using the repository syntax `// @anchor:<surface>:<role>`. Review finding F4 adds the configuration boundary because `AGENTS.md` requires tags on configuration boundaries.
+Add exactly eight production-code anchors using the repository syntax `// @anchor:<surface>:<role>`. Review finding F4 adds the Uptime configuration boundary because `AGENTS.md` requires tags on configuration boundaries.
 
 | Anchor | Boundary | Source location |
 |---|---|---|

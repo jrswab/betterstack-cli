@@ -2,7 +2,7 @@
 
 ## Command boundaries
 
-The command package uses the Go standard library without third-party dependencies. [go.mod](../go.mod) declares the module and Go version. `main` supplies the production endpoint, client, and output writers to `runWithAPI`. Tests supply loopback endpoints through the same boundary. There is no runtime endpoint override flag, environment variable, or configuration file.
+The command package uses the Go standard library without third-party dependencies. [go.mod](../go.mod) declares the module and Go version. `main` supplies the production endpoint, client, and output writers to the Command routing boundary (`runWithAPI`). Tests supply loopback endpoints through this boundary. There is no runtime endpoint override flag, environment variable, or configuration file.
 
 Handlers keep argument parsing and query translation separate from HTTP execution. `url.Values` encodes query parameters, and `url.PathEscape` escapes target path segments. All handlers share the [request contract](uptime/requests.md). API validation handles opaque filter values except locally validated booleans, metadata grammar, and positive timeout durations.
 
@@ -17,7 +17,7 @@ go test ./...
 gofmt -l cmd/bs/*.go
 ```
 
-Tests use dummy tokens and loopback `httptest` servers. `TestMain` clears inherited credentials and installs the network guard. A custom transport can bypass that guard. [Testing](uptime/testing.md) documents the protected seam and its limits.
+Tests use dummy tokens and loopback `httptest` servers. `TestMain` clears inherited credentials and installs the network guard. A custom transport can bypass that guard. [Testing](uptime/testing.md) documents the Command routing boundary and its limits.
 
 ## Repository records
 

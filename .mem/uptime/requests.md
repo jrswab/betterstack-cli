@@ -6,7 +6,7 @@ All five [command handlers](commands.md) read only `BETTERSTACK_UPTIME_API_TOKEN
 
 `redactToken` replaces every occurrence of the token with `[REDACTED]` in locally generated argument, request, and response-read diagnostics. It does not redact raw upstream response bodies.
 
-## Shared execution
+## Request executor
 
 [doMonitorsRequest](../../cmd/bs/monitors.go) serves all five handlers despite its monitor-oriented name. It creates a timeout context, builds an HTTP GET with no body, and sets the bearer header:
 
@@ -14,17 +14,17 @@ All five [command handlers](commands.md) read only `BETTERSTACK_UPTIME_API_TOKEN
 req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 ```
 
-After checking `err`, the executor sets authentication:
+After checking `err`, the request executor sets authentication:
 
 ```go
 req.Header.Set("Authorization", "Bearer "+token)
 ```
 
-The default timeout is 30 seconds. Each handler can override it with a positive `--timeout <duration>`. The executor copies the supplied client and sets `CheckRedirect` to return `http.ErrUseLastResponse`. Redirects remain non-2xx responses even if an injected client normally follows them. It calls `client.Do` on the copy once and adds no retry or pagination loop.
+The default timeout is 30 seconds. Each handler can override it with a positive `--timeout <duration>`. The request executor copies the supplied client and sets `CheckRedirect` to return `http.ErrUseLastResponse`. Redirects remain non-2xx responses even if an injected client normally follows them. It calls `client.Do` on the copy once and adds no retry or pagination loop.
 
 ## Response contract
 
-The executor reads the entire response with `io.ReadAll` before writing output and closes the body afterward.
+The request executor reads the entire response with `io.ReadAll` before writing output and closes the body afterward.
 
 | Result | stdout | stderr | Exit |
 |---|---|---|---|
@@ -32,6 +32,6 @@ The executor reads the entire response with `io.ReadAll` before writing output a
 | Other HTTP status, including 3xx | Empty | Raw body bytes | 1 |
 | Request construction, transport, timeout, or body-read failure | Empty | Local redacted diagnostic | 1 |
 
-Bodies remain opaque. The CLI does not parse JSON, add a newline, wrap errors, or redact upstream bytes. If a body read fails, it reports the local error rather than printing a partial body. The current executor ignores output-writer errors, so its exit code reflects HTTP status and read success, not successful downstream delivery.
+Bodies remain opaque. The CLI does not parse JSON, add a newline, wrap errors, or redact upstream bytes. If a body read fails, it reports the local error rather than printing a partial body. The current request executor ignores output-writer errors, so its exit code reflects HTTP status and read success, not successful downstream delivery.
 
 Sources: [monitors.go](../../cmd/bs/monitors.go) and [incidents.go](../../cmd/bs/incidents.go). Related: [incident rules](incidents.md), [testing](testing.md), and [summary](summary.md).

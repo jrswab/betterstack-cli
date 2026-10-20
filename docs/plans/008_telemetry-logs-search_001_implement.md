@@ -11,7 +11,7 @@ Milestone 001 establishes repository records for the current standard-library Up
 
 ## Section 2: Implementation Checklist
 
-The checkpoint is the source of task state. Task boxes render its passed gates. Tasks A1–A4 can be implemented independently, but V1 must follow them and check consistency across the records. No task changes test code. The existing `runWithAPI` loopback `httptest` seam and credential-clearing network guard remain unchanged.
+The checkpoint is the source of task state. Task boxes render its passed gates. Tasks A1–A4 can be implemented independently, but V1 must follow them and check consistency across the records. No task changes test code. The Command routing boundary and credential-clearing network guard remain unchanged.
 
 ### Slice A — Current Uptime repository records
 
