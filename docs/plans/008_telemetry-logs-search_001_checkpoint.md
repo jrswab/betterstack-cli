@@ -33,12 +33,12 @@ The checkpoint owns task state. The implementation checklist renders task boxes 
 ## State
 
 - Lane: `full`, retained from planning. This run executes the resolved S0 records checklist only.
-- Current phase: `execute`, stopped after the assigned A2/A4 tasks.
-- Current task: none. A2/A4 passed and are committed. V1 remains unstarted.
+- Current phase: `execute`, stopped after review findings F1–F5 repairs.
+- Current task: none. Review fixes are committed in `d9e294a2f54a5cb15819a9b7226028e59001a873`. A1–A4 remain passed. V1 remains unstarted.
 - Task states: A1 `passed` (committed in `43b250786351384ff20b8b8ae3dd1bf99693f033`); A2 `passed` (committed in `7cda359d378913f308088ba4dde5aedd007a2345`); A3 `passed` (committed in `43b250786351384ff20b8b8ae3dd1bf99693f033`); A4 `passed` (committed in `7cda359d378913f308088ba4dde5aedd007a2345`); V1 `not started`.
 - Milestone checkbox: `unchecked`. The user excludes rendering this protected baseline file.
-- Last completed gate: post-commit A2/R2, A4/R4, updated-fragment checks, Go build/vet/test, formatting, and whitespace checks passed at `7cda359d378913f308088ba4dde5aedd007a2345`.
-- Next action: commit this checkpoint and the A2/A4 checklist render separately, then stop. V1 requires another invocation.
+- Last completed gate: requested F1–F5 repair checks and post-commit R1/R3 and anchor/source checks passed at `d9e294a2f54a5cb15819a9b7226028e59001a873`. This is not V1.
+- Next action: stop after the checkpoint evidence commit. V1 requires a separate authorized invocation.
 - Authorization: explicit-path local commits on `master` only. No push, live API request, credential use, or milestone 002+ work.
 
 ## Previous planning evidence
@@ -149,7 +149,7 @@ Execution evidence follows here. Each transcript contains the exact command, std
 - The request topic records ignored output-writer errors as current behavior. No symptom patch or behavior change is applied.
 - `make help`, `make docs-check`, and `make fragments-check` again exited 2 with the stderr already listed. No Markdown formatter/linter configuration or applicable CLI exists. Direct checks replace the unavailable targets under the specification's settled exception.
 
-R1 direct command:
+R1 direct command (historical, superseded by the current tracked-target check under Review gate 1):
 
 ```sh
 python3 - <<'PY'
@@ -1718,3 +1718,430 @@ Stdout (verbatim):
 Stderr: empty.
 
 Exit: 0.
+
+## Review gate 1 — CHANGES REQUESTED (F1–F5, non-blocking) and fixes
+
+**Gate evidence:** The user supplied the milestone review findings for HEAD `fba2643b18c812cb0eb6bb7db6b9ea3f4d243cdc` on `master`.
+The initial `git status --porcelain` output follows verbatim. The command exited 0 with empty stderr.
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+The initial `git stash create` exited 0 with empty stdout and stderr. All relevant work was committed.
+The protected-path fingerprint matched `a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4` (exit 0).
+
+**Fixes:**
+
+- F1: `.mem/practices.md:24` uses a plain `AGENTS.md` reference. The current R1 check below requires Git-tracked link targets.
+- F2: `changelog.d/008-telemetry-logs-search-001.md:3` uses five plain backticked repo-root paths. Collection no longer changes their meaning.
+- F3: `.mem/uptime/testing.md:5–9` distinguishes `invoke` → `run` from `invokeAPI` → `runWithAPI` and direct handler helpers.
+- F3: `.mem/uptime/commands.md:3–9` documents `run`, `usageError`, and `knownAction`. Both topic files name the resource gate that later resources must extend.
+- F4: `cmd/bs/monitors.go:15` adds only `// @anchor:uptime:config` directly above the existing const block.
+- F4: `TAGS.md:8`, spec R2 at `docs/plans/008_telemetry-logs-search_001_spec.md:57–72`, and implementation task A2 at line 20 record eight boundaries.
+- F4: Spec acceptance, scope, and implementation coverage references also use eight. The fragment reports eight anchors.
+- F5: `.mem/terminology.md:4–8` defines surface `uptime` and roles `router`, `command-handler`, `request-executor`, and `config`.
+- F5: `TAGS.md:7,11` and the spec table use the terminology names for the Command routing boundary and Request executor.
+- Additional correction: `docs/plans/008_telemetry-logs-search_001_implement.md:14` removes run-specific resume state. The checkpoint's Next action no longer requests the completed A2/A4 commit.
+
+**Source verification:** I checked each new statement against `cmd/bs/main.go:17–53,83–163`, `cmd/bs/main_test.go:11–14,20–228`, and `cmd/bs/monitors_test.go:18–26,32–60,690–694`.
+I also checked `cmd/bs/incidents_test.go:1801–1805,2142–2173` and the complete production handlers and test safety harness.
+`usageError`, not `runWithAPI`, contains the hard-coded resource gate. Routed commands bypass that diagnostic fallthrough and use their handlers' parsers.
+No function or runtime statement changes.
+
+**Decisions and limits:**
+
+- Assumption: Historical transcripts remain historical. The current R1 and R3 commands below supersede their link-only checks for future replay.
+- Assumption: This invocation repairs the supplied review findings. It does not perform V1 or change any task checkbox.
+- Ladder rung 1: New tests, an extra fragment, runtime changes, README edits, and provenance entries are unnecessary or outside scope.
+- Ladder rung 1: V1, milestone 002+, the protected milestone checkbox, push, live requests, and credential use remain excluded.
+- Ladder rung 2: Python standard-library checks and installed Go/Git tools cover the requested repair verification. No dependency is added.
+- Script exception: `make help` has no target. `.agents/scripts/` contains only `.gitkeep` and the inapplicable live probe.
+- Script exception: The user prohibits writing the script directory. Inline commands replace the new-script fallback.
+- Trade-off: Plain paths preserve collection correctness but do not provide clickable fragment links. Relative links were rejected.
+- Trade-off: The configuration anchor tags the existing const block, not individual constants. This preserves the one-boundary inventory and one-line source diff.
+- Trade-off: The checkpoint uses reversible JSON for whitespace-sensitive output. This preserves bytes without weakening `git diff --check`.
+- Root fixes: F1 fixes an untracked link target and its incomplete verifier. F2 fixes fragment-relative path assumptions.
+- Root fixes: F3 fixes the conflated test entry points. F4 fixes the missing configuration boundary. F5 fixes undefined anchor terms.
+- Symptom patches: none. No deliberate runtime ceiling or new exported symbol exists.
+- Limitation: `make docs-check` and `make fragments-check` each exited 2. Their stderr names the missing target. Neither is reported as passed.
+- Limitation: No Markdown formatter or linter configuration exists. Direct whitespace, fence, link, and syntax checks apply instead.
+
+**Verification setup:** Every Go command uses the installed toolchain with both credential variables unset.
+Build alone sets `GOFLAGS=-o=/dev/null`. Vet and test use empty `GOFLAGS`.
+
+```sh
+unset BETTERSTACK_UPTIME_API_TOKEN BETTERSTACK_API_TOKEN GOROOT
+export PATH=/home/jaron/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64/bin:$PATH
+export GOTOOLCHAIN=local GOPROXY=off GOFLAGS=
+```
+
+The following transcripts record only the requested review-fix checks. V1 remains unstarted.
+
+### Current R1 direct check — tracked targets required
+
+This command supersedes the historical R1 link check for future replay.
+
+```sh
+python3 - <<'PY'
+from pathlib import Path
+import re
+import subprocess
+
+repo = Path.cwd().resolve()
+root = Path('.mem')
+expected = {
+    'summary.md', 'terminology.md', 'practices.md', 'mem-map.md',
+    'uptime/summary.md', 'uptime/commands.md', 'uptime/requests.md',
+    'uptime/incidents.md', 'uptime/testing.md',
+}
+actual = {str(p.relative_to(root)) for p in root.rglob('*') if p.is_file()}
+assert actual == expected, (actual, expected)
+map_links = re.findall(r'\[[^\]]+\]\(([^)]+)\)', (root / 'mem-map.md').read_text())
+assert len(map_links) == 9 and set(map_links) == expected, map_links
+
+def check_link(path, link):
+    assert not link.startswith(('/', 'http:', 'https:')), (path, link)
+    target = (path.parent / link).resolve()
+    assert target.is_file(), (path, link)
+    relative = str(target.relative_to(repo))
+    subprocess.run(['git', 'ls-files', '--error-unmatch', '--', relative], check=True, capture_output=True)
+
+link_count = 0
+for name in sorted(expected):
+    path = root / name
+    text = path.read_text()
+    assert len(text.splitlines()) <= 250, name
+    assert text.endswith('\n'), name
+    assert all(line == line.rstrip() for line in text.splitlines()), name
+    assert text.count('```') % 2 == 0, name
+    for link in re.findall(r'\[[^\]]+\]\(([^)]+)\)', text):
+        check_link(path, link)
+        link_count += 1
+    if name.startswith('uptime/') or name == 'practices.md':
+        assert re.search(r'```(?:go|sh|text)\n\S[\s\S]*?\n```', text), name
+    assert '/home/jaron/go/' not in text and 'GOTOOLCHAIN' not in text, name
+assert '```mermaid\nflowchart TD\n' in (root / 'uptime/summary.md').read_text()
+try:
+    check_link(root / 'practices.md', '../AGENTS.md')
+except subprocess.CalledProcessError as error:
+    assert error.returncode == 1, error.returncode
+else:
+    raise AssertionError('R1 accepted an existing untracked link target')
+print('R1 PASS: exactly nine memory files and nine map entries')
+print(f'R1 PASS: {link_count} relative links resolve to Git-tracked files')
+print('R1 PASS: existing untracked AGENTS.md target is rejected (git exit 1)')
+print('R1 PASS: topic examples, Mermaid flow, balanced fences, and 250-line limits')
+print('R1 PASS: local toolchain override is absent from memory')
+PY
+```
+
+Stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+R1 PASS: exactly nine memory files and nine map entries
+R1 PASS: 60 relative links resolve to Git-tracked files
+R1 PASS: existing untracked AGENTS.md target is rejected (git exit 1)
+R1 PASS: topic examples, Mermaid flow, balanced fences, and 250-line limits
+R1 PASS: local toolchain override is absent from memory
+```
+
+### Current R3 direct check — collection-safe paths
+
+This command supersedes the historical R3 link check for future replay.
+
+```sh
+python3 - <<'PY'
+from pathlib import Path
+import re
+import subprocess
+
+path = Path('changelog.d/008-telemetry-logs-search-001.md')
+text = path.read_text()
+lines = text.splitlines()
+assert len(lines) == 3 and lines[0] == '### Added' and lines[1] == ''
+assert lines[2].startswith('- ') and lines[2][2:].strip()
+assert text.endswith('\n') and all(line == line.rstrip() for line in lines)
+assert sum(line.startswith('### ') for line in lines) == 1
+assert not any(line.startswith(('---', '## [', '# ')) for line in lines)
+assert not re.search(r'\[[^\]]+\]\([^)]+\)', text)
+cited = re.findall(r'`([^`]+)`', lines[2])
+expected = {'.mem/mem-map.md', '.mem/uptime/summary.md', 'TAGS.md', 'LOG.md', 'log.d/.gitkeep'}
+assert len(cited) == 5 and set(cited) == expected, cited
+for target in cited:
+    assert not target.startswith(('/', '../', './')) and Path(target).is_file(), target
+    subprocess.run(['git', 'ls-files', '--error-unmatch', '--', target], check=True, capture_output=True)
+assert 'Uptime CLI' in lines[2] and 'Telemetry' not in text and 'eight Uptime boundary anchors' in text
+assert {p.name for p in path.parent.iterdir()} == {path.name}
+assert subprocess.check_output(['git', 'diff', 'fba2643', '--name-only', '--', 'CHANGELOG.md']) == b''
+print('R3 PASS: one Added heading, blank line, and one factual Uptime records bullet')
+print('R3 PASS: five plain repo-root paths resolve to Git-tracked files; no Markdown links')
+print('R3 PASS: eight anchors cited; no front matter, release section, or extra category')
+print('R3 PASS: only the required fragment exists; CHANGELOG.md is unchanged')
+PY
+```
+
+Stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+R3 PASS: one Added heading, blank line, and one factual Uptime records bullet
+R3 PASS: five plain repo-root paths resolve to Git-tracked files; no Markdown links
+R3 PASS: eight anchors cited; no front matter, release section, or extra category
+R3 PASS: only the required fragment exists; CHANGELOG.md is unchanged
+```
+
+### Anchor and source check
+
+```sh
+python3 - <<'PY'
+from collections import Counter
+from pathlib import Path
+import re
+import subprocess
+
+constants = ('defaultAPIBaseURL', 'defaultTimeout', 'tokenEnvVar')
+expected = [
+    ('uptime:router', 'cmd/bs/main.go', ('runWithAPI',)),
+    ('uptime:config', 'cmd/bs/monitors.go', constants),
+    ('uptime:command-handler', 'cmd/bs/monitors.go', ('monitorsList',)),
+    ('uptime:command-handler', 'cmd/bs/monitors.go', ('monitorsGet',)),
+    ('uptime:request-executor', 'cmd/bs/monitors.go', ('doMonitorsRequest',)),
+    ('uptime:command-handler', 'cmd/bs/incidents.go', ('incidentsList',)),
+    ('uptime:command-handler', 'cmd/bs/incidents.go', ('incidentsGet',)),
+    ('uptime:command-handler', 'cmd/bs/incidents.go', ('incidentsTimeline',)),
+]
+occurrences = []
+for path in sorted(Path('cmd').rglob('*.go')):
+    text = path.read_text()
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if '@anchor' not in line:
+            continue
+        assert not path.name.endswith('_test.go'), path
+        tag = re.fullmatch(r'// @anchor:(uptime:[a-z-]+)', line)
+        assert tag, (path, i + 1)
+        if tag[1] == 'uptime:config':
+            assert lines[i + 1] == 'const ('
+            symbols = tuple(re.match(r'\s*(\w+)\s*=', entry)[1] for entry in lines[i + 2:i + 5])
+            assert lines[i + 5] == ')'
+        else:
+            declaration = re.match(r'func (\w+)\(', lines[i + 1])
+            assert declaration, (path, i + 1)
+            symbols = (declaration[1],)
+        occurrences.append((tag[1], str(path), symbols))
+    original = subprocess.check_output(['git', 'show', 'fba2643:' + str(path)])
+    without_new_anchor = text.replace('// @anchor:uptime:config\n', '')
+    assert without_new_anchor.encode() == original, path
+assert Counter(occurrences) == Counter(expected), occurrences
+entries = []
+for line in Path('TAGS.md').read_text().splitlines():
+    if not line.startswith('| `'):
+        continue
+    cells = [cell.strip() for cell in line.strip('|').split('|')]
+    assert len(cells) == 4 and all(cells), line
+    tag = re.fullmatch(r'`(uptime:[a-z-]+)`', cells[0])
+    source = re.fullmatch(r'\[(cmd/bs/\w+\.go)\]\(\1\)', cells[1])
+    assert tag and source, line
+    symbols = tuple(re.findall(r'`(\w+)`', cells[2]))
+    subprocess.run(['git', 'ls-files', '--error-unmatch', '--', source[1]], check=True, capture_output=True)
+    entries.append((tag[1], source[1], symbols))
+assert Counter(entries) == Counter(expected), entries
+assert sum(tag == 'uptime:command-handler' for tag, _, _ in entries) == 5
+assert subprocess.check_output(['git', 'diff', 'fba2643', '--numstat', '--', 'cmd/bs'], text=True) == '1\t0\tcmd/bs/monitors.go\n'
+print('ANCHORS PASS: exactly eight source occurrences match TAGS.md, including five command handlers')
+print('ANCHORS PASS: config anchor immediately precedes the three-constant block; tests remain untagged')
+print('SOURCE PASS: cmd/bs differs from fba2643 by exactly one added config anchor line')
+PY
+```
+
+Stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+ANCHORS PASS: exactly eight source occurrences match TAGS.md, including five command handlers
+ANCHORS PASS: config anchor immediately precedes the three-constant block; tests remain untagged
+SOURCE PASS: cmd/bs differs from fba2643 by exactly one added config anchor line
+```
+
+### Go, source inventory, and whitespace results
+
+All commands used the verification setup above. Empty cells mean both stdout and stderr were empty.
+
+| Command | Verbatim stdout | Stderr | Exit |
+|---|---|---|---|
+| `go version` | `go version go1.26.9 linux/amd64` | Empty | 0 |
+| `GOFLAGS=-o=/dev/null go build ./...` | Empty | Empty | 0 |
+| `go vet ./...` | Empty | Empty | 0 |
+| `go test ./...` | `ok  	github.com/jrswab/betterstack-cli/cmd/bs	2.237s` | Empty | 0 |
+| `gofmt -l cmd/bs/*.go` | Empty | Empty | 0 |
+| `git diff --check` | Empty | Empty | 0 |
+
+Command: `grep -rn "@anchor" cmd/`. Stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+cmd/bs/monitors.go:15:// @anchor:uptime:config
+cmd/bs/monitors.go:29:// @anchor:uptime:command-handler
+cmd/bs/monitors.go:55:// @anchor:uptime:command-handler
+cmd/bs/monitors.go:81:// @anchor:uptime:request-executor
+cmd/bs/incidents.go:50:// @anchor:uptime:command-handler
+cmd/bs/incidents.go:82:// @anchor:uptime:command-handler
+cmd/bs/incidents.go:332:// @anchor:uptime:command-handler
+cmd/bs/main.go:30:// @anchor:uptime:router
+```
+
+Command: `git diff fba2643 -- cmd/bs`. Stdout follows as a reversible JSON string to preserve diff whitespace.
+Stderr was empty. The command exited 0.
+
+```json
+"diff --git a/cmd/bs/monitors.go b/cmd/bs/monitors.go\nindex b09e55b..ae80996 100644\n--- a/cmd/bs/monitors.go\n+++ b/cmd/bs/monitors.go\n@@ -12,6 +12,7 @@ import (\n \t\"time\"\n )\n \n+// @anchor:uptime:config\n const (\n \tdefaultAPIBaseURL = \"https://incidents.betterstack.com\"\n \tdefaultTimeout    = 30 * time.Second\n"
+```
+
+### Uncommitted repair snapshot and artifact correction
+
+`git rev-parse HEAD` returned `fba2643b18c812cb0eb6bb7db6b9ea3f4d243cdc`. Stderr was empty. The command exited 0.
+`git status --porcelain` returned the following stdout verbatim. Stderr was empty. The command exited 0.
+
+```text
+ M .mem/practices.md
+ M .mem/terminology.md
+ M .mem/uptime/commands.md
+ M .mem/uptime/testing.md
+ M TAGS.md
+ M changelog.d/008-telemetry-logs-search-001.md
+ M cmd/bs/monitors.go
+ M docs/plans/008_telemetry-logs-search_001_checkpoint.md
+ M docs/plans/008_telemetry-logs-search_001_implement.md
+ M docs/plans/008_telemetry-logs-search_001_spec.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+`git stash create` returned `4ae24bd69f2c9601f730274e251a9cbc3bd254c5`. Stderr was empty. The command exited 0.
+This object captures the relevant uncommitted repair and checkpoint before this append. It creates no stash-list entry and excludes protected untracked paths.
+
+The stored R1, R3, and anchor/source replays each exited 0 with the same stdout recorded above and empty stderr.
+The first artifact audit exited 1 because this checkpoint append left an extra final blank line.
+Its stderr follows verbatim. Stdout contained the three successful replays.
+
+```text
+Traceback (most recent call last):
+  File "<stdin>", line 18, in <module>
+AssertionError: docs/plans/008_telemetry-logs-search_001_checkpoint.md
+```
+
+`git diff --check` then exited 2 with empty stderr and this verbatim stdout:
+
+```text
+docs/plans/008_telemetry-logs-search_001_checkpoint.md:2001: new blank line at EOF.
+```
+
+This update removes that extra blank line through a temporary file and `mv`. It fixes the evidence format at its source.
+The artifact and whitespace checks must pass again before either commit.
+
+### Corrected artifact gate and repair commit
+
+The artifact recheck, staging audit, and whitespace checks passed before the repair commit.
+The artifact audit checked all touched Markdown files, stored shell/Python syntax, reversible JSON, and unchanged checklist boxes.
+Stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+ARTIFACT PASS: touched Markdown whitespace/fences, checkpoint shell/Python syntax, and JSON outputs pass
+ARTIFACT PASS: recorded source diff preserves exact bytes; all checklist boxes are unchanged
+```
+
+Explicit staging command (empty stdout/stderr, exit 0):
+
+```sh
+git add -- .mem/practices.md .mem/terminology.md .mem/uptime/commands.md .mem/uptime/testing.md TAGS.md changelog.d/008-telemetry-logs-search-001.md cmd/bs/monitors.go docs/plans/008_telemetry-logs-search_001_spec.md docs/plans/008_telemetry-logs-search_001_implement.md
+```
+
+The staged-path audit's stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+STAGING PASS: exactly nine authorized repair paths are staged; only checkpoint remains unstaged
+```
+
+`git diff --check` and `git diff --cached --check` each exited 0 with empty stdout/stderr.
+`git diff --cached --name-only` exited 0 with empty stderr and this verbatim stdout:
+
+```text
+.mem/practices.md
+.mem/terminology.md
+.mem/uptime/commands.md
+.mem/uptime/testing.md
+TAGS.md
+changelog.d/008-telemetry-logs-search-001.md
+cmd/bs/monitors.go
+docs/plans/008_telemetry-logs-search_001_implement.md
+docs/plans/008_telemetry-logs-search_001_spec.md
+```
+
+The protected-path fingerprint command from Identity exited 0 with empty stderr and this verbatim stdout:
+
+```text
+a16f816e5719f03a5cdd83047471d19892c91a4248baca2349d1269549adfbb4  -
+```
+
+Command: `git commit -m "001: fix review findings F1-F5"`. Stderr was empty. The command exited 0.
+Stdout follows verbatim:
+
+```text
+[master d9e294a] 001: fix review findings F1-F5
+ 9 files changed, 48 insertions(+), 31 deletions(-)
+```
+
+`git rev-parse HEAD` returned `d9e294a2f54a5cb15819a9b7226028e59001a873`. Stderr was empty. The command exited 0.
+`git status --porcelain` exited 0 with empty stderr and this verbatim stdout:
+
+```text
+ M docs/plans/008_telemetry-logs-search_001_checkpoint.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+`git stash create` returned `d69b9c70d072bec27ccbba660f292c8b8cb74533`. Stderr was empty. The command exited 0.
+This object captures only the uncommitted checkpoint before this append. It creates no stash-list entry.
+
+### Post-commit repair checks — passed
+
+The command selected only the three Python checks in this Review gate 1 section, then audited the repair commit's path set.
+It ran no historical commands and did not run V1. Stdout follows verbatim. Stderr was empty. The command exited 0.
+
+```text
+POST-COMMIT R1:
+R1 PASS: exactly nine memory files and nine map entries
+R1 PASS: 60 relative links resolve to Git-tracked files
+R1 PASS: existing untracked AGENTS.md target is rejected (git exit 1)
+R1 PASS: topic examples, Mermaid flow, balanced fences, and 250-line limits
+R1 PASS: local toolchain override is absent from memory
+POST-COMMIT R1 exit: 0
+POST-COMMIT R3:
+R3 PASS: one Added heading, blank line, and one factual Uptime records bullet
+R3 PASS: five plain repo-root paths resolve to Git-tracked files; no Markdown links
+R3 PASS: eight anchors cited; no front matter, release section, or extra category
+R3 PASS: only the required fragment exists; CHANGELOG.md is unchanged
+POST-COMMIT R3 exit: 0
+POST-COMMIT Anchor/source:
+ANCHORS PASS: exactly eight source occurrences match TAGS.md, including five command handlers
+ANCHORS PASS: config anchor immediately precedes the three-constant block; tests remain untagged
+SOURCE PASS: cmd/bs differs from fba2643 by exactly one added config anchor line
+POST-COMMIT Anchor/source exit: 0
+COMMIT PASS: repair commit contains exactly the nine authorized repair paths
+```
+
+### Checkpoint commit boundary
+
+The checkpoint update uses a temporary file and `mv`, followed by explicit staging and artifact/whitespace checks.
+The separate checkpoint commit records only this evidence and current state. The terminal report supplies its final SHA, status, and log.
+This checkpoint cannot contain its own eventual commit SHA without another self-referential commit.
+All five protected baseline paths remain unchanged and unstaged. A1–A4 and V1 task boxes remain unchanged.
+V1 remains unstarted, and the milestone source checkbox remains untouched. No push, live request, or ambient credential use occurred.
