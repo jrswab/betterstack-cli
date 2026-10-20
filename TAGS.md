@@ -7,6 +7,9 @@ Each row identifies one production boundary occurrence.
 | `uptime:router` | [cmd/bs/main.go](cmd/bs/main.go) | `runWithAPI` | Compatible Uptime injection interface |
 | `uptime:router` | [cmd/bs/main.go](cmd/bs/main.go) | `runWithEndpoints` | Endpoint injection seam and Command routing boundary |
 | `telemetry:config` | [cmd/bs/main.go](cmd/bs/main.go) | `defaultTelemetryRESTBaseURL` | Telemetry configuration boundary |
+| `telemetry:config` | [cmd/bs/sources.go](cmd/bs/sources.go) | `telemetryTokenEnvVar` | Telemetry API credential name |
+| `telemetry:command-handler` | [cmd/bs/sources.go](cmd/bs/sources.go) | `sourcesList` | Sources list command handler |
+| `telemetry:command-handler` | [cmd/bs/sources.go](cmd/bs/sources.go) | `sourcesGet` | Sources get command handler |
 | `uptime:config` | [cmd/bs/monitors.go](cmd/bs/monitors.go) | `defaultAPIBaseURL`, `defaultTimeout`, `tokenEnvVar` | Uptime configuration boundary |
 | `uptime:command-handler` | [cmd/bs/monitors.go](cmd/bs/monitors.go) | `monitorsList` | Monitors list command handler |
 | `uptime:command-handler` | [cmd/bs/monitors.go](cmd/bs/monitors.go) | `monitorsGet` | Monitors get command handler |

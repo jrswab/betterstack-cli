@@ -40,6 +40,138 @@ func TestRunWithAPIKeepsSignatureAndUptimeRouting(t *testing.T) {
 	}
 }
 
+// TestRunWithEndpointsSourcesHelp verifies exact help and generic secret warnings.
+func TestRunWithEndpointsSourcesHelp(t *testing.T) {
+	const warning = "The output includes each source's `token` field. Treat it as a secret credential. Keep it private and do not paste it into shared logs or tickets."
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { requests.Add(1) }))
+	defer srv.Close()
+	t.Setenv(telemetryTokenEnvVar, "")
+	t.Setenv(tokenEnvVar, "")
+	cases := []struct {
+		args  []string
+		wants []string
+	}{
+		{[]string{"--help"}, []string{"\n  sources ", "incidents", "monitors"}},
+		{[]string{"sources", "--help"}, []string{"bs sources", "list", "get <id>"}},
+		{[]string{"sources", "list", "--help"}, []string{"bs sources list", "Arguments:", "Flags:", "Examples:", "--page", "--per-page", "50", "--timeout", "30 seconds", warning}},
+		{[]string{"sources", "get", "--help"}, []string{"bs sources get <id>", "Arguments:", "Flags:", "Examples:", "opaque", "--timeout", "30 seconds", warning}},
+	}
+	for _, tc := range cases {
+		t.Run(strings.Join(tc.args, " "), func(t *testing.T) {
+			var out, err bytes.Buffer
+			code := runWithEndpoints(tc.args, &out, &err, srv.URL+"/uptime", srv.URL+"/rest", srv.URL+"/sql", testHTTPClient())
+			if code != 0 || err.Len() != 0 {
+				t.Fatalf("help code = %d, stderr empty = %t", code, err.Len() == 0)
+			}
+			for _, want := range tc.wants {
+				if !strings.Contains(out.String(), want) {
+					t.Errorf("help missing %q", want)
+				}
+			}
+			lower := strings.ToLower(out.String())
+			for _, bad := range []string{"ingest", "permissions", "allows", "grants", "authorizes", "bs logs", "sql"} {
+				if strings.Contains(lower, bad) {
+					t.Errorf("help contains unsupported wording %q", bad)
+				}
+			}
+		})
+	}
+	if requests.Load() != 0 {
+		t.Fatalf("help requests = %d, want 0", requests.Load())
+	}
+}
+
+// TestRunWithEndpointsSourcesInvalidUsage verifies local source-specific diagnostics.
+func TestRunWithEndpointsSourcesInvalidUsage(t *testing.T) {
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { requests.Add(1) }))
+	defer srv.Close()
+	t.Setenv(telemetryTokenEnvVar, "")
+	cases := [][]string{{"sources"}, {"sources", "delete"}, {"sources", "--help", "extra"}, {"sources", "get", "id", "--help"}, {"sources", "list", "--help", "extra"}}
+	for _, args := range invalidSourcesListArgs() {
+		cases = append(cases, append([]string{"sources", "list"}, args...))
+	}
+	for _, args := range invalidSourcesGetArgs() {
+		cases = append(cases, append([]string{"sources", "get"}, args...))
+	}
+	for _, args := range cases {
+		t.Run(strings.Join(args, " "), func(t *testing.T) {
+			var out, err bytes.Buffer
+			code := runWithEndpoints(args, &out, &err, srv.URL, srv.URL, srv.URL, testHTTPClient())
+			if code != 1 || out.Len() != 0 || !strings.Contains(err.String(), "bs sources") || strings.Contains(err.String(), "unknown resource") || strings.Contains(err.String(), "is not set") {
+				t.Fatalf("invalid vector did not produce source-specific usage: code=%d", code)
+			}
+		})
+	}
+	if requests.Load() != 0 {
+		t.Fatalf("invalid usage requests = %d, want 0", requests.Load())
+	}
+}
+
+// TestRunWithEndpointsSourcesHelpWithDummyCredentialMakesNoRequest guards help from HTTP access.
+func TestRunWithEndpointsSourcesHelpWithDummyCredentialMakesNoRequest(t *testing.T) {
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { requests.Add(1) }))
+	defer srv.Close()
+	t.Setenv(telemetryTokenEnvVar, "dummy-telemetry-token")
+	for _, args := range [][]string{{"sources", "--help"}, {"sources", "list", "--help"}, {"sources", "get", "--help"}} {
+		var out, err bytes.Buffer
+		code := runWithEndpoints(args, &out, &err, srv.URL, srv.URL, srv.URL, testHTTPClient())
+		if code != 0 || out.Len() == 0 || err.Len() != 0 {
+			t.Fatal("help did not return successfully")
+		}
+	}
+	if requests.Load() != 0 {
+		t.Fatalf("help requests = %d, want 0", requests.Load())
+	}
+}
+
+// TestRunWithEndpointsRoutesSources verifies the separate Telemetry REST request boundary.
+func TestRunWithEndpointsRoutesSources(t *testing.T) {
+	cases := []struct {
+		args []string
+		path string
+	}{
+		{[]string{"sources", "list"}, "/api/v2/sources"},
+		{[]string{"sources", "get", "opaque/a b%?x#y"}, "/api/v2/sources/opaque%2Fa%20b%25%3Fx%23y"},
+	}
+	for _, tc := range cases {
+		t.Run(strings.Join(tc.args, " "), func(t *testing.T) {
+			var uptimeRequests, restRequests, sqlRequests atomic.Int32
+			uptime := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				uptimeRequests.Add(1)
+			}))
+			defer uptime.Close()
+			sql := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				sqlRequests.Add(1)
+			}))
+			defer sql.Close()
+			rest := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				restRequests.Add(1)
+				if r.Method != http.MethodGet || r.URL.EscapedPath() != tc.path || r.URL.RawQuery != "" {
+					t.Errorf("request = %s %s, want GET %s", r.Method, r.URL.RequestURI(), tc.path)
+				}
+				if r.Header.Get("Authorization") != "Bearer dummy-telemetry-token" {
+					t.Error("request did not use the dummy Telemetry credential")
+				}
+				_, _ = io.WriteString(w, "source body")
+			}))
+			defer rest.Close()
+			t.Setenv("BETTERSTACK_TELEMETRY_API_TOKEN", "dummy-telemetry-token")
+			t.Setenv(tokenEnvVar, testToken)
+			var out, err bytes.Buffer
+			code := runWithEndpoints(tc.args, &out, &err, uptime.URL, rest.URL, sql.URL, testHTTPClient())
+			if code != 0 || out.String() != "source body" || err.Len() != 0 {
+				t.Fatalf("code = %d, stdout = %q, stderr empty = %t", code, out.String(), err.Len() == 0)
+			}
+			if restRequests.Load() != 1 || uptimeRequests.Load() != 0 || sqlRequests.Load() != 0 {
+				t.Fatalf("requests: REST=%d Uptime=%d SQL=%d", restRequests.Load(), uptimeRequests.Load(), sqlRequests.Load())
+			}
+		})
+	}
+}
+
 // TestRunWithEndpointsUsesDistinctEndpoints routes Uptime commands only to
 // the Uptime input when all three endpoint inputs are distinct.
 func TestRunWithEndpointsUsesDistinctEndpoints(t *testing.T) {

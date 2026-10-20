@@ -19,8 +19,8 @@ const (
 	tokenEnvVar       = "BETTERSTACK_UPTIME_API_TOKEN"
 )
 
-// newHTTPClient returns the production HTTP client. Redirect following is
-// disabled in monitorsGet so an injected client cannot re-enable it.
+// newHTTPClient returns the production HTTP client. The shared request executor
+// disables redirects so an injected client cannot re-enable them.
 func newHTTPClient() *http.Client { return &http.Client{} }
 
 // monitorsGet implements `bs monitors get <id> [--timeout <duration>]`:
@@ -75,9 +75,9 @@ func monitorsList(args []string, stdout, stderr io.Writer, baseURL string, clien
 }
 
 // doMonitorsRequest performs exactly one bearer-authenticated GET and applies
-// the shared 002 response contract used by both monitor commands: raw 2xx body
-// to stdout, raw non-2xx body to stderr, redirects not followed, and
-// token-free local diagnostics.
+// the shared response contract used by Uptime and Telemetry source commands:
+// raw 2xx body to stdout, raw non-2xx body to stderr, redirects not followed,
+// and token-free local diagnostics.
 // @anchor:uptime:request-executor
 func doMonitorsRequest(endpoint, token string, timeout time.Duration, stdout, stderr io.Writer, client *http.Client) int {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)

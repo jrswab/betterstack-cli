@@ -1,4 +1,4 @@
-// Command bs is a read-only CLI for the Better Stack Uptime API.
+// Command bs is a read-only CLI for the Better Stack Uptime and Telemetry APIs.
 // Exact help forms return without reading credentials or sending requests.
 package main
 
@@ -32,8 +32,8 @@ func runWithAPI(args []string, stdout, stderr io.Writer, baseURL string, client 
 }
 
 // runWithEndpoints accepts distinct test endpoints without adding production
-// host overrides. Only Uptime routes are active. The Telemetry REST and SQL
-// inputs remain unused until their command slices add request boundaries.
+// host overrides. Uptime and Telemetry REST commands use separate inputs.
+// The SQL input remains unused until its command slice adds a request boundary.
 // @anchor:uptime:router endpoints
 func runWithEndpoints(args []string, stdout, stderr io.Writer, uptimeBaseURL, telemetryRESTBaseURL, telemetrySQLURL string, client *http.Client) int {
 	if help, ok := helpFor(args); ok {
@@ -55,6 +55,12 @@ func runWithEndpoints(args []string, stdout, stderr io.Writer, uptimeBaseURL, te
 	if len(args) >= 2 && args[0] == "incidents" && args[1] == "list" {
 		return incidentsList(args[2:], stdout, stderr, uptimeBaseURL, client)
 	}
+	if len(args) >= 2 && args[0] == "sources" && args[1] == "list" {
+		return sourcesList(args[2:], stdout, stderr, telemetryRESTBaseURL, client)
+	}
+	if len(args) >= 2 && args[0] == "sources" && args[1] == "get" {
+		return sourcesGet(args[2:], stdout, stderr, telemetryRESTBaseURL, client)
+	}
 	fmt.Fprint(stderr, usageError(args))
 	return 1
 }
@@ -66,6 +72,12 @@ func helpFor(args []string) (string, bool) {
 	switch {
 	case len(args) == 1 && args[0] == "--help":
 		return rootHelp, true
+	case len(args) == 2 && args[0] == "sources" && args[1] == "--help":
+		return sourcesHelp, true
+	case len(args) == 3 && args[0] == "sources" && args[1] == "list" && args[2] == "--help":
+		return sourcesListHelp, true
+	case len(args) == 3 && args[0] == "sources" && args[1] == "get" && args[2] == "--help":
+		return sourcesGetHelp, true
 	case len(args) == 2 && args[0] == "incidents" && args[1] == "--help":
 		return incidentsHelp, true
 	case len(args) == 2 && args[0] == "monitors" && args[1] == "--help":
@@ -96,7 +108,7 @@ func usageError(args []string) string {
 	switch args[0] {
 	case "--help":
 		return fmt.Sprintf("bs: --help takes no further arguments; %s.\n", rootHint)
-	case "incidents", "monitors":
+	case "incidents", "monitors", "sources":
 		return resourceUsageError(args[0], args[1:])
 	default:
 		if strings.HasPrefix(args[0], "-") {
@@ -144,7 +156,7 @@ func resourceUsageError(resource string, rest []string) string {
 
 	// get and timeline take exactly one positional target.
 	placeholder := "<id-or-url>"
-	if resource == "monitors" {
+	if resource == "monitors" || resource == "sources" {
 		placeholder = "<id>"
 	}
 	switch {
@@ -161,7 +173,7 @@ func knownAction(resource, action string) bool {
 	switch resource {
 	case "incidents":
 		return action == "list" || action == "get" || action == "timeline"
-	case "monitors":
+	case "monitors", "sources":
 		return action == "list" || action == "get"
 	default:
 		return false

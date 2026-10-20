@@ -4,7 +4,7 @@
 
 `main` calls `runWithAPI` directly. The compatibility entry point `run(args, stdout, stderr)` supplies `defaultAPIBaseURL` and `newHTTPClient()` to `runWithAPI`. It does not accept an injected endpoint or client.
 
-`runWithAPI` delegates unchanged Uptime dependencies to `runWithEndpoints`. `runWithEndpoints` checks help and dispatches recognized commands before falling through to `usageError`. The Command routing boundary writes that diagnostic to stderr and returns 1. `usageError` handles missing commands, invalid root help, unknown options, and unknown resources. Its hard-coded resource gate recognizes only `incidents` and `monitors` for delegation to `resourceUsageError`. That helper uses `knownAction`: incidents accepts `list`, `get`, and `timeline`; monitors accepts `list` and `get`; other resources return false. Routed commands validate their remaining arguments in their handlers, not in this fallthrough.
+`runWithAPI` delegates unchanged Uptime dependencies to `runWithEndpoints`. `runWithEndpoints` checks help and dispatches recognized commands before falling through to `usageError`. The Command routing boundary writes that diagnostic to stderr and returns 1. `usageError` handles missing commands, invalid root help, unknown options, and unknown resources. Its hard-coded resource gate recognizes `incidents`, `monitors`, and `sources` for delegation to `resourceUsageError`. That helper uses `knownAction`: incidents accepts `list`, `get`, and `timeline`; monitors and sources accept `list` and `get`; other resources return false. Routed commands validate their remaining arguments in their handlers, not in this fallthrough.
 
 Later resources must extend the resource gate in `usageError` and the action inventory in `knownAction`, alongside routing and `helpFor`. Without this gate update, the diagnostic fallthrough classifies the new resource as unknown.
 
@@ -42,7 +42,7 @@ Non-timeout monitor filters and ordinary incident-list filters pass through unch
 
 ## Help boundary
 
-`helpFor` returns constants from [help.go](../../cmd/bs/help.go) for exactly `bs --help`, `bs monitors --help`, `bs incidents --help`, and `<resource> <action> --help` for the five routed commands. Help writes human-readable text to stdout and exits 0 without reading a token or making a request. Extra tokens and `-h` are not help forms. Invalid arguments produce local stderr diagnostics and exit 1.
+`helpFor` returns constants from [help.go](../../cmd/bs/help.go) for exactly `bs --help`, `bs monitors --help`, `bs incidents --help`, and `<resource> <action> --help` for the five Uptime commands, plus source resource/list/get help. [Sources](../telemetry/sources.md) documents the Telemetry behavior. Help writes human-readable text to stdout and exits 0 without reading a token or making a request. Extra tokens and `-h` are not help forms. Invalid arguments produce local stderr diagnostics and exit 1.
 
 This example calls the help boundary without credentials or HTTP:
 

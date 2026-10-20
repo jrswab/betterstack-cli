@@ -57,10 +57,10 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-// clearCredentialEnv removes the two credential variables the CLI could read.
+// clearCredentialEnv removes the active and legacy API credential variables.
 // It reports an error instead of dumping the environment.
 func clearCredentialEnv() error {
-	for _, name := range []string{tokenEnvVar, "BETTERSTACK_API_TOKEN"} {
+	for _, name := range []string{tokenEnvVar, "BETTERSTACK_API_TOKEN", telemetryTokenEnvVar} {
 		if err := os.Unsetenv(name); err != nil {
 			return fmt.Errorf("could not unset %s: %w", name, err)
 		}
@@ -324,13 +324,13 @@ func TestSafetyGuardAllowsLoopbackMock(t *testing.T) {
 	}
 }
 
-// envWithoutCredentials returns the current environment with both credential
+// envWithoutCredentials returns the current environment with API credential
 // variables removed. It never reads or returns their values.
 func envWithoutCredentials() []string {
 	out := make([]string, 0, len(os.Environ()))
 	for _, entry := range os.Environ() {
 		name, _, ok := strings.Cut(entry, "=")
-		if ok && (name == tokenEnvVar || name == "BETTERSTACK_API_TOKEN") {
+		if ok && (name == tokenEnvVar || name == "BETTERSTACK_API_TOKEN" || name == telemetryTokenEnvVar) {
 			continue
 		}
 		out = append(out, entry)
@@ -340,14 +340,15 @@ func envWithoutCredentials() []string {
 
 // TestSafetyHarnessStripsInheritedCredentials compiles the package's test
 // binary and runs one probe test with sentinel credentials in its environment.
-// The probe (running under TestMain) must observe both variables as unset, and
+// The probe (running under TestMain) must observe all variables as unset, and
 // the captured log must not contain the sentinel values. No ambient credential
 // is read or printed.
 func TestSafetyHarnessStripsInheritedCredentials(t *testing.T) {
 	const (
-		uptimeSentinel = "sentinel-uptime-token-do-not-use"
-		legacySentinel = "sentinel-legacy-token-do-not-use"
-		probeTestName  = "TestSafetyHarnessIsolatedProcessSeesNoCredentials"
+		uptimeSentinel    = "sentinel-uptime-token-do-not-use"
+		legacySentinel    = "sentinel-legacy-token-do-not-use"
+		telemetrySentinel = "sentinel-telemetry-token-do-not-use"
+		probeTestName     = "TestSafetyHarnessIsolatedProcessSeesNoCredentials"
 	)
 
 	dir := t.TempDir()
@@ -370,6 +371,7 @@ func TestSafetyHarnessStripsInheritedCredentials(t *testing.T) {
 		safetyProbeEnv+"=1",
 		tokenEnvVar+"="+uptimeSentinel,
 		"BETTERSTACK_API_TOKEN="+legacySentinel,
+		telemetryTokenEnvVar+"="+telemetrySentinel,
 	)
 	run.Stdout = logFile
 	run.Stderr = logFile
@@ -385,7 +387,7 @@ func TestSafetyHarnessStripsInheritedCredentials(t *testing.T) {
 	logText := string(logBytes)
 
 	// Check for leaked sentinels before any failure path prints the log.
-	for _, sentinel := range []string{uptimeSentinel, legacySentinel} {
+	for _, sentinel := range []string{uptimeSentinel, legacySentinel, telemetrySentinel} {
 		if strings.Contains(logText, sentinel) {
 			t.Fatal("the probe log contains a sentinel credential value; the harness must never print credentials")
 		}
@@ -403,7 +405,7 @@ func TestSafetyHarnessIsolatedProcessSeesNoCredentials(t *testing.T) {
 	if os.Getenv(safetyProbeEnv) != "1" {
 		t.Skip("isolated-process probe; run through TestSafetyHarnessStripsInheritedCredentials")
 	}
-	for _, name := range []string{tokenEnvVar, "BETTERSTACK_API_TOKEN"} {
+	for _, name := range []string{tokenEnvVar, "BETTERSTACK_API_TOKEN", telemetryTokenEnvVar} {
 		if os.Getenv(name) != "" {
 			t.Fatalf("inherited credential %s survived TestMain", name)
 		}

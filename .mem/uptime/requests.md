@@ -20,7 +20,7 @@ No current response path calls this helper. Uptime local diagnostics continue us
 
 ## Request executor
 
-[doMonitorsRequest](../../cmd/bs/monitors.go) serves all five handlers despite its monitor-oriented name. It creates a timeout context, builds an HTTP GET with no body, and sets the bearer header:
+[doMonitorsRequest](../../cmd/bs/monitors.go) serves all seven Uptime and source handlers despite its monitor-oriented name. It creates a timeout context, builds an HTTP GET with no body, and sets the bearer header:
 
 ```go
 req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
@@ -46,4 +46,4 @@ The Request executor reads the entire response with `io.ReadAll` before writing 
 
 Bodies remain opaque. The CLI does not parse JSON, add a newline, wrap errors, or redact upstream bytes. If a body read fails, it reports the local error rather than printing a partial body. The current Request executor ignores output-writer errors, so its exit code reflects HTTP status and read success, not successful downstream delivery.
 
-Sources: [monitors.go](../../cmd/bs/monitors.go) and [incidents.go](../../cmd/bs/incidents.go). Related: [incident rules](incidents.md), [testing](testing.md), and [summary](summary.md).
+Sources: [monitors.go](../../cmd/bs/monitors.go), [incidents.go](../../cmd/bs/incidents.go), and [sources.go](../../cmd/bs/sources.go). Related: [incident rules](incidents.md), [testing](testing.md), and [summary](summary.md).

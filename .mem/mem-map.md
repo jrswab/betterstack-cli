@@ -7,6 +7,10 @@
 - [Practices](practices.md) records implementation, verification, and documentation patterns.
 - [Memory map](mem-map.md) indexes every memory file, including itself.
 
+## Telemetry
+
+- [Sources](telemetry/sources.md) describes REST routing, credentials, pagination, opaque IDs, raw responses, and secret warnings.
+
 ## Uptime
 
 - [Uptime summary](uptime/summary.md) shows routing and the shared request flow.

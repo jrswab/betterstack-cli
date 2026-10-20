@@ -6,7 +6,7 @@
 
 [Commands](commands.md) documents usage diagnostics and the resource gate that later resources must extend.
 
-Routing tests use `invokeAPI` to call `runWithAPI` with captured stdout/stderr, a loopback `httptest.NewServer` URL, and an HTTP client. `runWithAPI` delegates to `runWithEndpoints` without changing its signature. `main_test.go` also calls `runWithEndpoints` directly with three distinct loopback endpoint inputs. It verifies all five Uptime routes use the Uptime input, not the Telemetry REST or SQL inputs, and that help and invalid usage send no requests through either interface. Telemetry REST and SQL routing have no request boundaries yet. [monitors_test.go](../../cmd/bs/monitors_test.go) defines `invokeAPI` and the fixed dummy `testToken`. Other tests call handlers directly through helpers such as `invokeMonitorsList` and `invokeIncidentsList`. These tests verify path escaping, bearer headers, query translation, raw output, exit codes, invalid arguments, timeouts, and disabled redirects.
+Routing tests use `invokeAPI` to call `runWithAPI` with captured stdout/stderr, a loopback `httptest.NewServer` URL, and an HTTP client. `runWithAPI` delegates to `runWithEndpoints` without changing its signature. `main_test.go` also calls `runWithEndpoints` directly with three distinct loopback endpoint inputs. It verifies all five Uptime routes use the Uptime input, not the Telemetry REST or SQL inputs, and that help and invalid usage send no requests through either interface. Source tests also verify Telemetry REST routing, with zero Uptime or SQL requests. The SQL input has no request boundary. [monitors_test.go](../../cmd/bs/monitors_test.go) defines `invokeAPI` and the fixed dummy `testToken`. Other tests call handlers directly through helpers such as `invokeMonitorsList` and `invokeIncidentsList`. These tests verify path escaping, bearer headers, query translation, raw output, exit codes, invalid arguments, timeouts, and disabled redirects.
 
 This existing test pattern authenticates only to a local mock server:
 
@@ -24,7 +24,7 @@ code, _, stderr := invokeAPI(srv.URL, newHTTPClient(), "monitors", "get", "789")
 
 ## Credential and network protections
 
-[TestMain](../../cmd/bs/safety_test.go) removes both `BETTERSTACK_UPTIME_API_TOKEN` and `BETTERSTACK_API_TOKEN` before tests run. Tests set dummy values explicitly. The isolated-process safety test uses fixed sentinel values to verify inherited credential removal and checks that its captured log contains neither sentinel.
+[TestMain](../../cmd/bs/safety_test.go) removes `BETTERSTACK_UPTIME_API_TOKEN`, `BETTERSTACK_API_TOKEN`, and `BETTERSTACK_TELEMETRY_API_TOKEN` before tests run. Tests set dummy values explicitly. The isolated-process safety test uses fixed sentinel values to verify inherited credential removal and checks that its captured log contains none of the three sentinels.
 
 `installNetworkGuard` replaces `http.DefaultTransport`. `loopbackOnlyTransport` accepts only literal loopback IPs, including `127.0.0.0/8` and `::1`. It rejects hostnames such as `localhost`, documentation IP ranges, and other addresses before the underlying transport runs. It does not resolve DNS. The cloned standard transport disables proxy lookup and adds `guardDialContext` as a second address check.
 

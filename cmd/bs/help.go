@@ -1,12 +1,6 @@
 package main
 
-// Human-readable help text for milestone 001. Help is the one agreed exception
-// to JSON-only output (spec section 1.3). Exact wording, formatting, and
-// trailing newlines are implementation choices (spec section 1.7). Each
-// per-command block carries a usage line, an arguments section, a flags
-// section, and at least one example using the approved flag spellings.
-
-const rootHelp = `bs - read-only Better Stack Uptime CLI
+const rootHelp = `bs - read-only Better Stack Uptime and Telemetry CLI
 
 Usage:
   bs <resource> <action> [arguments] [flags]
@@ -14,10 +8,64 @@ Usage:
 Resources:
   incidents   List and inspect incidents
   monitors    List and inspect monitors
+  sources     List and inspect Telemetry sources
 
 Run 'bs <resource> --help' for a resource's commands.
 Run 'bs <resource> <action> --help' for a command's usage and flags.
 `
+
+const sourcesHelp = `bs sources - commands
+
+Usage:
+  bs sources <command> [arguments] [flags]
+
+Commands:
+  list      List Telemetry sources
+  get <id>  Get one Telemetry source
+
+Run 'bs sources <command> --help' for a command's usage and flags.
+`
+
+const sourceSecretWarning = "The output includes each source's `token` field. Treat it as a secret credential. Keep it private and do not paste it into shared logs or tickets.\n"
+
+const sourcesListHelp = `bs sources list - list Telemetry sources
+
+Usage:
+  bs sources list [flags]
+
+Arguments:
+  none - this command takes no positional target.
+
+Flags:
+  --page <integer>      Request a positive decimal page number. Repeatable. No default is sent.
+  --per-page <integer>  Request 1 through 50 sources. Repeatable. No default is sent.
+  --timeout <duration>  Total request timeout, a positive Go duration. Default 30 seconds (30s).
+                        Repeated timeouts use the last valid value. Use space-separated values.
+
+Examples:
+  bs sources list
+  bs sources list --page 1 --per-page 50 --timeout 60s
+
+` + sourceSecretWarning
+
+const sourcesGetHelp = `bs sources get - get one Telemetry source
+
+Usage:
+  bs sources get <id> [--timeout <duration>]
+
+Arguments:
+  <id>  One nonempty opaque source ID, escaped as one path segment.
+
+Flags:
+  --timeout <duration>  Total request timeout, a positive Go duration. Default 30 seconds (30s).
+                        The flag can precede or follow the ID. Repeated timeouts use the last valid value.
+                        Use space-separated values.
+
+Examples:
+  bs sources get source-id
+  bs sources get --timeout 60s source-id
+
+` + sourceSecretWarning
 
 const incidentsHelp = `bs incidents - commands
 
