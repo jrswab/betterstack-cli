@@ -8,7 +8,7 @@ The checkpoint owns task state. The milestone source remains untracked and is ne
 - Milestone source: `docs/plans/008_telemetry-logs-search_milestones.md`. Phase 3 does not modify or render this baseline untracked file.
 - Repository root: `/home/jaron/dev/betterstack-cli/master`.
 - Branch: `master`.
-- Current HEAD: `4ea3bab5fd9f08cc756edbb84ae2c99c26d39904` (implementation commit and checkpoint/render verification parent).
+- Current HEAD: `ec4ad10a0e2533846a4b81638580d2ced1982144` (review-fix commit and review checkpoint verification parent).
 - Baseline `git status --porcelain` (verbatim):
 
 ```text
@@ -34,11 +34,11 @@ The checkpoint owns task state. The milestone source remains untracked and is ne
 
 - Lane: `full` — the milestone adds credential redaction, a security behavior, and a new test/endpoint seam that changes internal contracts.
 - Current phase: `execute`.
-- Current task: execute A1–A3 only, then stop before V1.
+- Current task: fix review findings F1, F2, N1, and N2 only, then stop before V1.
 - Task states: implementation checklist `complete`; A1 `passed`; A2 `passed`; A3 `passed`; V1 `not started`.
 - Milestone checkbox: `unchecked`.
-- Last completed gate: A3 local task checks passed. Delegated review gates are BLOCKED because this harness has no sub-agent tool.
-- Next action: stop here. A future invocation runs V1 and resolves BLOCKED delegated review gates before milestone completion.
+- Last completed gate: Review gate 1 fixes and local checks passed. The orchestrator must confirm the fixes through re-review.
+- Next action: stop before V1. The orchestrator must re-review the fixes before a future invocation runs V1.
 
 ## Step 0 — Restart validation for milestone 001
 
@@ -765,3 +765,403 @@ Command: `git diff --cached --check`. Exit code: `0`. Output (verbatim, trailing
 ```text
 
 ```
+
+## Review gate 1 — CHANGES REQUESTED (F1 medium, F2 low) and fixes
+
+**Result:** The orchestrator supplied CHANGES REQUESTED for F1 (medium) and F2 (low), with nits N1 and N2.
+The implementer fixed all four items and passed the local checks below.
+This evidence does not claim independent re-review approval or milestone completion.
+V1 remains `not started`. The implementer did not change milestone or implementation task checkboxes.
+
+**Invocation:** The starting HEAD was `895b214d6038f1ed7384cea199157eb0bf33cbb7` on `master`.
+The user authorized local commits, explicit staging, and scratch mutations under `/tmp/factory-002/mut/`.
+No push, live request, or real credential use occurred.
+The starting status included an extra untracked `bs` binary beyond the five protected baseline paths.
+The implementer preserved all six untracked paths and verified their contents.
+The index was empty before explicit staging.
+
+**Fixes:** The fix commit changed exactly four repository files.
+
+- F1: `cmd/bs/telemetry_test.go:95–99` adds `shorter secret matches replacement marker` to `TestRedactSecrets`.
+  It calls `redactSecrets("token usEr", "token", "E", "")` and expects `[REDACTED] us[REDACTED]r`.
+  The old cases passed with sequential `strings.ReplaceAll`, but the new case failed because that mutation rescanned inserted markers.
+- F2: `cmd/bs/telemetry_test.go:110–123` adds `TestRedactSecretsBasicAuthEncoding`.
+  It uses dummy username `user` and password `~???`.
+  `Request.SetBasicAuth` supplies the expected secret through its Authorization header, with `Basic ` removed.
+  The encoding is `dXNlcjp+Pz8/`, which contains both `+` and `/`.
+  The test asserts that distinction before expecting redaction to `[REDACTED]`.
+  The old cases passed with `base64.URLEncoding`, but the new test failed.
+- N1: `cmd/bs/main.go:13–14,31` defines and uses `defaultTelemetryRESTBaseURL` for the existing fixed Telemetry REST host.
+  The constant has the `telemetry:config` anchor.
+  `TAGS.md:9` indexes the Telemetry configuration boundary, and `.mem/terminology.md:10` defines its surface, role, and symbol.
+- N2: `cmd/bs/main.go:26–28` corrects the `runWithAPI` doc comment to cover production and tests.
+  Its signature and production callers remain unchanged.
+
+**Assumptions:** The supplied F1 example has a case mismatch.
+Uppercase `E` does not match lowercase `e` in `user` under the documented case-sensitive contract.
+The implementer used `usEr` instead, preserving the requested result and marker-collision mutation test.
+The implementer did not change production redaction to make the example case-insensitive.
+The assigned write scope places the Telemetry configuration constant in `cmd/bs/main.go`.
+The constant remains internal and adds no runtime endpoint override or active Telemetry command.
+
+**Orchestrator decision on review drift:** The milestone acceptance says tests can route source and SQL requests through `runWithEndpoints`.
+S1 satisfies this acceptance through the seam accepting and carrying distinct endpoints.
+Actual source request routing is proven by milestone `003` (S2).
+Actual SQL request routing is proven by milestone `005` (S4).
+This interpretation agrees with the milestone text: “This enabling seam supports S2 source requests and S4 SQL execution.”
+The implementer recorded this decision without adding source or SQL request behavior.
+The S1 specification already records the same downstream request-boundary ownership.
+
+**Decisions and limits:** The implementer retained the existing production redaction algorithm and fixed the missing regression tests.
+The sequential-replacement mutation preserves secret collection, empty-value handling, and stable length sorting.
+It changes only the replacement body in a scratch copy.
+The encoding mutation changes only `StdEncoding` to `URLEncoding` in a fresh copy of the helper.
+The independent HTTP header reference avoids reproducing the helper's base64 choice in the test.
+The single configuration anchor follows the repository boundary convention instead of classifying Telemetry configuration as Uptime configuration.
+No symptom patch exists. F1 and F2 originated in insufficient distinguishing test cases.
+N1 originated in the inline endpoint literal. N2 originated in the stale test-only doc comment.
+
+**Skips and dependencies:** The following exclusions remain in effect.
+
+- Ladder rung 1: The changelog fragment remains unchanged because this change does not change its described behavior.
+- Ladder rung 1: Other `.mem/` files remain unchanged because their routing and redaction statements remain accurate.
+- Ladder rung 1: README, provenance, the memory map, new configuration files, and new command behavior remain unnecessary and outside the write scope.
+- Ladder rung 1: Actual source and SQL request routing remains downstream work under the orchestrator decision.
+- Ladder rung 2: The Go and Python standard libraries provide test references, scratch mutation, and evidence checks. No new dependency exists.
+- User exclusion: V1, milestone checkbox changes, live requests, and pushes did not run.
+- Tool discovery found no Factory CLI or applicable repository script. The live probe was out of scope and did not run.
+  The implementer reused `/tmp/factory-002/run-check.sh` for command evidence.
+  New task-specific scripts stayed under `/tmp/factory-002/`, as authorized, without changing protected `.agents/`.
+- `make help` and `make docs-check` are unavailable because the repository has no Makefile.
+  No configured Markdown formatter or linter exists. Direct record checks passed instead.
+- The implementer used installed Go documentation and source for `Request.SetBasicAuth` without external documentation requests.
+  Reference: [Go Request.SetBasicAuth](https://pkg.go.dev/net/http#Request.SetBasicAuth).
+
+**Mutation procedure:** `bash /tmp/factory-002/review1-mutations.sh` copied `go.mod` and `cmd/` to `/tmp/factory-002/mut/`.
+The script installed each mutation with `/tmp/factory-002/review1-mutate.py` and tested it only in the scratch copy.
+The repository's `cmd/bs/telemetry.go` remained byte-identical to the starting HEAD.
+The existing cases passed independently for each mutation before the corresponding new test failed.
+Command evidence files use the prefix `/tmp/factory-002/review1-`.
+Each evidence item has `.command`, `.exit`, and `.output` files.
+The output blocks below reproduce command output verbatim.
+All Go commands use `PATH=/home/jaron/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64/bin:$PATH`, `GOTOOLCHAIN=local`, and `GOPROXY=off`.
+The mutation commands run in `/tmp/factory-002/mut/`. Repository checks run in the repository root.
+
+### F1 scratch replacement body
+
+```go
+	for _, secret := range secrets {
+		if secret != "" {
+			text = strings.ReplaceAll(text, secret, "[REDACTED]")
+		}
+	}
+	return text
+```
+
+### F2 scratch mutation
+
+```diff
+- secrets = append(secrets, base64.StdEncoding.EncodeToString([]byte(sqlUsername+":"+sqlPassword)))
++ secrets = append(secrets, base64.URLEncoding.EncodeToString([]byte(sqlUsername+":"+sqlPassword)))
+```
+
+### Review gate evidence
+
+#### Starting HEAD
+
+Command: `git rev-parse HEAD`. Exit code: `0`.
+
+```text
+895b214d6038f1ed7384cea199157eb0bf33cbb7
+```
+
+#### Starting status
+
+Command: `git status --porcelain`. Exit code: `0`.
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? bs
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+#### Protected baseline content fingerprint
+
+Command: `bash -c 'find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum'`. Exit code: `0`.
+
+```text
+5f6cf5609b4c769043291850953b4728031c3cad1c8a9fd6611cca60ffa064a8  -
+```
+
+#### Starting untracked binary checksum
+
+Command: `sha256sum bs`. Exit code: `0`.
+
+```text
+05f15eaee64aba81cffa73843076919eaf60eb001f4862e3ef3da2d702d76501  bs
+```
+
+#### Installed Basic-auth documentation
+
+Command: `go doc net/http.Request.SetBasicAuth`. Exit code: `0`.
+
+```text
+package http // import "net/http"
+
+func (r *Request) SetBasicAuth(username, password string)
+    SetBasicAuth sets the request's Authorization header to use HTTP Basic
+    Authentication with the provided username and password.
+
+    With HTTP Basic Authentication the provided username and password are not
+    encrypted. It should generally only be used in an HTTPS request.
+
+    The username may not contain a colon. Some protocols may impose additional
+    requirements on pre-escaping the username and password. For instance,
+    when used with OAuth2, both arguments must be URL encoded first with
+    url.QueryEscape.
+
+```
+
+#### Focused unmutated tests
+
+Command: `go test -count=1 -run 'TestRedactSecrets' ./cmd/bs`. Exit code: `0`.
+
+```text
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	0.011s
+```
+
+#### F1 existing cases with mutation
+
+Command: `go test -count=1 -run '^TestRedactSecrets$' -skip '^TestRedactSecrets$/shorter_secret_matches_replacement_marker$' ./cmd/bs`. Exit code: `0`.
+
+```text
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	0.006s
+```
+
+#### F1 mutation kill
+
+Command: `go test -count=1 -run '^TestRedactSecrets$/shorter_secret_matches_replacement_marker$' ./cmd/bs`. Exit code: `1`.
+
+```text
+--- FAIL: TestRedactSecrets (0.00s)
+    --- FAIL: TestRedactSecrets/shorter_secret_matches_replacement_marker (0.00s)
+        telemetry_test.go:104: redactSecrets() = "[R[REDACTED]DACT[REDACTED]D] us[REDACTED]r", want "[REDACTED] us[REDACTED]r"
+FAIL
+FAIL	github.com/jrswab/betterstack-cli/cmd/bs	0.006s
+FAIL
+```
+
+#### F2 existing cases with mutation
+
+Command: `go test -count=1 -run '^TestRedactSecrets$' ./cmd/bs`. Exit code: `0`.
+
+```text
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	0.005s
+```
+
+#### F2 mutation kill
+
+Command: `go test -count=1 -run '^TestRedactSecretsBasicAuthEncoding$' ./cmd/bs`. Exit code: `1`.
+
+```text
+--- FAIL: TestRedactSecretsBasicAuthEncoding (0.00s)
+    telemetry_test.go:121: redactSecrets() = "dXNlcjp+Pz8/", want "[REDACTED]"
+FAIL
+FAIL	github.com/jrswab/betterstack-cli/cmd/bs	0.004s
+FAIL
+```
+
+#### Mutation script summary
+
+Command: `bash /tmp/factory-002/review1-mutations.sh`. Exit code: `0`.
+
+```text
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	0.011s
+exit code: 0
+f1 mutation installed only in /tmp/factory-002/mut/cmd/bs/telemetry.go
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	0.006s
+exit code: 0
+--- FAIL: TestRedactSecrets (0.00s)
+    --- FAIL: TestRedactSecrets/shorter_secret_matches_replacement_marker (0.00s)
+        telemetry_test.go:104: redactSecrets() = "[R[REDACTED]DACT[REDACTED]D] us[REDACTED]r", want "[REDACTED] us[REDACTED]r"
+FAIL
+FAIL	github.com/jrswab/betterstack-cli/cmd/bs	0.006s
+FAIL
+exit code: 1
+f2 mutation installed only in /tmp/factory-002/mut/cmd/bs/telemetry.go
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	0.005s
+exit code: 0
+--- FAIL: TestRedactSecretsBasicAuthEncoding (0.00s)
+    telemetry_test.go:121: redactSecrets() = "dXNlcjp+Pz8/", want "[REDACTED]"
+FAIL
+FAIL	github.com/jrswab/betterstack-cli/cmd/bs	0.004s
+FAIL
+exit code: 1
+PASS: both mutations survived existing cases and failed the new tests in /tmp/factory-002/mut.
+```
+
+#### Build
+
+Command: `env GOFLAGS=-o=/dev/null go build ./...`. Exit code: `0`.
+
+```text
+```
+
+#### Vet
+
+Command: `go vet ./...`. Exit code: `0`.
+
+```text
+```
+
+#### Full tests
+
+Command: `go test -count=1 ./...`. Exit code: `0`.
+
+```text
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	1.869s
+```
+
+#### Formatting
+
+Command: `gofmt -l cmd/bs/*.go`. Exit code: `0`.
+
+```text
+```
+
+#### Anchor occurrences
+
+Command: `grep -rn @anchor cmd/`. Exit code: `0`.
+
+```text
+cmd/bs/monitors.go:15:// @anchor:uptime:config
+cmd/bs/monitors.go:29:// @anchor:uptime:command-handler
+cmd/bs/monitors.go:55:// @anchor:uptime:command-handler
+cmd/bs/monitors.go:81:// @anchor:uptime:request-executor
+cmd/bs/incidents.go:50:// @anchor:uptime:command-handler
+cmd/bs/incidents.go:82:// @anchor:uptime:command-handler
+cmd/bs/incidents.go:332:// @anchor:uptime:command-handler
+cmd/bs/main.go:13:// @anchor:telemetry:config
+cmd/bs/main.go:29:// @anchor:uptime:router
+cmd/bs/main.go:37:// @anchor:uptime:router endpoints
+```
+
+#### Direct record checks
+
+Command: `python3 /tmp/factory-002/review1-check-records.py`. Exit code: `0`.
+
+```text
+PASS: ten production anchor occurrences match TAGS.md by anchor, path, and symbol.
+PASS: Telemetry configuration terminology, memory links, map coverage, line limits, Markdown fences, and whitespace.
+PASS: approved changes only; all six starting untracked paths and their contents remain unchanged.
+PASS: production redaction, existing routing/safety tests, changelog, README, provenance, and task checkboxes remain unchanged. V1 is not started.
+```
+
+#### Unavailable documentation target
+
+Command: `make docs-check`. Exit code: `2`.
+
+```text
+make: *** No rule to make target 'docs-check'.  Stop.
+```
+
+#### Whitespace check
+
+Command: `git diff --check`. Exit code: `0`.
+
+```text
+```
+
+#### Explicit fix staged paths
+
+Command: `git diff --cached --name-only`. Exit code: `0`.
+
+```text
+.mem/terminology.md
+TAGS.md
+cmd/bs/main.go
+cmd/bs/telemetry_test.go
+```
+
+#### Staged whitespace check
+
+Command: `git diff --cached --check`. Exit code: `0`.
+
+```text
+```
+
+#### Fix commit
+
+Command: `git commit -m '002: fix review findings F1 F2 N1 N2'`. Exit code: `0`.
+
+```text
+[master ec4ad10] 002: fix review findings F1 F2 N1 N2
+ 4 files changed, 34 insertions(+), 5 deletions(-)
+```
+
+#### Fix commit SHA
+
+Command: `git rev-parse HEAD`. Exit code: `0`.
+
+```text
+ec4ad10a0e2533846a4b81638580d2ced1982144
+```
+
+#### Checkpoint direct record checks
+
+Command: `python3 /tmp/factory-002/review1-check-records.py`. Exit code: `0`.
+
+```text
+PASS: ten production anchor occurrences match TAGS.md by anchor, path, and symbol.
+PASS: Telemetry configuration terminology, memory links, map coverage, line limits, Markdown fences, and whitespace.
+PASS: approved changes only; all six starting untracked paths and their contents remain unchanged.
+PASS: production redaction, existing routing/safety tests, changelog, README, provenance, and task checkboxes remain unchanged. V1 is not started.
+```
+
+#### Checkpoint whitespace check
+
+Command: `git diff --check`. Exit code: `0`.
+
+```text
+```
+
+#### Checkpoint explicit staged paths
+
+Command: `git diff --cached --name-only`. Exit code: `0`.
+
+```text
+docs/plans/008_telemetry-logs-search_002_checkpoint.md
+```
+
+#### Checkpoint staged whitespace check
+
+Command: `git diff --cached --check`. Exit code: `0`.
+
+```text
+```
+
+#### Scratch script syntax checks
+
+Command: `python3 /tmp/factory-002/review1-check-script-syntax.py`. Exit code: `0`.
+
+```text
+PASS: Python syntax /tmp/factory-002/review1-check-records.py
+PASS: Python syntax /tmp/factory-002/review1-check-script-syntax.py
+PASS: Python syntax /tmp/factory-002/review1-mutate.py
+PASS: Python syntax /tmp/factory-002/review1-record-checkpoint.py
+PASS: Bash syntax /tmp/factory-002/review1-commit-checkpoint.sh
+PASS: Bash syntax /tmp/factory-002/review1-commit-fixes.sh
+PASS: Bash syntax /tmp/factory-002/review1-mutations.sh
+```
+
+**Commit boundary:** The fix commit is `ec4ad10a0e2533846a4b81638580d2ced1982144` — `002: fix review findings F1 F2 N1 N2`.
+The checkpoint commit follows separately as `002: record review gate 1 fixes and evidence`.
+It stages only this checkpoint and does not render or modify any checkbox.
+The checkpoint cannot contain its own SHA. Resolve it with `git rev-parse HEAD` after that commit.
+Its parent must be the fix commit above, and it must change only this checkpoint.
+The final response records both actual commit SHAs, final status, and `git log --oneline -3`.
+Final command evidence stays under `/tmp/factory-002/review1-final-*` after the checkpoint commit.
+This paragraph does not claim unobserved post-commit output.
