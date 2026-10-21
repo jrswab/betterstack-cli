@@ -31,14 +31,9 @@ func runWithAPI(args []string, stdout, stderr io.Writer, baseURL string, client 
 	return runWithEndpoints(args, stdout, stderr, baseURL, defaultTelemetryRESTBaseURL, "", client)
 }
 
-// runWithEndpoints accepts distinct test endpoints without adding command routes.
-// An optional prepared SQL request uses the SQL endpoint independently of argv.
+// runWithEndpoints checks exact help before dispatching commands to distinct endpoints.
 // @anchor:uptime:router endpoints
-func runWithEndpoints(args []string, stdout, stderr io.Writer, uptimeBaseURL, telemetryRESTBaseURL, telemetrySQLURL string, client *http.Client, sqlRequest ...logsSQLRequest) int {
-	if len(sqlRequest) == 1 && len(args) == 0 {
-		request := sqlRequest[0]
-		return doLogsSQLRequest(request.sql, request.params, request.timeout, stdout, stderr, telemetrySQLURL, client)
-	}
+func runWithEndpoints(args []string, stdout, stderr io.Writer, uptimeBaseURL, telemetryRESTBaseURL, telemetrySQLURL string, client *http.Client) int {
 	if help, ok := helpFor(args); ok {
 		fmt.Fprint(stdout, help)
 		return 0
@@ -63,6 +58,9 @@ func runWithEndpoints(args []string, stdout, stderr io.Writer, uptimeBaseURL, te
 	}
 	if len(args) >= 2 && args[0] == "sources" && args[1] == "get" {
 		return sourcesGet(args[2:], stdout, stderr, telemetryRESTBaseURL, client)
+	}
+	if len(args) >= 2 && args[0] == "logs" && args[1] == "search" {
+		return logsSearch(args[2:], stdout, stderr, telemetrySQLURL, client)
 	}
 	fmt.Fprint(stderr, usageError(args))
 	return 1

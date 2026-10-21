@@ -60,7 +60,7 @@ func TestLogsSQLUsesConfiguredEndpoint(t *testing.T) {
 	}
 }
 
-// TestRunWithEndpointsRoutesSQL verifies the prepared SQL boundary without a command route.
+// TestRunWithEndpointsRoutesSQL verifies argv routing through the injected SQL endpoint.
 func TestRunWithEndpointsRoutesSQL(t *testing.T) {
 	setFakeSQLConfig(t)
 	var uptimeRequests, restRequests, sqlRequests atomic.Int32
@@ -85,21 +85,17 @@ func TestRunWithEndpointsRoutesSQL(t *testing.T) {
 		_, _ = io.WriteString(w, "SQL body")
 	}))
 	defer sqlServer.Close()
-	args := []string{"--table", "t1_fake", "--query", "fake & 'text'", "--timeout", "1500ms"}
+	args := []string{"--table", "t1_fake", "--from", "1970-01-01T00:00:00Z", "--to", "1970-01-01T01:00:00Z", "--query", "fake & 'text'", "--timeout", "1500ms"}
 	sql, params, err := buildLogsSearchQuery(args, time.Unix(3600, 0))
-	if err != nil {
-		t.Fatal(err)
-	}
-	parsed, err := parseLogsSearchArgs(args)
-	if err != nil {
-		t.Fatal(err)
+	if err != nil || sql != wantSQL || params.Encode() != "param_from=0&param_query=fake+%26+%27text%27&param_to=3600000" {
+		t.Fatalf("builder SQL=%q, params=%v, error=%v", sql, params, err)
 	}
 	client := testHTTPClient()
 	guard := client.Transport.(*loopbackOnlyTransport)
 	probe := &sqlDeadlineTransport{base: guard.base, timeout: 1500 * time.Millisecond}
 	guard.base = probe
 	var out, diagnostic bytes.Buffer
-	code := runWithEndpoints(nil, &out, &diagnostic, uptime.URL, rest.URL, sqlServer.URL+"/", client, logsSQLRequest{sql: sql, params: params, timeout: parsed.timeout})
+	code := runWithEndpoints(append([]string{"logs", "search"}, args...), &out, &diagnostic, uptime.URL, rest.URL, sqlServer.URL+"/", client)
 	if code != 0 || out.String() != "SQL body" || diagnostic.Len() != 0 || !probe.valid || probe.calls != 1 || sqlRequests.Load() != 1 || uptimeRequests.Load() != 0 || restRequests.Load() != 0 {
 		t.Fatalf("code=%d, stdout=%q, stderr=%q, deadline=%t, attempts=%d, SQL=%d, Uptime=%d, REST=%d", code, out.String(), diagnostic.String(), probe.valid, probe.calls, sqlRequests.Load(), uptimeRequests.Load(), restRequests.Load())
 	}
@@ -121,18 +117,57 @@ func (p *sqlDeadlineTransport) RoundTrip(req *http.Request) (*http.Response, err
 	return p.base.RoundTrip(req)
 }
 
-// TestLogsSearchRouteRemainsUnavailable verifies SQL preparation adds no CLI command or help.
-func TestLogsSearchRouteRemainsUnavailable(t *testing.T) {
+// TestLogsSearchResponseChannels verifies routed SQL response bytes and error redaction.
+func TestLogsSearchResponseChannels(t *testing.T) {
 	setFakeSQLConfig(t)
-	var requests atomic.Int32
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { requests.Add(1) }))
-	defer srv.Close()
-	for _, args := range [][]string{{"logs", "search", "--table", "t1_fake"}, {"logs", "--help"}, {"logs", "search", "--help"}} {
-		var out, err bytes.Buffer
-		code := runWithEndpoints(args, &out, &err, srv.URL, srv.URL, srv.URL, testHTTPClient())
-		if code != 1 || out.Len() != 0 || !strings.Contains(err.String(), "unknown resource") || requests.Load() != 0 {
-			t.Fatal("logs command or help became available")
-		}
+	const body = "fake-sql-user fake-sql-password fake-telemetry-token\x00\n"
+	for _, status := range []int{200, 500} {
+		t.Run(strconv.Itoa(status), func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(status)
+				_, _ = io.WriteString(w, body)
+			}))
+			defer srv.Close()
+			var out, err bytes.Buffer
+			code := runWithEndpoints([]string{"logs", "search", "--table", "t1_fake"}, &out, &err, srv.URL, srv.URL, srv.URL, testHTTPClient())
+			if status == 200 {
+				if code != 0 || out.String() != body || err.Len() != 0 {
+					t.Fatalf("code=%d, stdout=%q, stderr=%q", code, out.String(), err.String())
+				}
+			} else if code != 1 || out.Len() != 0 || err.String() != "[REDACTED] [REDACTED] [REDACTED]\x00\n" {
+				t.Fatalf("code=%d, stdout=%q, stderr=%q", code, out.String(), err.String())
+			}
+			if requests.Load() != 1 {
+				t.Fatalf("requests=%d, want 1", requests.Load())
+			}
+		})
+	}
+}
+
+// TestLogsSearchOptionShapedQuery verifies query data does not become a cold switch.
+func TestLogsSearchOptionShapedQuery(t *testing.T) {
+	setFakeSQLConfig(t)
+	for _, cold := range []bool{false, true} {
+		t.Run(strconv.FormatBool(cold), func(t *testing.T) {
+			args := []string{"logs", "search", "--table", "t1_fake"}
+			if cold {
+				args = append(args, "--cold")
+			}
+			args = append(args, "--query", "--cold")
+			transport := &recordingRoundTripper{}
+			var out, err bytes.Buffer
+			code := runWithEndpoints(args, &out, &err, "http://127.0.0.1/uptime", "http://127.0.0.1/rest", "http://127.0.0.1/sql", &http.Client{Transport: transport})
+			if code != 0 || out.String() != "recorded response" || err.Len() != 0 || len(transport.requests) != 1 {
+				t.Fatalf("code=%d, stdout=%q, stderr=%q, requests=%d", code, out.String(), err.String(), len(transport.requests))
+			}
+			req := transport.requests[0]
+			body, readErr := io.ReadAll(req.Body)
+			if readErr != nil || req.URL.Path != "/sql" || req.URL.Query().Get("param_query") != "--cold" || strings.Contains(string(body), "UNION ALL") != cold || strings.Contains(string(body), "--cold") {
+				t.Fatalf("request=%s, body=%q, error=%v", req.URL, body, readErr)
+			}
+		})
 	}
 }
 

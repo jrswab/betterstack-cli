@@ -22,10 +22,16 @@ const (
 	telemetrySQLPasswordEnvVar = "BETTERSTACK_TELEMETRY_SQL_PASSWORD"
 )
 
-type logsSQLRequest struct {
-	sql     string
-	params  url.Values
-	timeout time.Duration
+// logsSearch validates search flags and sends the built query to the SQL request executor.
+// @anchor:telemetry:command-handler
+func logsSearch(args []string, stdout, stderr io.Writer, telemetrySQLURL string, client *http.Client) int {
+	sql, params, err := buildLogsSearchQuery(args, time.Now())
+	if err != nil {
+		fmt.Fprintf(stderr, "bs: %s; run 'bs logs search --help' for usage.\n", err)
+		return 1
+	}
+	parsed, _ := parseLogsSearchArgs(args)
+	return doLogsSQLRequest(sql, params, parsed.timeout, stdout, stderr, telemetrySQLURL, client)
 }
 
 // doLogsSQLRequest sends SQL with separate Basic credentials and safe local diagnostics.
