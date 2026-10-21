@@ -3,7 +3,7 @@
 ## Identity
 
 - Milestone ID: `007` (S6).
-- Milestone source: `docs/plans/008_telemetry-logs-search_milestones.md` (protected, untracked baseline path; do not modify).
+- Milestone source: `docs/plans/008_telemetry-logs-search_milestones.md` (protected, untracked baseline path. Only the completion-gate 007 checkbox render is authorized).
 - Repository root: `/home/jaron/dev/betterstack-cli/master`.
 - Branch: `master`.
 - Starting HEAD: `2b133c5c31c6a603ee03a473833279ea4650cbb1`.
@@ -17,10 +17,10 @@
 ?? verify-incident-id.sh
 ```
 
-- Protected paths: `.agents/`, `.wayfinder/`, `AGENTS.md`, `docs/plans/008_telemetry-logs-search_milestones.md`, and `verify-incident-id.sh`. Do not modify or stage these paths.
+- Protected paths: `.agents/`, `.wayfinder/`, `AGENTS.md`, `docs/plans/008_telemetry-logs-search_milestones.md`, and `verify-incident-id.sh`. Never stage these paths. Only factory-checkpoint may render the milestone source's 007 checkbox after the completion gate passes.
 - Baseline fingerprint command: `find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum`.
 - Required and observed baseline fingerprint: `a6747200c523c45aab759ca7b3e673f90828c888c3c8dbd0e1028bc4f14659a3  -`.
-- Authorization: planning and repository-record work for milestone 007 only. No code changes, protected-path changes, live requests, credentials, or pushes. Local commit of the three authorized planning artifacts is permitted.
+- Authorization: record review gate 1 re-run PASS, execute V1, run the completion gate, and render its checkboxes for milestone 007 only. No code changes, other protected-path changes, staging, live requests, credentials, commits, or pushes. The orchestrator commits separately.
 
 ## Artifacts
 
@@ -31,19 +31,19 @@
 ## State
 
 - Lane: `full` — D1 assigns the full lane because milestone 007 affects repository-wide records.
-- Current phase: `execute`
-- Current task: Review gate 1 findings F1–F4
+- Current phase: `complete`
+- Current task: Milestone 007 complete
 - Task states — checklist checkboxes render from this list:
 - A1 align current memory behavior: `checked`
 - A2 index memory records: `checked`
 - B1 reconcile production anchor index: `checked`
 - B2 document command and configuration contract: `checked`
 - C1 add repository-record changelog: `checked`
-- V1 verify records and Factory gate: `unchecked`
-- Milestone checkbox: `unchecked`
-- Next action: Review gate 1 re-run for 007
-- Next safe action: Review gate 1 re-run for 007
-- Last completed phase/task/gate and timestamp: Review gate 1 FAIL at b15349b (F1 blocking); fixes committed, 2026-10-21T20:43:55.605522+00:00
+- V1 verify records and Factory gate: `checked`
+- Milestone checkbox: `checked`
+- Next action: Milestone 007 complete; no unchecked milestones remain
+- Next safe action: Milestone 007 complete; no unchecked milestones remain
+- Last completed phase/task/gate and timestamp: Post-render fingerprint and final bookkeeping PASS, 2026-10-21T20:58:11.265456+00:00
 
 ## Gate evidence
 
@@ -2223,6 +2223,2020 @@ a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
 ```
 
 - Next action: Review gate 1 re-run for 007
+
+### Review gate 1 re-run PASS at 615c001
+
+- Gate: Review gate 1 re-run PASS at 615c001
+- Commands/results:
+**Review gate 1 re-run — PASS at `615c00119ede5a0b75ecac15962addfaf61fbc3c`.** The orchestrator supplied the independent reviewer result for `b15349b..HEAD` and the full implementation range `a450f7a..HEAD`.
+
+- F1 closed: `.mem/terminology.md:3-5` separates the whole bs CLI, its five Uptime commands, and the shared uptime anchors. The router serves all eight commands. The shared GET executor also serves both source handlers.
+- F2 closed: `.mem/terminology.md:17` says the Telemetry API token authenticates sources and log search uses it only for SQL error redaction.
+- F3 closed: the reviewer verified `.mem/telemetry/summary.md` citation ranges against source, including helpFor at main.go lines 72–102, knownAction at lines 177–188, and TestBuildLogsSearchQueryHot at logs_test.go lines 544–564.
+- F4 closed: README has no .go:N citations. README line 58 retains the exact required token sentence and code-file links without duplicate SQL executor links.
+- F5 acceptable: the empty B1 commit records the required parity check. TAGS already matched all 16 production occurrences, so no content edit was necessary.
+- F6 non-blocking: `.mem/uptime/summary.md:3` frames cmd/bs through its Uptime subset. The rest of the paragraph explicitly includes active source and log-search routes. This is not stale, and it remains unchanged.
+
+The reviewer ran these checks with Go 1.26.10. These are supplied review results, not this executor's V1 results.
+- docs-lint: PASS, 99 Markdown files, 0 findings, exit 0.
+- spec-lint on the 007 spec and checklist: PASS, exit 0.
+- go build -o /dev/null ./...: PASS, exit 0.
+- go vet ./...: PASS, exit 0.
+- go test -count=1 ./...: PASS, exit 0.
+- gofmt -l cmd/bs/*.go: PASS, no paths, exit 0.
+
+Relevant implementation work is committed. A1, A2, B1, B2, and C1 are checked. V1 and milestone 007 remain unchecked. This records-only executor will run V1 and the completion gate next. It will not change Go files, stage paths, commit, push, or use live credentials.
+- HEAD commit SHA: `615c00119ede5a0b75ecac15962addfaf61fbc3c`
+- Relevant work: `committed` — stash ref `none` (tracked files only; never applied)
+- `git status --porcelain` (before checkpoint/checkbox writes):
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Untracked file Git objects (stored with hash-object -w, never applied):
+
+```text
+e69de29bb2d1d6434b8b29ae775ad8c2e48c5391  ".agents/scripts/.gitkeep"
+2268d6d1b4dd6b23950ea8bcbce44e2cc4fd02a5  ".agents/scripts/telemetry-live-probe.sh"
+c3626f955decd6b7ffa341c26703f857462954b5  ".agents/skills/changelog/SKILL.md"
+656c156bf90f78f9ac3a85412fe9e91145a5bebb  ".agents/skills/mem/SKILL.md"
+44304443f37776ec688c34be9840378e243c6f2f  ".agents/skills/pr/SKILL.md"
+f788b79f289c9adfcdbb156d309261b925c403ba  ".agents/skills/provenance-log/SKILL.md"
+704342b5c4c16287177f2da9f4b656aa526fba5b  ".agents/skills/release/SKILL.md"
+e5ecdd11f8df24415ebff5fdf63f6113213bf7ec  ".wayfinder/MAP.md"
+d2521bd5eae2907dbcfadafe090456e6781b6e41  ".wayfinder/README.md"
+54113199fec1e082615bbf1bf5691e42201085b9  ".wayfinder/assets/01-api-contract-research.md"
+623ab01ed0b0385ce5fedd654d847a02d9c52fdb  ".wayfinder/assets/02-incident-url-identity-research.md"
+c4c4fe4107105fd614a8f3a94b46812cb06b3960  ".wayfinder/assets/06-go-toolchain-research.md"
+c6158f0916332d3e3a80e61a67a8ecc2de8a5b32  ".wayfinder/telemetry/MAP.md"
+f4e847e79b9fb7619c846148a592d14b88a367c7  ".wayfinder/telemetry/assets/03-sources-api-contract-research.md"
+247ee7bc692682bc7b1a32fb05f315fa938f36f6  ".wayfinder/telemetry/assets/04-sql-api-contract-research.md"
+0a18fb73e0093239f584809f479b542e99fc7f76  ".wayfinder/telemetry/assets/05-live-verification-results.md"
+5ebc264f975b3e46e337f17435443bc29535825e  ".wayfinder/telemetry/assets/06-cold-storage-timeout-research.md"
+2b71e98af8af64a9cd36bd3d5bd5e6e9b5cf818b  ".wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md"
+b7482d50e399cdae487b573ae35176f069362341  ".wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md"
+572c8f131bb6a497254d5a63b1bd30f2ce28502f  ".wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md"
+77b5c75dbaac7620d469a638c8d77335c6624e04  ".wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md"
+1323bb7b057a980e8b536c7162cccd9b7b26cc71  ".wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md"
+66a7fd3e74798761babbcd7fbec61d0aac59b704  ".wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md"
+cde68ecfe35ee426d1bcc07e817d52eced3d06b1  ".wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md"
+e180004c8a35821bec3e2cb2feab300f3046f71e  ".wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md"
+bf05f4602afcf7692f7dd66ed6af5a85be9566f1  ".wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md"
+9d010dd4260be2a86b212eeb6d11637bc1b22dbb  ".wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md"
+9677e361c7ff035c55b374943bad13b068a39a16  ".wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md"
+13a7970f556e13dad98340b3b700fd98da438aaa  ".wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md"
+5ad4771181950a65021b600d0765b6f79ad59dd5  ".wayfinder/tickets/02-incident-url-identity-resolution.md"
+53f3d379ecaf4eefb35f44de0596dcd8db5c76c1  ".wayfinder/tickets/03-command-naming-and-argument-conventions.md"
+1a67e294757e2a2558ec29f2247cc4fe6d1cb1b6  ".wayfinder/tickets/04-pagination-and-json-envelope.md"
+0a2031f1210b6008a0da9a8f7d217ecf1233f4bf  ".wayfinder/tickets/05-errors-timeouts-retries-token-safety.md"
+dc414d2e4181c232972f98528077e0e0650c47ec  ".wayfinder/tickets/06-installation-distribution-acceptance.md"
+aca24cb6a5e5e366b6216d692a002839547a1ef3  "AGENTS.md"
+d25d1c789e303a87fed9534f135c441b5cf4c9f5  "docs/plans/008_telemetry-logs-search_milestones.md"
+a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
+```
+
+- Next action: Execute V1, then run the Factory completion gate
+
+### V1 PASS
+
+- Gate: V1 PASS
+- Commands/results:
+**V1 — PASS at `615c00119ede5a0b75ecac15962addfaf61fbc3c`.** Requirements R1–R8 and the milestone 007 acceptance pass against the final tree.
+
+**Requirement acceptance comparison.**
+
+| Requirement | Acceptance evidence and result |
+|---|---|
+| R1 | PASS. I read all 12 in-scope memory files and checked routing, handlers, help, REST/SQL configuration, validation, response handling, and test safety against current Go source. All eight routes are active. REST uses separate bearer tokens and the shared GET executor. SQL validates its own URL and Basic credentials and redacts only non-2xx bodies. Exact help returns before credentials or requests. The Telemetry summary contains an accurate local builder example and request-flow diagram. Its cited default-query test binds 0 and 3600000 milliseconds. Both required summary links resolve. All 12 files have at most 101 lines, below 250. The toolchain-workaround search returned exit 1 with no matches. |
+| R2 | PASS. Enumeration and the existing memory-map check found exactly one map link for each of 12 files, including the map itself and Telemetry summary. A separate local-link check resolved all 122 links across those files. Map descriptions match the linked content. The tracked/staged `.mem/tmp` guard passed. |
+| R3 | PASS. The exact repository-wide anchor grep returned 16 occurrences. The existing parity check matched all 16 unique TAGS rows by anchor, source, and declaration symbol. I compared their boundary descriptions with source. No removed, absent, or duplicate row exists. Established surfaces and roles remain unchanged. The empty B1 commit is acceptable because the baseline index already matched. |
+| R4 | PASS. README and help name source list, source get, and logs search. They agree on opaque source IDs, pagination 1–50, repeatable pagination, last-valid repeated source timeout, full table identifiers, source lookup, all search flags and defaults, duplicate rejection, time bounds, option-shaped query values, and no raw SQL or positional log target. The source-secret warning and CLUSTER_DOESNT_EXIST/--cold guidance remain present. |
+| R5 | PASS. Runtime Getenv calls resolve to exactly five README variables: Uptime token, Telemetry token, and SQL URL/username/password. No runtime LookupEnv call exists. The token authenticates sources and appears in SQL only for non-2xx redaction. README line 58 matches the exact required sentence. The baseline README search returned expected exit 1. Test-only legacy-token sentinels and BS_SAFETY_PROBE are not runtime configuration. README agrees with ticket 02 as amended by tickets 10 and 11: separate credentials, no fallback, fixed REST host, approved HTTPS URL forms, typed parameters, one POST, no redirects/retries, raw 2xx bodies, and redacted SQL failures. |
+| R6 | PASS. The quoted-heredoc shape script passed all seven fragments against 001 R3: existing file, supported first heading, following blank line, nonempty factual path-citing bullet, and no unrelated content or extra heading. The 007 fragment contains exactly one Changed bullet for actual memory/link/README updates. I read every fragment and confirmed factuality against its original milestone and committed changes. The 003 fragment still covers both source commands. The 006 fragment still covers active log search. The 005 fragment and CHANGELOG.md are unchanged. The release skill retains reconciliation ownership. |
+| R7 | PASS. The autonomous provenance gate finds no new repository-level rationale that omission could make a future agent simplify incorrectly. This records-only change preserves settled decisions. LOG.md remains zero bytes. log.d contains only its zero-byte .gitkeep. Both are unchanged. |
+| R8 | PASS. docs-lint passed 99 Markdown files with 0 findings. spec-lint passed the spec with 96 citations and checklist with 11 citations. Go 1.26.10 build, vet, uncached tests, and gofmt passed. gofmt printed no paths. The safe build wrote to /dev/null and no ./bs exists. Direct checks establish R1–R7. Git scope, index, protected-file hashes, and pre-render baseline fingerprint passed. No Go file, protected baseline content, unrelated record, live API, or real credential changed or was used. Only the authorized future 007 checkbox render remains pending. |
+
+**Factory completion comparison — PASS before render.** All four completion checks hold:
+1. Build, vet, uncached tests, formatting, documentation lint, specification lint, and direct record checks pass.
+2. Every R1–R8 acceptance criterion and milestone 007 acceptance has the evidence above and actual command results below.
+3. Every Git change is accounted for. No staged paths exist. The protected baseline fingerprint still matches before render.
+4. The orchestrator-supplied independent review gate 1 re-run passed at this HEAD for b15349b..HEAD and a450f7a..HEAD. F1–F4 are closed. F5 is acceptable. F6 remains non-blocking and unchanged.
+
+**Git accounting.** The committed a450f7a..HEAD range contains only `.mem/mem-map.md`, `.mem/summary.md`, `.mem/telemetry/summary.md`, `.mem/terminology.md`, `README.md`, the 007 changelog fragment, and the 007 checkpoint/checklist. Planning since 2b133c5 also adds the 007 spec. The code, module, TAGS index, 005 fragment, CHANGELOG.md, LOG.md, and log.d are unchanged. This executor changes only the checkpoint and checklist as tracked files. The five untracked baseline paths remain untracked and unstaged. The milestone source is still byte-identical before render.
+
+**Assumptions.** The supplied independent review is authoritative review evidence. Historical planning authorization and task commit messages do not authorize this executor to commit. The user authorizes only the final one-line milestone render after the completion gate.
+
+**Skips and decisions.** Ladder rung 1 excludes new code, extra memory edits, a new changelog fragment, provenance additions, and historical-fragment reconciliation. Existing records already meet acceptance, and the release skill owns reconciliation. The source/SQL contract remains unchanged. I retain F6 wording because it describes the Uptime subset and explicitly names the active Telemetry routes. Ladder rung 4 reuses factory-checkpoint, docs-lint, spec-lint, and the existing temporary shape/map/anchor checks. No new dependency or symptom patch exists. The safe build uses /dev/null instead of creating a root executable. The uncached test command uses -count=1 as the user requests.
+
+**Unavailable checks.** make fragments-check and make docs-check each exited 2 because no Makefile exists. The 001 R3 shape script and docs-lint are the required replacements. No configured Markdown formatter exists.
+
+**Own-tool corrections.** Parallel Go/lint capture initially shared temporary stdout/stderr paths. I gave each evidence file separate temporary paths and reran both suites successfully. One inline environment cross-check failed with a shell-quoting SyntaxError, exit 1. I corrected only the temporary command and reran it successfully. Neither failure changed repository state or invalidated a repository prerequisite. The raw failure and successful retry appear below.
+
+**Baseline before render.** The required fingerprint is still `a6747200c523c45aab759ca7b3e673f90828c888c3c8dbd0e1028bc4f14659a3  -`. V1 is ready to render checked. The milestone remains unchecked until the separate completion-gate recording call.
+
+
+
+Command: test "$(git branch --show-current)" = master && test "$(git rev-parse HEAD)" = 615c00119ede5a0b75ecac15962addfaf61fbc3c
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git status --porcelain
+stdout:
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: test -z "$(git diff --name-only; git diff --cached --name-only)"
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum
+stdout:
+```text
+a6747200c523c45aab759ca7b3e673f90828c888c3c8dbd0e1028bc4f14659a3  -
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: test "$(find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum)" = "a6747200c523c45aab759ca7b3e673f90828c888c3c8dbd0e1028bc4f14659a3  -"
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: find .agents .wayfinder AGENTS.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/factory-007/V1-protected-sha256.txt
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: sha256sum docs/plans/008_telemetry-logs-search_milestones.md docs/plans/008_telemetry-logs-search_007_implement.md > /tmp/factory-007/V1-prerender-sha256.txt
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+
+
+Command: /home/jaron/.agents/scripts/factory-checkpoint docs/plans/008_telemetry-logs-search_007_checkpoint.md --repo /home/jaron/dev/betterstack-cli/master --phase execute --task V1 --taskstates /tmp/factory-007/V1-unchecked-taskstates.txt --gate "Review gate 1 re-run PASS at 615c001" --result /tmp/factory-007/review-gate-1-rerun-result.txt --next "Execute V1, then run the Factory completion gate" --relevant-work committed
+stdout:
+```text
+/home/jaron/dev/betterstack-cli/master/docs/plans/008_telemetry-logs-search_007_checkpoint.md: Review gate 1 re-run PASS at 615c001, HEAD 615c00119ede5a0b75ecac15962addfaf61fbc3c, stash none
+Checkboxes rendered by task/milestone ID. Titles were left unchanged.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: sha256sum -c /tmp/factory-007/V1-prerender-sha256.txt
+stdout:
+```text
+docs/plans/008_telemetry-logs-search_milestones.md: OK
+docs/plans/008_telemetry-logs-search_007_implement.md: OK
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+
+Environment: PATH=$HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.10.linux-amd64/bin:$PATH GOTOOLCHAIN=local GOPROXY=off
+
+Command: go version
+stdout:
+```text
+go version go1.26.10 linux/amd64
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: go build -o /dev/null ./...
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: go vet ./...
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: go test -count=1 ./...
+stdout:
+```text
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	3.171s
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: gofmt -l cmd/bs/*.go
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: test -z "$(gofmt -l cmd/bs/*.go)"
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: test ! -e ./bs
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+
+
+Command: ~/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master
+stdout:
+```text
+PASS: /home/jaron/dev/betterstack-cli/master: 99 Markdown files, 0 findings
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: ~/.agents/scripts/spec-lint --root /home/jaron/dev/betterstack-cli/master docs/plans/008_telemetry-logs-search_007_spec.md docs/plans/008_telemetry-logs-search_007_implement.md
+stdout:
+```text
+PASS: /home/jaron/dev/betterstack-cli/master/docs/plans/008_telemetry-logs-search_007_spec.md: 96 citations, 0/0 gocyclo values checked, 0 findings
+PASS: /home/jaron/dev/betterstack-cli/master/docs/plans/008_telemetry-logs-search_007_implement.md: 11 citations, 0/0 gocyclo values checked, 0 findings
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: make fragments-check
+stdout:
+```text
+
+```
+stderr:
+```text
+make: *** No rule to make target 'fragments-check'.  Stop.
+
+```
+exit: 2 (expected 2)
+
+Command: make docs-check
+stdout:
+```text
+
+```
+stderr:
+```text
+make: *** No rule to make target 'docs-check'.  Stop.
+
+```
+exit: 2 (expected 2)
+
+Command: test ! -e Makefile && test ! -e makefile && test ! -e GNUmakefile
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+
+
+Command: cat <<'EOF' > /tmp/factory-007/readme-token-sentence.txt
+The `BETTERSTACK_TELEMETRY_API_TOKEN` authenticates source commands, and log search uses it only to redact SQL error output.
+EOF
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: grep -nF -f /tmp/factory-007/readme-token-sentence.txt README.md
+stdout:
+```text
+58:The `BETTERSTACK_TELEMETRY_API_TOKEN` authenticates source commands, and log search uses it only to redact SQL error output.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git show 2b133c5:README.md | grep -nF -f /tmp/factory-007/readme-token-sentence.txt
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 1 (expected 1)
+
+Command: rg -n "GOTOOLCHAIN|toolchain@|go1\.26" .mem
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 1 (expected 1)
+
+Command: rg -n "\.go:[0-9]+" README.md
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 1 (expected 1)
+
+Command: find .mem -name "*.md" ! -path ".mem/tmp/*" -exec wc -l {} +
+stdout:
+```text
+   26 .mem/practices.md
+    3 .mem/summary.md
+   50 .mem/telemetry/sources.md
+   66 .mem/telemetry/summary.md
+  101 .mem/telemetry/logs.md
+   22 .mem/mem-map.md
+   27 .mem/terminology.md
+   49 .mem/uptime/requests.md
+   53 .mem/uptime/commands.md
+   39 .mem/uptime/incidents.md
+   48 .mem/uptime/summary.md
+   41 .mem/uptime/testing.md
+  525 total
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: find .mem -type f -name "*.md" ! -path ".mem/tmp/*" -print | sort
+stdout:
+```text
+.mem/mem-map.md
+.mem/practices.md
+.mem/summary.md
+.mem/telemetry/logs.md
+.mem/telemetry/sources.md
+.mem/telemetry/summary.md
+.mem/terminology.md
+.mem/uptime/commands.md
+.mem/uptime/incidents.md
+.mem/uptime/requests.md
+.mem/uptime/summary.md
+.mem/uptime/testing.md
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: rg -n '\]\(' .mem --glob '*.md'
+stdout:
+```text
+.mem/uptime/testing.md:5:[main_test.go](../../cmd/bs/main_test.go) uses `invoke` → `run(args, stdout, stderr)` to capture output for exact help forms and invalid usage. `run` supplies the production base URL and `newHTTPClient()` before delegating to `runWithAPI` in [main.go](../../cmd/bs/main.go). It does not inject a loopback endpoint.
+.mem/uptime/testing.md:7:[Commands](commands.md) documents usage diagnostics and the resource gate that later resources must extend.
+.mem/uptime/testing.md:9:Routing tests use `invokeAPI` to call `runWithAPI` with captured stdout/stderr, a loopback `httptest.NewServer` URL, and an HTTP client. `runWithAPI` delegates to `runWithEndpoints` without changing its signature. `main_test.go` also calls `runWithEndpoints` directly with three distinct loopback endpoint inputs. It verifies all five Uptime routes use the Uptime input, not the Telemetry REST or SQL inputs, and that help and invalid usage send no requests through either interface. Source tests also verify Telemetry REST routing, with zero Uptime or SQL requests. `TestRunWithEndpointsRoutesSQL` invokes the real [logs search route](../telemetry/logs.md) with three distinct guarded loopback endpoints. It verifies one POST through the SQL input, zero Uptime/REST requests, explicit time-bound parameters, exact SQL, Basic credentials, and the parsed timeout. Route tests also verify local validation, raw success/redacted SQL failure, both option-shaped query orders, and exact help without requests. [monitors_test.go](../../cmd/bs/monitors_test.go) defines `invokeAPI` and the fixed dummy `testToken`. Other tests call handlers directly through helpers such as `invokeMonitorsList` and `invokeIncidentsList`. These tests verify path escaping, bearer headers, query translation, raw output, exit codes, invalid arguments, timeouts, and disabled redirects.
+.mem/uptime/testing.md:11:The in-memory `TestRunWithAPIUsesFixedTelemetryHost` transport records production routing without dialing or delegating to another transport. It asserts the exact Telemetry base URL, HTTPS source host and path, separate bearer credentials, and injected Uptime URL. [TestLogsSQLUsesConfiguredEndpoint](../../cmd/bs/logs_test.go) uses the same transport to verify the configured SQL scheme, host, path, and builder query parameters. It checks every request header value for the fake Telemetry API token.
+.mem/uptime/testing.md:25:[incidents_test.go](../../cmd/bs/incidents_test.go) covers dashboard URL acceptance/rejection, metadata bracket encoding, duplicate-key rejection, and timeline passthrough. No test needs a live API response or an ambient credential.
+.mem/uptime/testing.md:29:[TestMain](../../cmd/bs/safety_test.go) removes six environment variables before tests run: `BETTERSTACK_UPTIME_API_TOKEN`, `BETTERSTACK_API_TOKEN`, `BETTERSTACK_TELEMETRY_API_TOKEN`, `BETTERSTACK_TELEMETRY_SQL_URL`, `BETTERSTACK_TELEMETRY_SQL_USERNAME`, and `BETTERSTACK_TELEMETRY_SQL_PASSWORD`. Tests set dummy values explicitly. The isolated-process safety test uses six fixed sentinel values to verify inherited credential and SQL configuration removal. It checks that its captured log contains none of the six sentinels.
+.mem/uptime/testing.md:41:The suite compiles an isolated test binary in a temporary test directory for its credential-removal probe. The production CLI is not needed for test HTTP requests. Related: [commands](commands.md), [requests](requests.md), [incidents](incidents.md), and [summary](summary.md).
+.mem/uptime/summary.md:3:The [command package](../../cmd/bs/main.go) implements five read-only Uptime commands. `main` supplies the fixed production base URL and an HTTP client. `runWithAPI` accepts those dependencies and the stdout/stderr writers so tests can use local servers. It delegates to `runWithEndpoints`, which accepts distinct Uptime, Telemetry REST, and SQL endpoint inputs. Uptime, [source REST handlers](../telemetry/sources.md), and [logs search](../telemetry/logs.md) are active. `helpFor` runs before every command route. Logs search validates builder output before the separate SQL executor reads configuration.
+.mem/uptime/summary.md:48:[Commands](commands.md) maps every route to its endpoint and help boundary. [Requests](requests.md) defines the common output and credential contract. [Incidents](incidents.md) covers target and metadata rules. [Testing](testing.md) describes loopback-only checks. The [memory map](../mem-map.md) indexes the complete set.
+.mem/uptime/incidents.md:5:[resolveIncidentTarget](../../cmd/bs/incidents.go) performs local parsing without network access. A scheme-less target remains an opaque bare ID, including lookalike paths and protocol-relative strings. A malformed scheme-less target also remains opaque. The command handler subsequently escapes the candidate as one API path segment.
+.mem/uptime/incidents.md:39:Other incident-list flags and their mappings appear in [commands](commands.md). Shared credentials and raw output follow [requests](requests.md). [Testing](testing.md) links the URL and query acceptance tests. See [summary](summary.md).
+.mem/uptime/commands.md:13:[runWithEndpoints](../../cmd/bs/main.go), reached through the compatible `runWithAPI` interface, checks exact help forms first, then routes these five Uptime commands alongside [sources](../telemetry/sources.md) and [logs search](../telemetry/logs.md). Uptime endpoints use the base URL `https://incidents.betterstack.com` from [monitors.go](../../cmd/bs/monitors.go).
+.mem/uptime/commands.md:25:Monitor help describes a bare ID. The current monitor parser treats the target as opaque and escapes it without a numeric or URL-format check. Incident get/timeline apply the separate [incident target rules](incidents.md).
+.mem/uptime/commands.md:39:`incidentsList` accepts `--from`, `--to`, `--monitor-id`, `--heartbeat-id`, `--team-name`, `--page`, and `--per-page`. They map to `from`, `to`, `monitor_id`, `heartbeat_id`, `team_name`, `page`, and `per_page`. It also accepts explicit boolean `--resolved`/`--acknowledged` values and repeatable `--metadata` pairs. [Incidents](incidents.md) defines their validation and encoding.
+.mem/uptime/commands.md:45:`helpFor` returns constants from [help.go](../../cmd/bs/help.go) for exactly `bs --help`, `bs monitors --help`, `bs incidents --help`, and `<resource> <action> --help` for the five Uptime commands, plus source resource/list/get help and logs resource/search help. [Sources](../telemetry/sources.md) and [logs search](../telemetry/logs.md) document the Telemetry behavior. Help writes human-readable text to stdout and exits 0 without reading a token or making a request. Extra tokens and `-h` are not help forms. Invalid arguments produce local stderr diagnostics and exit 1.
+.mem/uptime/commands.md:53:`ok` is true, and `text` is `incidentsTimelineHelp`. See [summary](summary.md), [requests](requests.md), and [testing](testing.md).
+.mem/uptime/requests.md:5:All five [command handlers](commands.md) read only `BETTERSTACK_UPTIME_API_TOKEN` through `tokenEnvVar`. They do not use `BETTERSTACK_API_TOKEN` as a fallback. The handler reads the token before parsing so local argument diagnostics can redact its value. Argument validation, incident target resolution, and duplicate metadata rejection precede the missing-token check. Invalid arguments and a missing token return 1 before HTTP execution. Exact help forms return before any handler reads credentials.
+.mem/uptime/requests.md:11:[redactSecrets](../../cmd/bs/telemetry.go) accepts diagnostic text, a Telemetry API token, SQL username, and SQL password as explicit strings. It does not read environment variables. It replaces literal case-sensitive occurrences with `[REDACTED]` and ignores empty values. When either SQL credential is non-empty, it includes standard base64 encoding of `username:password`. Longer values take priority over shorter values, including overlaps starting at different positions. The helper splits unredacted text in longest-first order and joins the remaining parts with the marker. It never scans replacement text again, so credentials matching the marker cannot alter new markers.
+.mem/uptime/requests.md:19:Only non-2xx [SQL response bodies](../telemetry/logs.md) call this helper. Uptime local diagnostics continue using `redactToken`, and upstream Uptime and source bodies remain raw. [telemetry_test.go](../../cmd/bs/telemetry_test.go) tests explicit dummy strings, overlap, repeated matches, case differences, empty credentials, and unrelated text.
+.mem/uptime/requests.md:23:[doMonitorsRequest](../../cmd/bs/monitors.go) serves all seven Uptime and source handlers despite its monitor-oriented name. It creates a timeout context, builds an HTTP GET with no body, and sets the bearer header:
+.mem/uptime/requests.md:49:Sources: [monitors.go](../../cmd/bs/monitors.go), [incidents.go](../../cmd/bs/incidents.go), and [sources.go](../../cmd/bs/sources.go). Related: [incident rules](incidents.md), [testing](testing.md), and [summary](summary.md).
+.mem/terminology.md:27:Sources: [routing](../cmd/bs/main.go), [requests](../cmd/bs/monitors.go), [source handlers](../cmd/bs/sources.go), [log search builder](../cmd/bs/logs.go), [secret redaction](../cmd/bs/telemetry.go), [incidents](../cmd/bs/incidents.go), and [test safety](../cmd/bs/safety_test.go). See the [memory map](mem-map.md).
+.mem/mem-map.md:5:- [System summary](summary.md) describes the current executable and its boundaries.
+.mem/mem-map.md:6:- [Terminology](terminology.md) defines names used in the memory set.
+.mem/mem-map.md:7:- [Practices](practices.md) records implementation, verification, and documentation patterns.
+.mem/mem-map.md:8:- [Memory map](mem-map.md) indexes itself and every memory file except session scratch under `.mem/tmp/`.
+.mem/mem-map.md:12:- [Telemetry summary](telemetry/summary.md) describes active routes, separate REST and SQL contracts, help, and test safety.
+.mem/mem-map.md:13:- [Sources](telemetry/sources.md) describes REST routing, credentials, pagination, opaque IDs, raw responses, and secret warnings.
+.mem/mem-map.md:14:- [Log search](telemetry/logs.md) describes the active logs search route, exact help, argument validation, typed SQL parameters, time bounds, the optional cold union, and the separate SQL HTTP executor.
+.mem/mem-map.md:18:- [Uptime summary](uptime/summary.md) shows routing and the shared request flow.
+.mem/mem-map.md:19:- [Commands](uptime/commands.md) lists the five handlers, endpoints, arguments, flags, and help forms.
+.mem/mem-map.md:20:- [Requests](uptime/requests.md) describes credentials, timeouts, redirects, and output behavior.
+.mem/mem-map.md:21:- [Incidents](uptime/incidents.md) describes dashboard URL resolution, metadata, and timeline behavior.
+.mem/mem-map.md:22:- [Testing](uptime/testing.md) describes the Command routing boundary and loopback-only protections.
+.mem/telemetry/logs.md:5:[runWithEndpoints](../../cmd/bs/main.go) checks `helpFor` before routing `bs logs search` to `logsSearch`. The handler calls `buildLogsSearchQuery` with one captured current time, then passes SQL, typed parameters, and the parsed timeout to `doLogsSQLRequest`. Invalid flags or bounds produce a command-specific `bs logs search --help` hint and exit 1 before SQL configuration or requests. `bs logs` and unknown actions use the established resource diagnostics. `runWithAPI` preserves its signature and supplies an empty SQL injection input, so production SQL uses the configured URL.
+.mem/telemetry/logs.md:7:Exact root, logs resource, and logs search help returns without credentials or HTTP access. [Command help](../../cmd/bs/help.go) documents all flags, the full `t<team_id>_<table_name>` identifier, and that `bs sources get <id>` shows both parts. The argument after `--query` is data, including option-shaped text: `--query --cold` does not enable cold storage. `--cold --query --cold` enables cold storage while searching for that text. HTTP 500 `CLUSTER_DOESNT_EXIST` means the source has no hot table. Help suggests rerunning with `--cold` without changing error handling or guaranteeing success.
+.mem/telemetry/logs.md:22:[parseLogsSearchArgs](../../cmd/bs/logs.go) accepts space-separated search flags without requests, endpoint access, or credentials. It requires one full table identifier matching `^t[0-9]+_[a-z0-9_]+$`. All value-bearing flags reject duplicates before checking the repeated value. Unknown flags, equals forms, positionals, and missing values fail locally. Repeated `--cold` switches enable one option. A query pointer distinguishes an omitted query from an explicitly empty string.
+.mem/telemetry/logs.md:39:[buildLogsSearchQuery](../../cmd/bs/logs.go) accepts raw arguments and a captured `time.Time`, validates arguments, and returns SQL plus `url.Values`. Invalid input returns empty SQL and nil parameters. It selects `dt, raw` from `remote(<table>_logs)`, applies typed inclusive-lower and exclusive-upper time parameters, then uses one order, bounded limit, timeout setting, and `FORMAT JSONEachRow`. It computes the relative window from the supplied time.
+.mem/telemetry/logs.md:71:[parseTelemetrySQLURL](../../cmd/bs/logs.go) accepts a DNS host or bracketed IPv6 address, optionally with raw port `443`. Absolute `https://host[:port]` URLs allow an empty path or `/`. Explicit HTTPS ports range from 1 through 65535. Host-only forms receive HTTPS. Userinfo, queries, fragments, non-root paths, other schemes, malformed hosts, and unsupported raw ports fail with a fixed diagnostic that does not echo input. The parser sends no request.
+.mem/telemetry/logs.md:75:[doLogsSQLRequest](../../cmd/bs/logs.go) requires nonempty `BETTERSTACK_TELEMETRY_SQL_URL`, `BETTERSTACK_TELEMETRY_SQL_USERNAME`, and `BETTERSTACK_TELEMETRY_SQL_PASSWORD`. It validates the configured URL before using an injected test endpoint. Only SQL username/password supply Basic authentication. Neither API token substitutes for SQL credentials. Missing values name the variable without echoing input.
+.mem/telemetry/logs.md:99:The builder itself has no request or credential access. [Route, parser, builder, and executor tests](../../cmd/bs/logs_test.go) use fake strings, fixed explicit route bounds, fixed builder times, guarded loopback servers, and in-memory transports. `TestRunWithEndpointsRoutesSQL` proves the real argv route sends one POST through `telemetrySQLURL`, with zero Uptime or REST requests.
+.mem/telemetry/logs.md:101:Related: [memory map](../mem-map.md), [terminology](../terminology.md), and [sources](sources.md).
+.mem/telemetry/summary.md:7:Sources: [routing](../../cmd/bs/main.go), `cmd/bs/main.go:13-67,72-102,106-175,177-188`.
+.mem/telemetry/summary.md:11:- [Sources](sources.md) use `BETTERSTACK_TELEMETRY_API_TOKEN` for bearer authentication at `https://telemetry.betterstack.com`.
+.mem/telemetry/summary.md:14:  Sources: [handlers](../../cmd/bs/sources.go), `cmd/bs/sources.go:14-84,92-151`, and `cmd/bs/main.go:13,30-31`.
+.mem/telemetry/summary.md:18:  Sources: [requests](../../cmd/bs/monitors.go), `cmd/bs/monitors.go:81-128`, and [help](../../cmd/bs/help.go), `cmd/bs/help.go:78-117`.
+.mem/telemetry/summary.md:19:- [Log search](logs.md) validates the full table identifier, flags, and time bounds before SQL configuration or HTTP access.
+.mem/telemetry/summary.md:22:  Sources: [builder](../../cmd/bs/logs.go), `cmd/bs/logs.go:27-35,159-272`.
+.mem/telemetry/summary.md:28:  Sources: [executor and URL parser](../../cmd/bs/logs.go), `cmd/bs/logs.go:18-23,39-94,109-157`, and [redaction](../../cmd/bs/telemetry.go), `cmd/bs/telemetry.go:13-33`.
+.mem/telemetry/summary.md:43:Source: [default-query test](../../cmd/bs/logs_test.go), `cmd/bs/logs_test.go:544-564`.
+.mem/telemetry/summary.md:61:[Tests](../uptime/testing.md) clear inherited API credentials and SQL configuration before installing the Loopback-only network guard.
+.mem/telemetry/summary.md:64:Sources: [test safety](../../cmd/bs/safety_test.go), `cmd/bs/safety_test.go:1-25,50-137`, [REST routing](../../cmd/bs/main_test.go), `cmd/bs/main_test.go:22-34,298-340`, and [SQL routing](../../cmd/bs/logs_test.go), `cmd/bs/logs_test.go:63-102`.
+.mem/telemetry/summary.md:66:Related: [system summary](../summary.md), [memory map](../mem-map.md), and [terminology](../terminology.md).
+.mem/telemetry/sources.md:5:[runWithEndpoints](../../cmd/bs/main.go) routes `bs sources list` and `bs sources get <id>` to the Telemetry REST input. `runWithAPI` preserves the Uptime injection interface and supplies the fixed production Telemetry REST host, `https://telemetry.betterstack.com`. Only tests inject another REST endpoint. No user setting overrides it. The SQL endpoint input serves the separate [logs search route](logs.md), not source requests.
+.mem/telemetry/sources.md:12:[Source handlers](../../cmd/bs/sources.go) read only `BETTERSTACK_TELEMETRY_API_TOKEN` through `telemetryTokenEnvVar`. They read it to redact local argument diagnostics, but validate arguments before reporting an unset or empty token. Invalid arguments and missing credentials exit 1 without HTTP access. No Uptime or legacy token fallback exists.
+.mem/telemetry/sources.md:30:Both handlers reuse the [Request executor](../uptime/requests.md), `doMonitorsRequest`. It sends exactly one bearer-authenticated GET with a timeout and disables redirects. It passes complete 2xx bodies unchanged to stdout and other HTTP bodies unchanged to stderr. It does not decode, format, redact, add a newline, retry, or follow pagination links. Transport, timeout, and body-read failures use token-redacted local diagnostics.
+.mem/telemetry/sources.md:32:Source response `token` fields remain unchanged on both output channels. The CLI does not assign a meaning or permission to that field. [Help](../../cmd/bs/help.go) warns on both commands: “The output includes each source's `token` field. Treat it as a secret credential. Keep it private and do not paste it into shared logs or tickets.”
+.mem/telemetry/sources.md:48:[Source tests](../../cmd/bs/sources_test.go) and [routing tests](../../cmd/bs/main_test.go) use dummy tokens and loopback servers. The [test harness](../../cmd/bs/safety_test.go) clears inherited Telemetry, Uptime, and legacy API tokens plus SQL configuration and blocks non-loopback HTTP access. Tests cover separate endpoints, auth, validation, raw bodies, redirects, local failures, help, and secret warnings.
+.mem/telemetry/sources.md:50:Related: [memory map](../mem-map.md), [terminology](../terminology.md), and [Uptime testing](../uptime/testing.md).
+.mem/summary.md:3:`bs` is a read-only Better Stack Uptime and Telemetry CLI implemented with the Go standard library in [cmd/bs](../cmd/bs/main.go). `runWithAPI` preserves the Uptime injection interface and delegates to `runWithEndpoints`. The latter checks exact-match help before routing monitors list/get, incidents list/get/timeline, [sources list/get](telemetry/sources.md), and [logs search](telemetry/logs.md). Help requires no credentials or requests. Uptime commands use `BETTERSTACK_UPTIME_API_TOKEN`. Source commands use only `BETTERSTACK_TELEMETRY_API_TOKEN` and the fixed Telemetry REST host. The seven Uptime/source handlers share the Request executor (`doMonitorsRequest`), which sends one bearer-authenticated GET with a 30-second default timeout, disables redirects, and passes bodies unchanged to stdout for 2xx or stderr otherwise. `logsSearch` validates flags through the Log search query builder and passes hot or optional cold SQL, separate typed parameters, and the parsed timeout to the SQL request executor. SQL requires separate URL, username, and password configuration and sends one timed Basic-authenticated POST without redirects or retries. `redactSecrets` applies only to non-2xx SQL bodies. Source help warns that output contains a secret credential. Logs help explains the full table identifier, option-shaped query data, and missing-hot-table `--cold` guidance. Tests inject guarded loopback servers or in-memory transports and clear inherited API credentials and SQL configuration. The [memory map](mem-map.md) indexes [Uptime](uptime/summary.md), [Telemetry](telemetry/summary.md), [terminology](terminology.md), and [practices](practices.md).
+.mem/practices.md:5:The command package uses the Go standard library without third-party dependencies. [go.mod](../go.mod) declares the module and Go version. `main` supplies the production endpoint, client, and output writers to the Command routing boundary (`runWithAPI`). `runWithAPI` delegates to the Endpoint injection seam (`runWithEndpoints`), passing the Uptime base URL, the fixed Telemetry REST host, and an empty SQL URL. The seam accepts separate test inputs for all three service destinations and checks exact help before routing. Uptime and Telemetry REST routes use their separate endpoints. `logs search` validates flags through `buildLogsSearchQuery` and passes SQL, typed parameters, and parsed timeout to `doLogsSQLRequest` through the SQL input. SQL alone reads a user-configurable URL from its required environment configuration. Tests supply guarded loopback endpoints through either interface. Uptime and REST hosts remain fixed.
+.mem/practices.md:7:Handlers keep argument parsing and query translation separate from HTTP execution. `url.Values` encodes query parameters, and `url.PathEscape` escapes target path segments. The seven Uptime/source command handlers share the [GET request contract](uptime/requests.md). `logsSearch` uses the [SQL request executor](telemetry/logs.md) with separate Basic auth and redaction only for non-2xx SQL bodies. API validation handles opaque Uptime filter values except locally validated booleans, metadata grammar, and positive timeout durations. [Sources](telemetry/sources.md) also validate digit-only pagination and the per-page maximum of 50.
+.mem/practices.md:20:Tests use dummy tokens and loopback `httptest` servers. `TestMain` clears inherited API credentials and SQL configuration, then installs the network guard. A custom transport can bypass that guard. [Testing](uptime/testing.md) documents the Command routing boundary, the loopback-only network guard, and the guard's limits.
+.mem/practices.md:26:Related: [memory map](mem-map.md), [terminology](terminology.md), and [commands](uptime/commands.md).
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: python3 /tmp/factory-007/memory-check.py
+stdout:
+```text
+.mem/mem-map.md: one map link, exists, <=250 lines
+.mem/practices.md: one map link, exists, <=250 lines
+.mem/summary.md: one map link, exists, <=250 lines
+.mem/telemetry/logs.md: one map link, exists, <=250 lines
+.mem/telemetry/sources.md: one map link, exists, <=250 lines
+.mem/telemetry/summary.md: one map link, exists, <=250 lines
+.mem/terminology.md: one map link, exists, <=250 lines
+.mem/uptime/commands.md: one map link, exists, <=250 lines
+.mem/uptime/incidents.md: one map link, exists, <=250 lines
+.mem/uptime/requests.md: one map link, exists, <=250 lines
+.mem/uptime/summary.md: one map link, exists, <=250 lines
+.mem/uptime/testing.md: one map link, exists, <=250 lines
+PASS: all 12 in-scope memory files have exactly one map link, including the map and Telemetry summary.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: test -z "$(git ls-files .mem/tmp; git diff --cached --name-only -- .mem/tmp)"
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: grep -rn '@anchor' --exclude-dir=.git --exclude-dir=docs --exclude-dir=.wayfinder --exclude-dir=.mem --exclude=TAGS.md --exclude=AGENTS.md .
+stdout:
+```text
+./cmd/bs/monitors.go:15:// @anchor:uptime:config
+./cmd/bs/monitors.go:29:// @anchor:uptime:command-handler
+./cmd/bs/monitors.go:55:// @anchor:uptime:command-handler
+./cmd/bs/monitors.go:81:// @anchor:uptime:request-executor
+./cmd/bs/incidents.go:50:// @anchor:uptime:command-handler
+./cmd/bs/incidents.go:82:// @anchor:uptime:command-handler
+./cmd/bs/incidents.go:332:// @anchor:uptime:command-handler
+./cmd/bs/sources.go:14:// @anchor:telemetry:config
+./cmd/bs/sources.go:18:// @anchor:telemetry:command-handler
+./cmd/bs/sources.go:38:// @anchor:telemetry:command-handler
+./cmd/bs/logs.go:18:// @anchor:telemetry:config sql
+./cmd/bs/logs.go:26:// @anchor:telemetry:command-handler
+./cmd/bs/logs.go:38:// @anchor:telemetry:request-executor sql
+./cmd/bs/main.go:13:// @anchor:telemetry:config
+./cmd/bs/main.go:29:// @anchor:uptime:router
+./cmd/bs/main.go:35:// @anchor:uptime:router endpoints
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: python3 /tmp/factory-007/anchor-check.py
+stdout:
+```text
+PASS: 16 production occurrences match 16 unique TAGS.md rows by anchor, source, and symbol. Each source exists.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: rg -n '^\| `[^`]+` \|' TAGS.md
+stdout:
+```text
+7:| `uptime:router` | [cmd/bs/main.go](cmd/bs/main.go) | `runWithAPI` | Compatible Uptime injection interface |
+8:| `uptime:router` | [cmd/bs/main.go](cmd/bs/main.go) | `runWithEndpoints` | Endpoint injection seam and Command routing boundary |
+9:| `telemetry:config` | [cmd/bs/main.go](cmd/bs/main.go) | `defaultTelemetryRESTBaseURL` | Telemetry configuration boundary |
+10:| `telemetry:config` | [cmd/bs/sources.go](cmd/bs/sources.go) | `telemetryTokenEnvVar` | Telemetry API credential name |
+11:| `telemetry:config` | [cmd/bs/logs.go](cmd/bs/logs.go) | `telemetrySQLURLEnvVar`, `telemetrySQLUsernameEnvVar`, `telemetrySQLPasswordEnvVar` | SQL configuration names |
+12:| `telemetry:command-handler` | [cmd/bs/logs.go](cmd/bs/logs.go) | `logsSearch` | Logs search command handler |
+13:| `telemetry:request-executor` | [cmd/bs/logs.go](cmd/bs/logs.go) | `doLogsSQLRequest` | SQL request executor |
+14:| `telemetry:command-handler` | [cmd/bs/sources.go](cmd/bs/sources.go) | `sourcesList` | Sources list command handler |
+15:| `telemetry:command-handler` | [cmd/bs/sources.go](cmd/bs/sources.go) | `sourcesGet` | Sources get command handler |
+16:| `uptime:config` | [cmd/bs/monitors.go](cmd/bs/monitors.go) | `defaultAPIBaseURL`, `defaultTimeout`, `tokenEnvVar` | Uptime configuration boundary |
+17:| `uptime:command-handler` | [cmd/bs/monitors.go](cmd/bs/monitors.go) | `monitorsList` | Monitors list command handler |
+18:| `uptime:command-handler` | [cmd/bs/monitors.go](cmd/bs/monitors.go) | `monitorsGet` | Monitors get command handler |
+19:| `uptime:request-executor` | [cmd/bs/monitors.go](cmd/bs/monitors.go) | `doMonitorsRequest` | Request executor |
+20:| `uptime:command-handler` | [cmd/bs/incidents.go](cmd/bs/incidents.go) | `incidentsList` | Incidents list command handler |
+21:| `uptime:command-handler` | [cmd/bs/incidents.go](cmd/bs/incidents.go) | `incidentsGet` | Incidents get command handler |
+22:| `uptime:command-handler` | [cmd/bs/incidents.go](cmd/bs/incidents.go) | `incidentsTimeline` | Incidents timeline command handler |
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: rg -n 'BETTERSTACK_|os\.(Getenv|LookupEnv)' cmd/bs
+stdout:
+```text
+cmd/bs/logs.go:20:	telemetrySQLURLEnvVar      = "BETTERSTACK_TELEMETRY_SQL_URL"
+cmd/bs/logs.go:21:	telemetrySQLUsernameEnvVar = "BETTERSTACK_TELEMETRY_SQL_USERNAME"
+cmd/bs/logs.go:22:	telemetrySQLPasswordEnvVar = "BETTERSTACK_TELEMETRY_SQL_PASSWORD"
+cmd/bs/logs.go:46:		value := os.Getenv(name)
+cmd/bs/logs.go:92:	_, _ = io.WriteString(stderr, redactSecrets(string(body), os.Getenv(telemetryTokenEnvVar), values[1], values[2]))
+cmd/bs/logs.go:110:	invalid := fmt.Errorf("invalid BETTERSTACK_TELEMETRY_SQL_URL")
+cmd/bs/sources_test.go:323:	t.Setenv("BETTERSTACK_API_TOKEN", "dummy-legacy-token")
+cmd/bs/sources_test.go:347:	t.Setenv("BETTERSTACK_API_TOKEN", "dummy-legacy-token")
+cmd/bs/incidents_test.go:532:				t.Setenv("BETTERSTACK_API_TOKEN", testToken)
+cmd/bs/incidents_test.go:792:// credentials, naming BETTERSTACK_UPTIME_API_TOKEN.
+cmd/bs/incidents_test.go:816:				t.Setenv("BETTERSTACK_API_TOKEN", testToken)
+cmd/bs/incidents_test.go:1324:				t.Setenv("BETTERSTACK_API_TOKEN", testToken)
+cmd/bs/incidents_test.go:1547:// former-name credentials, naming BETTERSTACK_UPTIME_API_TOKEN.
+cmd/bs/incidents_test.go:1571:				t.Setenv("BETTERSTACK_API_TOKEN", testToken)
+cmd/bs/incidents_test.go:2257:// BETTERSTACK_UPTIME_API_TOKEN.
+cmd/bs/incidents_test.go:2271:			t.Setenv("BETTERSTACK_API_TOKEN", testToken)
+cmd/bs/sources.go:15:const telemetryTokenEnvVar = "BETTERSTACK_TELEMETRY_API_TOKEN"
+cmd/bs/sources.go:20:	token := os.Getenv(telemetryTokenEnvVar)
+cmd/bs/sources.go:40:	token := os.Getenv(telemetryTokenEnvVar)
+cmd/bs/monitors_test.go:453:// token, and the former `BETTERSTACK_API_TOKEN` name set alone, each fail
+cmd/bs/monitors_test.go:454:// before any request with a message naming `BETTERSTACK_UPTIME_API_TOKEN`.
+cmd/bs/monitors_test.go:478:				t.Setenv("BETTERSTACK_API_TOKEN", testToken)
+cmd/bs/monitors_test.go:1113:// BETTERSTACK_UPTIME_API_TOKEN.
+cmd/bs/monitors_test.go:1137:				t.Setenv("BETTERSTACK_API_TOKEN", testToken)
+cmd/bs/main_test.go:328:			t.Setenv("BETTERSTACK_TELEMETRY_API_TOKEN", "dummy-telemetry-token")
+cmd/bs/safety_test.go:63:	for _, name := range []string{tokenEnvVar, "BETTERSTACK_API_TOKEN", telemetryTokenEnvVar, telemetrySQLURLEnvVar, telemetrySQLUsernameEnvVar, telemetrySQLPasswordEnvVar} {
+cmd/bs/safety_test.go:333:		if ok && (name == tokenEnvVar || name == "BETTERSTACK_API_TOKEN" || name == telemetryTokenEnvVar || name == telemetrySQLURLEnvVar || name == telemetrySQLUsernameEnvVar || name == telemetrySQLPasswordEnvVar) {
+cmd/bs/safety_test.go:376:		"BETTERSTACK_API_TOKEN="+legacySentinel,
+cmd/bs/safety_test.go:411:	if os.Getenv(safetyProbeEnv) != "1" {
+cmd/bs/safety_test.go:414:	for _, name := range []string{tokenEnvVar, "BETTERSTACK_API_TOKEN", telemetryTokenEnvVar, telemetrySQLURLEnvVar, telemetrySQLUsernameEnvVar, telemetrySQLPasswordEnvVar} {
+cmd/bs/safety_test.go:415:		if os.Getenv(name) != "" {
+cmd/bs/logs_test.go:19:	t.Setenv("BETTERSTACK_TELEMETRY_SQL_URL", "sql.example")
+cmd/bs/logs_test.go:20:	t.Setenv("BETTERSTACK_TELEMETRY_SQL_USERNAME", "fake-sql-user")
+cmd/bs/logs_test.go:21:	t.Setenv("BETTERSTACK_TELEMETRY_SQL_PASSWORD", "fake-sql-password")
+cmd/bs/logs_test.go:54:					if strings.Contains(value, os.Getenv(telemetryTokenEnvVar)) {
+cmd/bs/logs_test.go:378:	for _, name := range []string{"BETTERSTACK_TELEMETRY_SQL_URL", "BETTERSTACK_TELEMETRY_SQL_USERNAME", "BETTERSTACK_TELEMETRY_SQL_PASSWORD"} {
+cmd/bs/logs_test.go:398:		t.Setenv("BETTERSTACK_TELEMETRY_SQL_USERNAME", "")
+cmd/bs/logs_test.go:399:		t.Setenv("BETTERSTACK_TELEMETRY_SQL_PASSWORD", "")
+cmd/bs/logs_test.go:407:		t.Setenv("BETTERSTACK_TELEMETRY_SQL_URL", "https://fake-sql-user:fake-sql-password@sql.example")
+cmd/bs/logs_test.go:409:		if code := doLogsSQLRequest("SELECT 1", nil, time.Second, &out, &err, srv.URL, testHTTPClient()); code != 1 || out.Len() != 0 || err.String() != "bs: invalid BETTERSTACK_TELEMETRY_SQL_URL\n" || requests.Load() != 0 {
+cmd/bs/logs_test.go:456:			if err == nil || endpoint != nil || err.Error() != "invalid BETTERSTACK_TELEMETRY_SQL_URL" {
+cmd/bs/incidents.go:54:	token := os.Getenv(tokenEnvVar)
+cmd/bs/incidents.go:86:	token := os.Getenv(tokenEnvVar)
+cmd/bs/incidents.go:336:	token := os.Getenv(tokenEnvVar)
+cmd/bs/monitors.go:19:	tokenEnvVar       = "BETTERSTACK_UPTIME_API_TOKEN"
+cmd/bs/monitors.go:34:	token := os.Getenv(tokenEnvVar)
+cmd/bs/monitors.go:57:	token := os.Getenv(tokenEnvVar)
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: rg -n 'bs sources (list|get)|bs logs search|t<team_id>_<table_name>|CLUSTER_DOESNT_EXIST|BETTERSTACK_(UPTIME_API_TOKEN|TELEMETRY_API_TOKEN|TELEMETRY_SQL_URL|TELEMETRY_SQL_USERNAME|TELEMETRY_SQL_PASSWORD)' README.md
+stdout:
+```text
+7:`bs logs search` validates search flags, builds parameterized SQL, and sends one request through the SQL executor.
+10:bs logs search --table t1_example
+11:bs logs search --table t1_example --since 30m --query error --limit 50
+12:bs logs search --table t1_example --from 2026-01-01T00:00:00Z --to 2026-01-02T00:00:00Z --order asc
+13:bs logs search --table t1_example --cold --query --cold --timeout 60s
+15:bs logs search --help
+20:| `--table <table_name>` | Required full identifier `t<team_id>_<table_name>`, matching `^t[0-9]+_[a-z0-9_]+$`. |
+30:`bs sources get <id>` shows both parts of the full table identifier. Its `table_name` omits the team prefix.
+39:HTTP 500 `CLUSTER_DOESNT_EXIST` means the source has no hot table. Try rerunning with `--cold`.
+50:| `BETTERSTACK_TELEMETRY_SQL_URL` | Regional SQL host, `host:443`, or `https://host[:port]`. |
+51:| `BETTERSTACK_TELEMETRY_SQL_USERNAME` | Nonempty HTTP Basic-auth username. |
+52:| `BETTERSTACK_TELEMETRY_SQL_PASSWORD` | Nonempty HTTP Basic-auth password. |
+58:The `BETTERSTACK_TELEMETRY_API_TOKEN` authenticates source commands, and log search uses it only to redact SQL error output.
+63:Source commands use only `BETTERSTACK_TELEMETRY_API_TOKEN`. Set this environment variable to your Telemetry API token before requesting sources. Uptime commands continue to use `BETTERSTACK_UPTIME_API_TOKEN` without credential fallback.
+68:bs sources list
+69:bs sources list --page 1 --per-page 50 --timeout 60s
+70:bs sources get source-id
+71:bs sources get --timeout 60s source-id
+73:bs sources list --help
+74:bs sources get --help
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: wc -c LOG.md
+stdout:
+```text
+0 LOG.md
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: find log.d -maxdepth 1 -type f -printf '%f %s bytes\n'
+stdout:
+```text
+.gitkeep 0 bytes
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: test ! -s LOG.md && test ! -s log.d/.gitkeep && test "$(find log.d -mindepth 1 -maxdepth 1 -printf "%f\n")" = .gitkeep
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --exit-code a450f7a HEAD -- cmd/bs .agents .wayfinder AGENTS.md verify-incident-id.sh docs/plans/008_telemetry-logs-search_milestones.md changelog.d/008-telemetry-logs-search-005.md CHANGELOG.md LOG.md log.d
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --exit-code -- cmd/bs .agents .wayfinder AGENTS.md verify-incident-id.sh changelog.d/008-telemetry-logs-search-005.md CHANGELOG.md LOG.md log.d
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --cached --exit-code
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --check a450f7a..HEAD
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --check
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: sha256sum -c /tmp/factory-007/V1-protected-sha256.txt
+stdout:
+```text
+.agents/scripts/.gitkeep: OK
+.agents/scripts/telemetry-live-probe.sh: OK
+.agents/skills/changelog/SKILL.md: OK
+.agents/skills/mem/SKILL.md: OK
+.agents/skills/pr/SKILL.md: OK
+.agents/skills/provenance-log/SKILL.md: OK
+.agents/skills/release/SKILL.md: OK
+.wayfinder/MAP.md: OK
+.wayfinder/README.md: OK
+.wayfinder/assets/01-api-contract-research.md: OK
+.wayfinder/assets/02-incident-url-identity-research.md: OK
+.wayfinder/assets/06-go-toolchain-research.md: OK
+.wayfinder/telemetry/MAP.md: OK
+.wayfinder/telemetry/assets/03-sources-api-contract-research.md: OK
+.wayfinder/telemetry/assets/04-sql-api-contract-research.md: OK
+.wayfinder/telemetry/assets/05-live-verification-results.md: OK
+.wayfinder/telemetry/assets/06-cold-storage-timeout-research.md: OK
+.wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md: OK
+.wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md: OK
+.wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md: OK
+.wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md: OK
+.wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md: OK
+.wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md: OK
+.wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md: OK
+.wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md: OK
+.wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md: OK
+.wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md: OK
+.wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md: OK
+.wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md: OK
+.wayfinder/tickets/02-incident-url-identity-resolution.md: OK
+.wayfinder/tickets/03-command-naming-and-argument-conventions.md: OK
+.wayfinder/tickets/04-pagination-and-json-envelope.md: OK
+.wayfinder/tickets/05-errors-timeouts-retries-token-safety.md: OK
+.wayfinder/tickets/06-installation-distribution-acceptance.md: OK
+AGENTS.md: OK
+verify-incident-id.sh: OK
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: sha256sum -c /tmp/factory-007/V1-prerender-sha256.txt
+stdout:
+```text
+docs/plans/008_telemetry-logs-search_milestones.md: OK
+docs/plans/008_telemetry-logs-search_007_implement.md: OK
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git status --porcelain
+stdout:
+```text
+ M docs/plans/008_telemetry-logs-search_007_checkpoint.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --stat a450f7a..HEAD
+stdout:
+```text
+ .mem/mem-map.md                                    |    3 +-
+ .mem/summary.md                                    |    2 +-
+ .mem/telemetry/summary.md                          |   66 +
+ .mem/terminology.md                                |    7 +-
+ README.md                                          |    3 +-
+ changelog.d/008-telemetry-logs-search-007.md       |    3 +
+ .../008_telemetry-logs-search_007_checkpoint.md    | 1289 +++++++++++++++++++-
+ .../008_telemetry-logs-search_007_implement.md     |   10 +-
+ 8 files changed, 1363 insertions(+), 20 deletions(-)
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --name-status a450f7a..HEAD
+stdout:
+```text
+M	.mem/mem-map.md
+M	.mem/summary.md
+A	.mem/telemetry/summary.md
+M	.mem/terminology.md
+M	README.md
+A	changelog.d/008-telemetry-logs-search-007.md
+M	docs/plans/008_telemetry-logs-search_007_checkpoint.md
+M	docs/plans/008_telemetry-logs-search_007_implement.md
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --stat b15349b..HEAD
+stdout:
+```text
+ .mem/telemetry/summary.md                          |  14 +--
+ .mem/terminology.md                                |   7 +-
+ README.md                                          |   4 +-
+ .../008_telemetry-logs-search_007_checkpoint.md    | 138 ++++++++++++++++++++-
+ 4 files changed, 146 insertions(+), 17 deletions(-)
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+
+
+Command: cat <<'SH' > /tmp/factory-007/changelog-check.sh
+#!/usr/bin/env bash
+set -euo pipefail
+python3 - <<'PY'
+from pathlib import Path
+import re
+
+root = Path.cwd().resolve()
+fragments = sorted(Path('changelog.d').glob('*.md'))
+assert fragments, 'No changelog fragments exist'
+categories = {'Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security'}
+for path in fragments:
+    assert path.is_file(), f'{path}: file missing'
+    lines = path.read_text().splitlines()
+    nonempty = [index for index, line in enumerate(lines) if line.strip()]
+    assert nonempty, f'{path}: empty fragment'
+    start = nonempty[0]
+    assert lines[start] in {f'### {name}' for name in categories}, f'{path}: unsupported first heading'
+    assert start + 1 < len(lines) and lines[start + 1] == '', f'{path}: missing blank line after heading'
+    bullets = [line for line in lines[start + 2:] if line.strip()]
+    assert bullets, f'{path}: no bullets'
+    for bullet in bullets:
+        assert bullet.startswith('- ') and bullet[2:].strip(), f'{path}: extra category, release section, front matter, or non-bullet content'
+        paths = []
+        for value in re.findall(r'`([^`]+)`', bullet):
+            destination = value.split(':', 1)[0]
+            candidate = (root / destination).resolve()
+            if not Path(destination).is_absolute() and candidate.is_relative_to(root) and candidate.exists():
+                paths.append(destination)
+        assert paths, f'{path}: bullet has no existing backticked repository-root path'
+    if path.name == '008-telemetry-logs-search-007.md':
+        assert lines[start] == '### Changed' and len(bullets) == 1, '007 needs exactly one Changed bullet'
+    print(f'PASS: {path}: supported heading, blank line, {len(bullets)} nonempty path-citing bullet(s), no unrelated content')
+assert Path('changelog.d/008-telemetry-logs-search-007.md') in fragments
+sources = Path('changelog.d/008-telemetry-logs-search-003.md').read_text().splitlines()[2]
+logs = Path('changelog.d/008-telemetry-logs-search-006.md').read_text().splitlines()[2]
+assert '`bs sources list`' in sources and '`bs sources get`' in sources
+assert '`bs logs search`' in logs and 'executes parameterized SQL' in logs
+print(f'PASS: all {len(fragments)} fragments meet 001 R3 shape criteria. 003/006 retain source and log-search coverage.')
+print('Bullet factuality requires the recorded manual review against milestone changes.')
+PY
+SH
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: bash -n /tmp/factory-007/changelog-check.sh
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: bash /tmp/factory-007/changelog-check.sh
+stdout:
+```text
+PASS: changelog.d/008-telemetry-logs-search-001.md: supported heading, blank line, 1 nonempty path-citing bullet(s), no unrelated content
+PASS: changelog.d/008-telemetry-logs-search-002.md: supported heading, blank line, 1 nonempty path-citing bullet(s), no unrelated content
+PASS: changelog.d/008-telemetry-logs-search-003.md: supported heading, blank line, 1 nonempty path-citing bullet(s), no unrelated content
+PASS: changelog.d/008-telemetry-logs-search-004.md: supported heading, blank line, 1 nonempty path-citing bullet(s), no unrelated content
+PASS: changelog.d/008-telemetry-logs-search-005.md: supported heading, blank line, 1 nonempty path-citing bullet(s), no unrelated content
+PASS: changelog.d/008-telemetry-logs-search-006.md: supported heading, blank line, 1 nonempty path-citing bullet(s), no unrelated content
+PASS: changelog.d/008-telemetry-logs-search-007.md: supported heading, blank line, 1 nonempty path-citing bullet(s), no unrelated content
+PASS: all 7 fragments meet 001 R3 shape criteria. 003/006 retain source and log-search coverage.
+Bullet factuality requires the recorded manual review against milestone changes.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: python3 - <<'PY'
+from pathlib import Path
+import re
+from urllib.parse import unquote, urlsplit
+files = sorted(p for p in Path('.mem').rglob('*.md') if not p.is_relative_to(Path('.mem/tmp')))
+count = 0
+for path in files:
+    for target in re.findall(r'\]\(([^)]+)\)', path.read_text()):
+        parsed = urlsplit(target)
+        if parsed.scheme or parsed.netloc:
+            continue
+        destination = (path.parent / unquote(parsed.path)).resolve() if parsed.path else path.resolve()
+        assert destination.is_file(), (path, target)
+        count += 1
+print(f'PASS: {count} local links resolve across all {len(files)} in-scope memory files.')
+summary = Path('.mem/summary.md').read_text()
+assert '[Telemetry](telemetry/summary.md)' in summary
+print('PASS: system summary links the Telemetry domain summary.')
+PY
+stdout:
+```text
+PASS: 122 local links resolve across all 12 in-scope memory files.
+PASS: system summary links the Telemetry domain summary.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: python3 - <<'PY'
+from pathlib import Path
+import re
+runtime = sorted(p for p in Path('cmd/bs').glob('*.go') if not p.name.endswith('_test.go'))
+constants = {}
+for path in runtime:
+    constants.update(re.findall(r'\b(\w+)\s*=\s*"(BETTERSTACK_[^"]+)"', path.read_text()))
+reads = set()
+for path in runtime:
+    for line_number, line in enumerate(path.read_text().splitlines(), 1):
+        for call, argument in re.findall(r'os\.(Getenv|LookupEnv)\(([^)]+)\)', line):
+            if argument == 'name':
+                assert path.name == 'logs.go'
+                names = [constants[n] for n in ('telemetrySQLURLEnvVar', 'telemetrySQLUsernameEnvVar', 'telemetrySQLPasswordEnvVar')]
+            else:
+                assert argument in constants, (path, line_number, argument)
+                names = [constants[argument]]
+            reads.update(names)
+            print(f'{path}:{line_number}: os.{call}({argument}) -> {,
+stdout:
+```text
+
+```
+stderr:
+```text
+bash: line 19: warning: here-document at line 1 delimited by end-of-file (wanted `PY')
+  File "<stdin>", line 18
+    print(f'{path}:{line_number}: os.{call}({argument}) -> {,
+                                                            ^
+SyntaxError: f-string: expecting a valid expression after '{'
+
+```
+exit: 1 (expected 0)
+
+
+
+Command: python3 - <<'PY'
+from pathlib import Path
+import re
+runtime = sorted(p for p in Path('cmd/bs').glob('*.go') if not p.name.endswith('_test.go'))
+constants = {}
+for path in runtime:
+    constants.update(re.findall(r'\b(\w+)\s*=\s*"(BETTERSTACK_[^"]+)"', path.read_text()))
+reads = set()
+for path in runtime:
+    for line_number, line in enumerate(path.read_text().splitlines(), 1):
+        for call, argument in re.findall(r'os\.(Getenv|LookupEnv)\(([^)]+)\)', line):
+            if argument == 'name':
+                assert path.name == 'logs.go'
+                names = [constants[n] for n in ('telemetrySQLURLEnvVar', 'telemetrySQLUsernameEnvVar', 'telemetrySQLPasswordEnvVar')]
+            else:
+                assert argument in constants, (path, line_number, argument)
+                names = [constants[argument]]
+            reads.update(names)
+            joined = ', '.join(names)
+            print(f'{path}:{line_number}: os.{call}({argument}) -> {joined}')
+expected = {'BETTERSTACK_UPTIME_API_TOKEN', 'BETTERSTACK_TELEMETRY_API_TOKEN', 'BETTERSTACK_TELEMETRY_SQL_URL', 'BETTERSTACK_TELEMETRY_SQL_USERNAME', 'BETTERSTACK_TELEMETRY_SQL_PASSWORD'}
+assert reads == expected, reads
+readme = Path('README.md').read_text()
+assert all(name in readme for name in expected)
+assert 'BETTERSTACK_API_TOKEN' not in readme and 'BS_SAFETY_PROBE' not in readme
+print('PASS: exactly five runtime variables appear in README. The legacy-token sentinel and safety probe remain test-only.')
+print('PASS: no runtime LookupEnv calls exist. Test Getenv calls read fake credentials or the isolated-process safety probe.')
+PY
+stdout:
+```text
+cmd/bs/incidents.go:54: os.Getenv(tokenEnvVar) -> BETTERSTACK_UPTIME_API_TOKEN
+cmd/bs/incidents.go:86: os.Getenv(tokenEnvVar) -> BETTERSTACK_UPTIME_API_TOKEN
+cmd/bs/incidents.go:336: os.Getenv(tokenEnvVar) -> BETTERSTACK_UPTIME_API_TOKEN
+cmd/bs/logs.go:46: os.Getenv(name) -> BETTERSTACK_TELEMETRY_SQL_URL, BETTERSTACK_TELEMETRY_SQL_USERNAME, BETTERSTACK_TELEMETRY_SQL_PASSWORD
+cmd/bs/logs.go:92: os.Getenv(telemetryTokenEnvVar) -> BETTERSTACK_TELEMETRY_API_TOKEN
+cmd/bs/monitors.go:34: os.Getenv(tokenEnvVar) -> BETTERSTACK_UPTIME_API_TOKEN
+cmd/bs/monitors.go:57: os.Getenv(tokenEnvVar) -> BETTERSTACK_UPTIME_API_TOKEN
+cmd/bs/sources.go:20: os.Getenv(telemetryTokenEnvVar) -> BETTERSTACK_TELEMETRY_API_TOKEN
+cmd/bs/sources.go:40: os.Getenv(telemetryTokenEnvVar) -> BETTERSTACK_TELEMETRY_API_TOKEN
+PASS: exactly five runtime variables appear in README. The legacy-token sentinel and safety probe remain test-only.
+PASS: no runtime LookupEnv calls exist. Test Getenv calls read fake credentials or the isolated-process safety probe.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: python3 - <<'PY'
+import subprocess
+expected = [' M docs/plans/008_telemetry-logs-search_007_checkpoint.md', '?? .agents/', '?? .wayfinder/', '?? AGENTS.md', '?? docs/plans/008_telemetry-logs-search_milestones.md', '?? verify-incident-id.sh']
+actual = subprocess.check_output(['git', 'status', '--porcelain'], text=True).splitlines()
+assert actual == expected, actual
+print('PASS: Git status contains only the checkpoint edit and five untracked baseline paths. The index is unchanged.')
+PY
+stdout:
+```text
+PASS: Git status contains only the checkpoint edit and five untracked baseline paths. The index is unchanged.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git show --format=fuller --stat c7dcb5f
+stdout:
+```text
+commit c7dcb5f315112a9b48c772998471680f5d18638b
+Author:     Jaron Swab <jr@jrswab.com>
+AuthorDate: Wed Oct 21 16:29:01 2026 -0400
+Commit:     Jaron Swab <jr@jrswab.com>
+CommitDate: Wed Oct 21 16:29:01 2026 -0400
+
+    007: B1 reconcile production anchor index
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum
+stdout:
+```text
+a6747200c523c45aab759ca7b3e673f90828c888c3c8dbd0e1028bc4f14659a3  -
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: test "$(find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum)" = "a6747200c523c45aab759ca7b3e673f90828c888c3c8dbd0e1028bc4f14659a3  -"
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+
+
+Command: git diff --name-status 2b133c5..HEAD
+stdout:
+```text
+M	.mem/mem-map.md
+M	.mem/summary.md
+A	.mem/telemetry/summary.md
+M	.mem/terminology.md
+M	README.md
+A	changelog.d/008-telemetry-logs-search-007.md
+A	docs/plans/008_telemetry-logs-search_007_checkpoint.md
+A	docs/plans/008_telemetry-logs-search_007_implement.md
+A	docs/plans/008_telemetry-logs-search_007_spec.md
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git log --oneline a450f7a..HEAD
+stdout:
+```text
+615c001 007: record review gate 1
+6697c89 007: fix review findings F1 F2 F3 F4
+b15349b 007: C1 checkpoint and task state
+549d0d6 007: C1 add repository-record changelog
+b4eb10a 007: B2 checkpoint and task state
+68ebf6e 007: B2 document command and configuration contract
+3db3c14 007: B1 checkpoint and task state
+c7dcb5f 007: B1 reconcile production anchor index
+ad2b290 007: A2 checkpoint and task state
+e1c5887 007: A2 index memory records
+f630e46 007: A1 checkpoint and task state
+f50047e 007: A1 align current memory behavior
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --exit-code 2b133c5 HEAD -- cmd/bs go.mod TAGS.md changelog.d/008-telemetry-logs-search-005.md CHANGELOG.md LOG.md log.d
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --check
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git status --porcelain
+stdout:
+```text
+ M docs/plans/008_telemetry-logs-search_007_checkpoint.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --stat
+stdout:
+```text
+ .../008_telemetry-logs-search_007_checkpoint.md    | 84 +++++++++++++++++++++-
+ 1 file changed, 81 insertions(+), 3 deletions(-)
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: test ! -e ./bs
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: test "$(git rev-parse HEAD)" = 615c00119ede5a0b75ecac15962addfaf61fbc3c
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: test "$(find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum)" = "a6747200c523c45aab759ca7b3e673f90828c888c3c8dbd0e1028bc4f14659a3  -"
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+- HEAD commit SHA: `615c00119ede5a0b75ecac15962addfaf61fbc3c`
+- Relevant work: `uncommitted` — stash ref `4df6631bb23525d788226beeaf1b9152be401602` (tracked files only; never applied)
+- `git status --porcelain` (before checkpoint/checkbox writes):
+
+```text
+ M docs/plans/008_telemetry-logs-search_007_checkpoint.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Untracked file Git objects (stored with hash-object -w, never applied):
+
+```text
+e69de29bb2d1d6434b8b29ae775ad8c2e48c5391  ".agents/scripts/.gitkeep"
+2268d6d1b4dd6b23950ea8bcbce44e2cc4fd02a5  ".agents/scripts/telemetry-live-probe.sh"
+c3626f955decd6b7ffa341c26703f857462954b5  ".agents/skills/changelog/SKILL.md"
+656c156bf90f78f9ac3a85412fe9e91145a5bebb  ".agents/skills/mem/SKILL.md"
+44304443f37776ec688c34be9840378e243c6f2f  ".agents/skills/pr/SKILL.md"
+f788b79f289c9adfcdbb156d309261b925c403ba  ".agents/skills/provenance-log/SKILL.md"
+704342b5c4c16287177f2da9f4b656aa526fba5b  ".agents/skills/release/SKILL.md"
+e5ecdd11f8df24415ebff5fdf63f6113213bf7ec  ".wayfinder/MAP.md"
+d2521bd5eae2907dbcfadafe090456e6781b6e41  ".wayfinder/README.md"
+54113199fec1e082615bbf1bf5691e42201085b9  ".wayfinder/assets/01-api-contract-research.md"
+623ab01ed0b0385ce5fedd654d847a02d9c52fdb  ".wayfinder/assets/02-incident-url-identity-research.md"
+c4c4fe4107105fd614a8f3a94b46812cb06b3960  ".wayfinder/assets/06-go-toolchain-research.md"
+c6158f0916332d3e3a80e61a67a8ecc2de8a5b32  ".wayfinder/telemetry/MAP.md"
+f4e847e79b9fb7619c846148a592d14b88a367c7  ".wayfinder/telemetry/assets/03-sources-api-contract-research.md"
+247ee7bc692682bc7b1a32fb05f315fa938f36f6  ".wayfinder/telemetry/assets/04-sql-api-contract-research.md"
+0a18fb73e0093239f584809f479b542e99fc7f76  ".wayfinder/telemetry/assets/05-live-verification-results.md"
+5ebc264f975b3e46e337f17435443bc29535825e  ".wayfinder/telemetry/assets/06-cold-storage-timeout-research.md"
+2b71e98af8af64a9cd36bd3d5bd5e6e9b5cf818b  ".wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md"
+b7482d50e399cdae487b573ae35176f069362341  ".wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md"
+572c8f131bb6a497254d5a63b1bd30f2ce28502f  ".wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md"
+77b5c75dbaac7620d469a638c8d77335c6624e04  ".wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md"
+1323bb7b057a980e8b536c7162cccd9b7b26cc71  ".wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md"
+66a7fd3e74798761babbcd7fbec61d0aac59b704  ".wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md"
+cde68ecfe35ee426d1bcc07e817d52eced3d06b1  ".wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md"
+e180004c8a35821bec3e2cb2feab300f3046f71e  ".wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md"
+bf05f4602afcf7692f7dd66ed6af5a85be9566f1  ".wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md"
+9d010dd4260be2a86b212eeb6d11637bc1b22dbb  ".wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md"
+9677e361c7ff035c55b374943bad13b068a39a16  ".wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md"
+13a7970f556e13dad98340b3b700fd98da438aaa  ".wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md"
+5ad4771181950a65021b600d0765b6f79ad59dd5  ".wayfinder/tickets/02-incident-url-identity-resolution.md"
+53f3d379ecaf4eefb35f44de0596dcd8db5c76c1  ".wayfinder/tickets/03-command-naming-and-argument-conventions.md"
+1a67e294757e2a2558ec29f2247cc4fe6d1cb1b6  ".wayfinder/tickets/04-pagination-and-json-envelope.md"
+0a2031f1210b6008a0da9a8f7d217ecf1233f4bf  ".wayfinder/tickets/05-errors-timeouts-retries-token-safety.md"
+dc414d2e4181c232972f98528077e0e0650c47ec  ".wayfinder/tickets/06-installation-distribution-acceptance.md"
+aca24cb6a5e5e366b6216d692a002839547a1ef3  "AGENTS.md"
+d25d1c789e303a87fed9534f135c441b5cf4c9f5  "docs/plans/008_telemetry-logs-search_milestones.md"
+a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
+```
+
+- Next action: Run the Factory completion gate and render milestone 007 checked
+
+### Factory completion gate PASS
+
+- Gate: Factory completion gate PASS
+- Commands/results:
+**Factory completion gate — PASS at `615c00119ede5a0b75ecac15962addfaf61fbc3c`.** All four completion checks passed before the milestone render.
+
+1. Verification passed: Go 1.26.10 build to /dev/null, vet, uncached tests, and gofmt. gofmt printed no paths. docs-lint passed 99 Markdown files. spec-lint passed the 007 spec and checklist. Direct memory, links, anchor, environment, README, changelog, provenance, scope, and binary checks passed.
+2. Acceptance passed: the V1 evidence compares every R1–R8 acceptance criterion and the milestone 007 acceptance with current source and actual results. All six checklist tasks are checked.
+3. Git accounting passed: only the 007 checkpoint and checklist are tracked worktree changes. The five baseline paths remain untracked and unstaged. The a450f7a..HEAD implementation changes and planning since 2b133c5 are accounted for in V1. No cmd/bs file, module, TAGS index, 005 fragment, CHANGELOG.md, LOG.md, log.d, or protected baseline content changed. The required fingerprint matches `a6747200c523c45aab759ca7b3e673f90828c888c3c8dbd0e1028bc4f14659a3  -` before render. The pre-render milestone copy is `/tmp/factory-007/milestones-pre.md`.
+4. Independent review passed: the supplied review gate 1 re-run PASS applies at this HEAD to b15349b..HEAD and a450f7a..HEAD. F1–F4 are closed. The empty B1 commit is acceptable. F6 is non-blocking, not stale, and unchanged.
+
+The completion call now authorizes factory-checkpoint to render only the 007 milestone checkbox. No unchecked milestone remains after that render. A separate post-render result will record the exact diff and new fingerprint.
+
+Unavailable checks: make fragments-check and make docs-check each exit 2 because no Makefile exists. The 001 R3 shape script and docs-lint are the replacements. No Markdown formatter is configured. No live API or real credentials were used. No root bs binary exists. No staging, commit, or push occurred.
+
+The checkpoint identity now states this run's no-commit authorization and sole milestone-render exception. Historical evidence remains unchanged. The duplicated State Next action now agrees with Next safe action. No functions changed. Ladder rung 1 skips additional record/code/changelog/provenance changes because acceptance already holds. Ladder rung 4 reuses existing tools. No dependency or symptom patch exists.
+
+
+
+Command: /home/jaron/.agents/scripts/factory-checkpoint docs/plans/008_telemetry-logs-search_007_checkpoint.md --repo /home/jaron/dev/betterstack-cli/master --phase execute --task V1 --taskstates /tmp/factory-007/V1-checked-taskstates.txt --gate "V1 PASS" --result /tmp/factory-007/V1-result.txt --next "Run the Factory completion gate and render milestone 007 checked" --relevant-work uncommitted
+stdout:
+```text
+/home/jaron/dev/betterstack-cli/master/docs/plans/008_telemetry-logs-search_007_checkpoint.md: V1 PASS, HEAD 615c00119ede5a0b75ecac15962addfaf61fbc3c, stash 4df6631bb23525d788226beeaf1b9152be401602
+Checkboxes rendered by task/milestone ID. Titles were left unchanged.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: ~/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master
+stdout:
+```text
+PASS: /home/jaron/dev/betterstack-cli/master: 99 Markdown files, 0 findings
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: ~/.agents/scripts/spec-lint --root /home/jaron/dev/betterstack-cli/master docs/plans/008_telemetry-logs-search_007_spec.md docs/plans/008_telemetry-logs-search_007_implement.md
+stdout:
+```text
+PASS: /home/jaron/dev/betterstack-cli/master/docs/plans/008_telemetry-logs-search_007_spec.md: 96 citations, 0/0 gocyclo values checked, 0 findings
+PASS: /home/jaron/dev/betterstack-cli/master/docs/plans/008_telemetry-logs-search_007_implement.md: 11 citations, 0/0 gocyclo values checked, 0 findings
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --check
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: test "$(find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum)" = "a6747200c523c45aab759ca7b3e673f90828c888c3c8dbd0e1028bc4f14659a3  -"
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git status --porcelain
+stdout:
+```text
+ M docs/plans/008_telemetry-logs-search_007_checkpoint.md
+ M docs/plans/008_telemetry-logs-search_007_implement.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+
+
+Command: cp docs/plans/008_telemetry-logs-search_milestones.md /tmp/factory-007/milestones-pre.md
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: cmp /tmp/factory-007/milestones-pre.md docs/plans/008_telemetry-logs-search_milestones.md
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: test "$(find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum)" = "a6747200c523c45aab759ca7b3e673f90828c888c3c8dbd0e1028bc4f14659a3  -"
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --check
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --cached --exit-code
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: python3 - <<'PY'
+from pathlib import Path
+import re
+import subprocess
+expected = [' M docs/plans/008_telemetry-logs-search_007_checkpoint.md', ' M docs/plans/008_telemetry-logs-search_007_implement.md', '?? .agents/', '?? .wayfinder/', '?? AGENTS.md', '?? docs/plans/008_telemetry-logs-search_milestones.md', '?? verify-incident-id.sh']
+assert subprocess.check_output(['git', 'status', '--porcelain'], text=True).splitlines() == expected
+text = Path('docs/plans/008_telemetry-logs-search_007_implement.md').read_text()
+assert len(re.findall(r'^- \[x\] \*\*[ABC]1|^- \[x\] \*\*[AB]2|^- \[x\] \*\*V1', text, re.M)) == 6
+assert not re.search(r'^- \[ \]', text, re.M)
+source = Path('docs/plans/008_telemetry-logs-search_milestones.md').read_text()
+assert re.findall(r'^- \[ \] (\d{3}):', source, re.M) == ['007']
+print('PASS: all six tasks are checked. Only milestone 007 remains unchecked before the completion render. Git changes match scope.')
+PY
+stdout:
+```text
+PASS: all six tasks are checked. Only milestone 007 remains unchecked before the completion render. Git changes match scope.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: ~/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master
+stdout:
+```text
+PASS: /home/jaron/dev/betterstack-cli/master: 99 Markdown files, 0 findings
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+- HEAD commit SHA: `615c00119ede5a0b75ecac15962addfaf61fbc3c`
+- Relevant work: `uncommitted` — stash ref `50c57e21d71fa71696bd5657ce977fc3315aebed` (tracked files only; never applied)
+- `git status --porcelain` (before checkpoint/checkbox writes):
+
+```text
+ M docs/plans/008_telemetry-logs-search_007_checkpoint.md
+ M docs/plans/008_telemetry-logs-search_007_implement.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Untracked file Git objects (stored with hash-object -w, never applied):
+
+```text
+e69de29bb2d1d6434b8b29ae775ad8c2e48c5391  ".agents/scripts/.gitkeep"
+2268d6d1b4dd6b23950ea8bcbce44e2cc4fd02a5  ".agents/scripts/telemetry-live-probe.sh"
+c3626f955decd6b7ffa341c26703f857462954b5  ".agents/skills/changelog/SKILL.md"
+656c156bf90f78f9ac3a85412fe9e91145a5bebb  ".agents/skills/mem/SKILL.md"
+44304443f37776ec688c34be9840378e243c6f2f  ".agents/skills/pr/SKILL.md"
+f788b79f289c9adfcdbb156d309261b925c403ba  ".agents/skills/provenance-log/SKILL.md"
+704342b5c4c16287177f2da9f4b656aa526fba5b  ".agents/skills/release/SKILL.md"
+e5ecdd11f8df24415ebff5fdf63f6113213bf7ec  ".wayfinder/MAP.md"
+d2521bd5eae2907dbcfadafe090456e6781b6e41  ".wayfinder/README.md"
+54113199fec1e082615bbf1bf5691e42201085b9  ".wayfinder/assets/01-api-contract-research.md"
+623ab01ed0b0385ce5fedd654d847a02d9c52fdb  ".wayfinder/assets/02-incident-url-identity-research.md"
+c4c4fe4107105fd614a8f3a94b46812cb06b3960  ".wayfinder/assets/06-go-toolchain-research.md"
+c6158f0916332d3e3a80e61a67a8ecc2de8a5b32  ".wayfinder/telemetry/MAP.md"
+f4e847e79b9fb7619c846148a592d14b88a367c7  ".wayfinder/telemetry/assets/03-sources-api-contract-research.md"
+247ee7bc692682bc7b1a32fb05f315fa938f36f6  ".wayfinder/telemetry/assets/04-sql-api-contract-research.md"
+0a18fb73e0093239f584809f479b542e99fc7f76  ".wayfinder/telemetry/assets/05-live-verification-results.md"
+5ebc264f975b3e46e337f17435443bc29535825e  ".wayfinder/telemetry/assets/06-cold-storage-timeout-research.md"
+2b71e98af8af64a9cd36bd3d5bd5e6e9b5cf818b  ".wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md"
+b7482d50e399cdae487b573ae35176f069362341  ".wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md"
+572c8f131bb6a497254d5a63b1bd30f2ce28502f  ".wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md"
+77b5c75dbaac7620d469a638c8d77335c6624e04  ".wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md"
+1323bb7b057a980e8b536c7162cccd9b7b26cc71  ".wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md"
+66a7fd3e74798761babbcd7fbec61d0aac59b704  ".wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md"
+cde68ecfe35ee426d1bcc07e817d52eced3d06b1  ".wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md"
+e180004c8a35821bec3e2cb2feab300f3046f71e  ".wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md"
+bf05f4602afcf7692f7dd66ed6af5a85be9566f1  ".wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md"
+9d010dd4260be2a86b212eeb6d11637bc1b22dbb  ".wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md"
+9677e361c7ff035c55b374943bad13b068a39a16  ".wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md"
+13a7970f556e13dad98340b3b700fd98da438aaa  ".wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md"
+5ad4771181950a65021b600d0765b6f79ad59dd5  ".wayfinder/tickets/02-incident-url-identity-resolution.md"
+53f3d379ecaf4eefb35f44de0596dcd8db5c76c1  ".wayfinder/tickets/03-command-naming-and-argument-conventions.md"
+1a67e294757e2a2558ec29f2247cc4fe6d1cb1b6  ".wayfinder/tickets/04-pagination-and-json-envelope.md"
+0a2031f1210b6008a0da9a8f7d217ecf1233f4bf  ".wayfinder/tickets/05-errors-timeouts-retries-token-safety.md"
+dc414d2e4181c232972f98528077e0e0650c47ec  ".wayfinder/tickets/06-installation-distribution-acceptance.md"
+aca24cb6a5e5e366b6216d692a002839547a1ef3  "AGENTS.md"
+d25d1c789e303a87fed9534f135c441b5cf4c9f5  "docs/plans/008_telemetry-logs-search_milestones.md"
+a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
+```
+
+- Next action: Milestone 007 complete; no unchecked milestones remain
+
+### Post-render fingerprint and final bookkeeping PASS
+
+- Gate: Post-render fingerprint and final bookkeeping PASS
+- Commands/results:
+**Post-render bookkeeping — PASS.** The Factory completion call exited 0 at unchanged HEAD 615c00119ede5a0b75ecac15962addfaf61fbc3c. The milestone source differs from `/tmp/factory-007/milestones-pre.md` only at line 55: `- [ ] 007:` became `- [x] 007:`. The explicit diff exited 1 as expected, and the exact byte comparison passed.
+
+The new protected-baseline fingerprint is `77fcdace637fe7f9b8ae30ee6076454eb98a3da12255dd2a9745e07ce822a9b2  -`. This replaces the pre-render fingerprint for future restart validation. Every other protected baseline file passed its saved SHA-256 check. The milestones document remains untracked and unstaged. No later edit to that document is authorized or needed.
+
+The final milestone line at line 55 is checked. The V1 checklist line at line 38 is checked. All six tasks and all seven milestones are checked. Both State next-action fields state: Milestone 007 complete; no unchecked milestones remain.
+
+Post-render docs-lint passed 99 Markdown files with 0 findings. spec-lint passed the spec and checklist. git diff --check passed. The index is empty. No code or protected path outside the sole milestone render changed. No ./bs exists. Git status contains only checkpoint/checklist tracked edits plus the five untracked baseline paths. No staging, commit, or push occurred.
+
+This final factory-checkpoint call preserves phase complete, checked task states, and the already-checked milestone. The tool does not rewrite an unchanged milestone source. No function or runtime behavior changed. The V1 and completion entries contain the assumptions, skips, decisions, unavailable checks, and actual verification evidence.
+
+
+
+Command: /home/jaron/.agents/scripts/factory-checkpoint docs/plans/008_telemetry-logs-search_007_checkpoint.md --repo /home/jaron/dev/betterstack-cli/master --phase complete --task "Milestone 007 complete" --taskstates /tmp/factory-007/V1-checked-taskstates.txt --gate "Factory completion gate PASS" --result /tmp/factory-007/completion-result.txt --milestone checked --completion-passed --next "Milestone 007 complete; no unchecked milestones remain" --relevant-work uncommitted
+stdout:
+```text
+/home/jaron/dev/betterstack-cli/master/docs/plans/008_telemetry-logs-search_007_checkpoint.md: Factory completion gate PASS, HEAD 615c00119ede5a0b75ecac15962addfaf61fbc3c, stash 50c57e21d71fa71696bd5657ce977fc3315aebed
+Checkboxes rendered by task/milestone ID. Titles were left unchanged.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: diff /tmp/factory-007/milestones-pre.md docs/plans/008_telemetry-logs-search_milestones.md
+stdout:
+```text
+55c55
+< - [ ] 007: S6 — Finalize repository and project records for Telemetry. Acceptance: `.mem/` describes the implemented Uptime and Telemetry behavior, `TAGS.md` matches every code anchor, `README.md` documents the added commands and environment variables, changelog fragments cover the change, `LOG.md` and `log.d/` follow repository conventions, and the `.mem/mem-map.md` links every memory file. Affected files: `.mem/**`, `TAGS.md`, `README.md`, `changelog.d/**`, `LOG.md`, `log.d/**`. Decisions: [tickets 08](../../.wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md), [01](../../.wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md), [02](../../.wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md), and [11](../../.wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md). Verification: `go build ./...`; `go vet ./...`; `go test ./...`; `gofmt -l cmd/bs/*.go`.
+---
+> - [x] 007: S6 — Finalize repository and project records for Telemetry. Acceptance: `.mem/` describes the implemented Uptime and Telemetry behavior, `TAGS.md` matches every code anchor, `README.md` documents the added commands and environment variables, changelog fragments cover the change, `LOG.md` and `log.d/` follow repository conventions, and the `.mem/mem-map.md` links every memory file. Affected files: `.mem/**`, `TAGS.md`, `README.md`, `changelog.d/**`, `LOG.md`, `log.d/**`. Decisions: [tickets 08](../../.wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md), [01](../../.wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md), [02](../../.wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md), and [11](../../.wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md). Verification: `go build ./...`; `go vet ./...`; `go test ./...`; `gofmt -l cmd/bs/*.go`.
+
+```
+stderr:
+```text
+
+```
+exit: 1 (expected 1)
+
+Command: python3 - <<'PY'
+from pathlib import Path
+before = Path('/tmp/factory-007/milestones-pre.md').read_bytes()
+after = Path('docs/plans/008_telemetry-logs-search_milestones.md').read_bytes()
+assert before.count(b'- [ ] 007:') == 1
+assert after == before.replace(b'- [ ] 007:', b'- [x] 007:', 1)
+print('PASS: milestone source differs only by the authorized 007 checkbox render.')
+PY
+stdout:
+```text
+PASS: milestone source differs only by the authorized 007 checkbox render.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum
+stdout:
+```text
+77fcdace637fe7f9b8ae30ee6076454eb98a3da12255dd2a9745e07ce822a9b2  -
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: sha256sum -c /tmp/factory-007/V1-protected-sha256.txt
+stdout:
+```text
+.agents/scripts/.gitkeep: OK
+.agents/scripts/telemetry-live-probe.sh: OK
+.agents/skills/changelog/SKILL.md: OK
+.agents/skills/mem/SKILL.md: OK
+.agents/skills/pr/SKILL.md: OK
+.agents/skills/provenance-log/SKILL.md: OK
+.agents/skills/release/SKILL.md: OK
+.wayfinder/MAP.md: OK
+.wayfinder/README.md: OK
+.wayfinder/assets/01-api-contract-research.md: OK
+.wayfinder/assets/02-incident-url-identity-research.md: OK
+.wayfinder/assets/06-go-toolchain-research.md: OK
+.wayfinder/telemetry/MAP.md: OK
+.wayfinder/telemetry/assets/03-sources-api-contract-research.md: OK
+.wayfinder/telemetry/assets/04-sql-api-contract-research.md: OK
+.wayfinder/telemetry/assets/05-live-verification-results.md: OK
+.wayfinder/telemetry/assets/06-cold-storage-timeout-research.md: OK
+.wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md: OK
+.wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md: OK
+.wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md: OK
+.wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md: OK
+.wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md: OK
+.wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md: OK
+.wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md: OK
+.wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md: OK
+.wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md: OK
+.wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md: OK
+.wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md: OK
+.wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md: OK
+.wayfinder/tickets/02-incident-url-identity-resolution.md: OK
+.wayfinder/tickets/03-command-naming-and-argument-conventions.md: OK
+.wayfinder/tickets/04-pagination-and-json-envelope.md: OK
+.wayfinder/tickets/05-errors-timeouts-retries-token-safety.md: OK
+.wayfinder/tickets/06-installation-distribution-acceptance.md: OK
+AGENTS.md: OK
+verify-incident-id.sh: OK
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: sha256sum docs/plans/008_telemetry-logs-search_milestones.md > /tmp/factory-007/milestones-rendered-sha256.txt
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+
+
+Command: ~/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master
+stdout:
+```text
+PASS: /home/jaron/dev/betterstack-cli/master: 99 Markdown files, 0 findings
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: ~/.agents/scripts/spec-lint --root /home/jaron/dev/betterstack-cli/master docs/plans/008_telemetry-logs-search_007_spec.md docs/plans/008_telemetry-logs-search_007_implement.md
+stdout:
+```text
+PASS: /home/jaron/dev/betterstack-cli/master/docs/plans/008_telemetry-logs-search_007_spec.md: 96 citations, 0/0 gocyclo values checked, 0 findings
+PASS: /home/jaron/dev/betterstack-cli/master/docs/plans/008_telemetry-logs-search_007_implement.md: 11 citations, 0/0 gocyclo values checked, 0 findings
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --check
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --cached --exit-code
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --exit-code -- cmd/bs .agents .wayfinder AGENTS.md verify-incident-id.sh
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: test ! -e ./bs
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: sha256sum -c /tmp/factory-007/milestones-rendered-sha256.txt
+stdout:
+```text
+docs/plans/008_telemetry-logs-search_milestones.md: OK
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: python3 - <<'PY'
+from pathlib import Path
+import re
+import subprocess
+expected = [' M docs/plans/008_telemetry-logs-search_007_checkpoint.md', ' M docs/plans/008_telemetry-logs-search_007_implement.md', '?? .agents/', '?? .wayfinder/', '?? AGENTS.md', '?? docs/plans/008_telemetry-logs-search_milestones.md', '?? verify-incident-id.sh']
+assert subprocess.check_output(['git', 'status', '--porcelain'], text=True).splitlines() == expected
+source = Path('docs/plans/008_telemetry-logs-search_milestones.md').read_text()
+assert not re.search(r'^- \[ \] \d{3}:', source, re.M)
+assert re.search(r'^- \[x\] 007:', source, re.M)
+checklist = Path('docs/plans/008_telemetry-logs-search_007_implement.md').read_text()
+assert not re.search(r'^- \[ \]', checklist, re.M)
+head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+assert head == '615c00119ede5a0b75ecac15962addfaf61fbc3c'
+print('PASS: no unchecked milestones or tasks remain. Only checkpoint/checklist tracked changes exist. HEAD is unchanged, and the index is empty.')
+PY
+stdout:
+```text
+PASS: no unchecked milestones or tasks remain. Only checkpoint/checklist tracked changes exist. HEAD is unchanged, and the index is empty.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git status --short
+stdout:
+```text
+ M docs/plans/008_telemetry-logs-search_007_checkpoint.md
+ M docs/plans/008_telemetry-logs-search_007_implement.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --stat
+stdout:
+```text
+ .../008_telemetry-logs-search_007_checkpoint.md    | 1679 +++++++++++++++++++-
+ .../008_telemetry-logs-search_007_implement.md     |    2 +-
+ 2 files changed, 1670 insertions(+), 11 deletions(-)
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: grep -n '^\- \[x\] 007:' docs/plans/008_telemetry-logs-search_milestones.md
+stdout:
+```text
+55:- [x] 007: S6 — Finalize repository and project records for Telemetry. Acceptance: `.mem/` describes the implemented Uptime and Telemetry behavior, `TAGS.md` matches every code anchor, `README.md` documents the added commands and environment variables, changelog fragments cover the change, `LOG.md` and `log.d/` follow repository conventions, and the `.mem/mem-map.md` links every memory file. Affected files: `.mem/**`, `TAGS.md`, `README.md`, `changelog.d/**`, `LOG.md`, `log.d/**`. Decisions: [tickets 08](../../.wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md), [01](../../.wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md), [02](../../.wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md), and [11](../../.wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md). Verification: `go build ./...`; `go vet ./...`; `go test ./...`; `gofmt -l cmd/bs/*.go`.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: grep -n '^\- \[x\] \*\*V1' docs/plans/008_telemetry-logs-search_007_implement.md
+stdout:
+```text
+38:- [x] **V1 — Verify R1–R8 and record the final evidence.** Requirements: R1–R8. Run the changelog and memory skills where relevant, then verify every acceptance criterion against the final tree. Check current-state memory claims and 250-line limits; ensure `.mem/telemetry/summary.md` is linked from the map and `.mem/summary.md`; run `find .mem -name '*.md' ! -path '.mem/tmp/*' -exec wc -l {} +`, `find .mem -type f -name '*.md' ! -path '.mem/tmp/*' -print | sort`, and `rg -n '\]\(' .mem --glob '*.md'`, then compare every enumerated path with map link destinations and resolve each local link. Repeat the production-anchor grep from R3 and compare every occurrence with exactly one `TAGS.md` row. Repeat `rg -n 'BETTERSTACK_|os\.(Getenv|LookupEnv)' cmd/bs` and cross-check runtime environment reads against test-only access. Run `mkdir -p /tmp/factory-007` before the heredoc step. Write the exact planned README sentence to `/tmp/factory-007/readme-token-sentence.txt` with a quoted heredoc. Run `grep -nF -f /tmp/factory-007/readme-token-sentence.txt README.md` and confirm it matches. Run `git show 2b133c5:README.md | grep -nF -f /tmp/factory-007/readme-token-sentence.txt` and require exit 1. Run `test -z "$(git ls-files .mem/tmp; git diff --cached --name-only -- .mem/tmp)"` and require success, which confirms that no `.mem/tmp` path is tracked or staged. Verify README commands, options, credentials, endpoints, and SQL response contract. Run `rg -n 'GOTOOLCHAIN|toolchain@|go1\.26' .mem` and expect no match; if `rg` is unavailable, use `grep -rnE 'GOTOOLCHAIN|toolchain@|go1\.26' .mem`. Validate every changelog fragment with the C1 script against all 001 R3 criteria (`docs/plans/008_telemetry-logs-search_001_spec.md:78`): each file exists; its first non-empty line is exactly one supported category heading; the next line is blank; it has at least one non-empty bullet; every bullet describes an actual change and includes a backticked repository-root path; and it has no unrelated front matter, release section, or extra category heading. Also require exactly one bullet under `### Changed` in the 007 fragment and manually confirm bullet factuality. Confirm `changelog.d/008-telemetry-logs-search-003.md:3` and `changelog.d/008-telemetry-logs-search-006.md:3` still cover source and log-search changes; leave the 005 fragment unchanged. Confirm `LOG.md` and `log.d/` state and account for all Git changes. Run `~/.agents/scripts/spec-lint --root /home/jaron/dev/betterstack-cli/master docs/plans/008_telemetry-logs-search_007_spec.md docs/plans/008_telemetry-logs-search_007_implement.md` and `~/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master`. Also try `make fragments-check` and `make docs-check`, recording that each is unavailable because no Makefile exists; identify the 001 R3 shape script and `docs-lint` as replacements. Run the deliberate safe build deviation `PATH=$HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.10.linux-amd64/bin:$PATH GOTOOLCHAIN=local GOPROXY=off go build -o /dev/null ./...`, plus the corresponding `go vet ./...`, `go test ./...`, and `gofmt -l cmd/bs/*.go`; `gofmt` must print no paths. Do not modify Go files. Record the result and full verification evidence in the checkpoint. Before any completion-gate render, run the baseline fingerprint command from the checkpoint and require `a6747200c523c45aab759ca7b3e673f90828c888c3c8dbd0e1028bc4f14659a3  -`. Only after the completion gate passes, save a pre-render copy of the milestone file in `/tmp`, render its sole allowed change from `- [ ] 007:` to `- [x] 007:` as the last change to that milestone file, compare the rendered file with the copy to confirm only that line changed, then rerun and record the new fingerprint in the checkpoint after the render. Never render the milestone checkbox during planning or before the completion gate passes. The report confirms no protected path, code file, or other milestone content changed. Commit message: `007: V1 verify records and Factory gate`.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+- HEAD commit SHA: `615c00119ede5a0b75ecac15962addfaf61fbc3c`
+- Relevant work: `uncommitted` — stash ref `02650e4ba04d570e5fca6a5a3e81d2b281e2b9b1` (tracked files only; never applied)
+- `git status --porcelain` (before checkpoint/checkbox writes):
+
+```text
+ M docs/plans/008_telemetry-logs-search_007_checkpoint.md
+ M docs/plans/008_telemetry-logs-search_007_implement.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Untracked file Git objects (stored with hash-object -w, never applied):
+
+```text
+e69de29bb2d1d6434b8b29ae775ad8c2e48c5391  ".agents/scripts/.gitkeep"
+2268d6d1b4dd6b23950ea8bcbce44e2cc4fd02a5  ".agents/scripts/telemetry-live-probe.sh"
+c3626f955decd6b7ffa341c26703f857462954b5  ".agents/skills/changelog/SKILL.md"
+656c156bf90f78f9ac3a85412fe9e91145a5bebb  ".agents/skills/mem/SKILL.md"
+44304443f37776ec688c34be9840378e243c6f2f  ".agents/skills/pr/SKILL.md"
+f788b79f289c9adfcdbb156d309261b925c403ba  ".agents/skills/provenance-log/SKILL.md"
+704342b5c4c16287177f2da9f4b656aa526fba5b  ".agents/skills/release/SKILL.md"
+e5ecdd11f8df24415ebff5fdf63f6113213bf7ec  ".wayfinder/MAP.md"
+d2521bd5eae2907dbcfadafe090456e6781b6e41  ".wayfinder/README.md"
+54113199fec1e082615bbf1bf5691e42201085b9  ".wayfinder/assets/01-api-contract-research.md"
+623ab01ed0b0385ce5fedd654d847a02d9c52fdb  ".wayfinder/assets/02-incident-url-identity-research.md"
+c4c4fe4107105fd614a8f3a94b46812cb06b3960  ".wayfinder/assets/06-go-toolchain-research.md"
+c6158f0916332d3e3a80e61a67a8ecc2de8a5b32  ".wayfinder/telemetry/MAP.md"
+f4e847e79b9fb7619c846148a592d14b88a367c7  ".wayfinder/telemetry/assets/03-sources-api-contract-research.md"
+247ee7bc692682bc7b1a32fb05f315fa938f36f6  ".wayfinder/telemetry/assets/04-sql-api-contract-research.md"
+0a18fb73e0093239f584809f479b542e99fc7f76  ".wayfinder/telemetry/assets/05-live-verification-results.md"
+5ebc264f975b3e46e337f17435443bc29535825e  ".wayfinder/telemetry/assets/06-cold-storage-timeout-research.md"
+2b71e98af8af64a9cd36bd3d5bd5e6e9b5cf818b  ".wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md"
+b7482d50e399cdae487b573ae35176f069362341  ".wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md"
+572c8f131bb6a497254d5a63b1bd30f2ce28502f  ".wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md"
+77b5c75dbaac7620d469a638c8d77335c6624e04  ".wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md"
+1323bb7b057a980e8b536c7162cccd9b7b26cc71  ".wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md"
+66a7fd3e74798761babbcd7fbec61d0aac59b704  ".wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md"
+cde68ecfe35ee426d1bcc07e817d52eced3d06b1  ".wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md"
+e180004c8a35821bec3e2cb2feab300f3046f71e  ".wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md"
+bf05f4602afcf7692f7dd66ed6af5a85be9566f1  ".wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md"
+9d010dd4260be2a86b212eeb6d11637bc1b22dbb  ".wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md"
+9677e361c7ff035c55b374943bad13b068a39a16  ".wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md"
+13a7970f556e13dad98340b3b700fd98da438aaa  ".wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md"
+5ad4771181950a65021b600d0765b6f79ad59dd5  ".wayfinder/tickets/02-incident-url-identity-resolution.md"
+53f3d379ecaf4eefb35f44de0596dcd8db5c76c1  ".wayfinder/tickets/03-command-naming-and-argument-conventions.md"
+1a67e294757e2a2558ec29f2247cc4fe6d1cb1b6  ".wayfinder/tickets/04-pagination-and-json-envelope.md"
+0a2031f1210b6008a0da9a8f7d217ecf1233f4bf  ".wayfinder/tickets/05-errors-timeouts-retries-token-safety.md"
+dc414d2e4181c232972f98528077e0e0650c47ec  ".wayfinder/tickets/06-installation-distribution-acceptance.md"
+aca24cb6a5e5e366b6216d692a002839547a1ef3  "AGENTS.md"
+d5716b2480cd8484f7ea7bdc84b669db39a401bb  "docs/plans/008_telemetry-logs-search_milestones.md"
+a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
+```
+
+- Next action: Milestone 007 complete; no unchecked milestones remain
 
 ## Restart validation of milestone 006
 
