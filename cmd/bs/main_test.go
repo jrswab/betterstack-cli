@@ -283,6 +283,9 @@ func TestRunWithEndpointsSourcesHelpWithDummyCredentialMakesNoRequest(t *testing
 		if code != 0 || out.Len() == 0 || err.Len() != 0 {
 			t.Fatal("help did not return successfully")
 		}
+		if len(args) == 3 && !strings.Contains(out.String(), "The output includes each source's `token` field. Treat it as a secret credential.") {
+			t.Error("source command help lost the secret credential warning")
+		}
 	}
 	if requests.Load() != 0 {
 		t.Fatalf("help requests = %d, want 0", requests.Load())
