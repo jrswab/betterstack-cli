@@ -31,9 +31,9 @@
 ## State
 
 - Lane: `full` — D1 assigns the full lane to every milestone because work affects external API contracts, security, or repository-wide records.
-- Current phase: `review`
+- Current phase: `complete`
 - State: `review gate 1 failed; fixes committed; re-run pending`; V1 and completion remain pending.
-- Current task: review gate 1 re-run
+- Current task: none
 - Task states — checklist checkboxes render from this list:
 - A1 Replace the SQL side channel with a working logs search route: `checked`
 - A2 Prove local validation and established usage diagnostics: `checked`
@@ -41,10 +41,10 @@
 - B2 Add logs usage diagnostics and preserve source help regression: `checked`
 - C1 Document the active command in README and changelog: `checked`
 - C2 Update current routing memory and anchor index: `checked`
-- V1 Run the 006 verification and Factory completion gate: `unchecked`
-- Milestone checkbox: `unchecked`
-- Next safe action: Orchestrator: review gate 1 re-run
-- Last completed phase/task/gate and timestamp: Review gate 1 findings F1–F3 fixed with mutation evidence, 2026-10-21T16:48:47+00:00
+- V1 Run the 006 verification and Factory completion gate: `checked`
+- Milestone checkbox: `checked`
+- Next safe action: Milestone 007: create spec
+- Last completed phase/task/gate and timestamp: Factory completion gate PASS, 2026-10-21T18:56:11.929697+00:00
 
 ## Restart validation and setup evidence
 
@@ -1054,6 +1054,235 @@ exit=0
 - Skips: no production change, new test helper, or full-help snapshot is needed (ladder rung 1). README, anchors, changelog, and provenance records need no update for these scoped corrections (rung 1). F4 remains record-only under the explicit 007 deferral. Standard-library tools cover mutation and record checks (rung 2). No new dependency or symptom patch exists.
 - Gate state after fixes: **FAIL remains recorded at `93e3f11`; review gate 1 re-run is pending**. A1–C2 stay checked. V1 and the milestone stay unchecked.
 - Next action: **review gate 1 re-run**.
+
+### Review gate 1 re-run PASS at 4bd0f81
+
+- Gate: Review gate 1 re-run PASS at 4bd0f81
+- Commands/results:
+**Review gate 1 re-run — PASS.** The independent reviewer returned PASS at `4bd0f818301bfa1882828b4038313acd00752391`; reviewed range `93e3f11..HEAD`.
+
+- F1 closed: M30 (`sed -i '48d'`), M10 (`sed -i '49d'`), and M29 (`sed -i '48,49d'`) each ran only in separate scratch mutations of `cmd/bs/help.go`. Each mutation made `go test -count=1 -run '^TestRunWithEndpointsLogsHelp$' ./cmd/bs` exit 1. Control and restored control exited 0.
+- F2 closed: `.mem/terminology.md:8` says “seven Uptime/source handlers”. Seven `doMonitorsRequest` calls exist: `incidents.go:74,106,357`, `monitors.go:48,74`, and `sources.go:34,51`.
+- F3 closed: `docs/plans/008_telemetry-logs-search_006_implement.md:28` uses `CLUSTER_DOESNT_EXIST`.
+- `cmd/bs/main.go`, `logs.go`, and `help.go` are unchanged in `93e3f11..HEAD`.
+- The `.mem/` sweep found no stale claims. Requirements R1–R8 are satisfied.
+- F4 is non-blocking and deferred to milestone 007 (`changelog.d/008-telemetry-logs-search-005.md:3`). F5 is non-blocking: earlier checkpoints used Go 1.26.9; this review and V1 use Go 1.26.10.
+- Records-review prerequisite: `docs-lint` passed at `4bd0f81`, 94 files, zero findings, exit 0.
+- Go pre-flight: `PATH=$HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.10.linux-amd64/bin:$PATH GOTOOLCHAIN=local GOPROXY=off ~/.agents/scripts/go-toolchain-check /home/jaron/dev/betterstack-cli/master` passed, exit 0. `govulncheck` found no vulnerabilities, superseding the Go 1.26.9 `GO-2026-6809` limitation.
+
+**Preflight outputs:** Mutation control/restored control exit 0; M10/M29/M30 exit 1 as required. `docs-lint` printed `PASS: /home/jaron/dev/betterstack-cli/master: 94 Markdown files, 0 findings`. Go toolchain check printed `PASS: Go pre-flight checks.` Git source diff check and production-file unchanged check exited 0. The required baseline fingerprint matched `053c5c7b096d5990e38a2aa26b691865a29116f5754c268ce4b41cc62cde5fef`.
+- HEAD commit SHA: `4bd0f818301bfa1882828b4038313acd00752391`
+- Relevant work: `committed` — stash ref `none` (tracked files only; never applied)
+- `git status --porcelain` (before checkpoint/checkbox writes):
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Untracked file Git objects (stored with hash-object -w, never applied):
+
+```text
+e69de29bb2d1d6434b8b29ae775ad8c2e48c5391  ".agents/scripts/.gitkeep"
+2268d6d1b4dd6b23950ea8bcbce44e2cc4fd02a5  ".agents/scripts/telemetry-live-probe.sh"
+c3626f955decd6b7ffa341c26703f857462954b5  ".agents/skills/changelog/SKILL.md"
+656c156bf90f78f9ac3a85412fe9e91145a5bebb  ".agents/skills/mem/SKILL.md"
+44304443f37776ec688c34be9840378e243c6f2f  ".agents/skills/pr/SKILL.md"
+f788b79f289c9adfcdbb156d309261b925c403ba  ".agents/skills/provenance-log/SKILL.md"
+704342b5c4c16287177f2da9f4b656aa526fba5b  ".agents/skills/release/SKILL.md"
+e5ecdd11f8df24415ebff5fdf63f6113213bf7ec  ".wayfinder/MAP.md"
+d2521bd5eae2907dbcfadafe090456e6781b6e41  ".wayfinder/README.md"
+54113199fec1e082615bbf1bf5691e42201085b9  ".wayfinder/assets/01-api-contract-research.md"
+623ab01ed0b0385ce5fedd654d847a02d9c52fdb  ".wayfinder/assets/02-incident-url-identity-research.md"
+c4c4fe4107105fd614a8f3a94b46812cb06b3960  ".wayfinder/assets/06-go-toolchain-research.md"
+c6158f0916332d3e3a80e61a67a8ecc2de8a5b32  ".wayfinder/telemetry/MAP.md"
+f4e847e79b9fb7619c846148a592d14b88a367c7  ".wayfinder/telemetry/assets/03-sources-api-contract-research.md"
+247ee7bc692682bc7b1a32fb05f315fa938f36f6  ".wayfinder/telemetry/assets/04-sql-api-contract-research.md"
+0a18fb73e0093239f584809f479b542e99fc7f76  ".wayfinder/telemetry/assets/05-live-verification-results.md"
+5ebc264f975b3e46e337f17435443bc29535825e  ".wayfinder/telemetry/assets/06-cold-storage-timeout-research.md"
+2b71e98af8af64a9cd36bd3d5bd5e6e9b5cf818b  ".wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md"
+b7482d50e399cdae487b573ae35176f069362341  ".wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md"
+572c8f131bb6a497254d5a63b1bd30f2ce28502f  ".wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md"
+77b5c75dbaac7620d469a638c8d77335c6624e04  ".wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md"
+1323bb7b057a980e8b536c7162cccd9b7b26cc71  ".wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md"
+66a7fd3e74798761babbcd7fbec61d0aac59b704  ".wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md"
+cde68ecfe35ee426d1bcc07e817d52eced3d06b1  ".wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md"
+e180004c8a35821bec3e2cb2feab300f3046f71e  ".wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md"
+bf05f4602afcf7692f7dd66ed6af5a85be9566f1  ".wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md"
+9d010dd4260be2a86b212eeb6d11637bc1b22dbb  ".wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md"
+9677e361c7ff035c55b374943bad13b068a39a16  ".wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md"
+13a7970f556e13dad98340b3b700fd98da438aaa  ".wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md"
+5ad4771181950a65021b600d0765b6f79ad59dd5  ".wayfinder/tickets/02-incident-url-identity-resolution.md"
+53f3d379ecaf4eefb35f44de0596dcd8db5c76c1  ".wayfinder/tickets/03-command-naming-and-argument-conventions.md"
+1a67e294757e2a2558ec29f2247cc4fe6d1cb1b6  ".wayfinder/tickets/04-pagination-and-json-envelope.md"
+0a2031f1210b6008a0da9a8f7d217ecf1233f4bf  ".wayfinder/tickets/05-errors-timeouts-retries-token-safety.md"
+dc414d2e4181c232972f98528077e0e0650c47ec  ".wayfinder/tickets/06-installation-distribution-acceptance.md"
+aca24cb6a5e5e366b6216d692a002839547a1ef3  "AGENTS.md"
+c2aa8050a6c704164fa53e3baa765b75dd09cd49  "docs/plans/008_telemetry-logs-search_milestones.md"
+a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
+```
+
+- Next action: Run Factory completion gate and render milestone 006 checked
+
+### V1 verification PASS at 4bd0f81
+
+- Gate: V1 verification PASS at 4bd0f81
+- Commands/results:
+**V1 verification — PASS at `4bd0f818301bfa1882828b4038313acd00752391`.** All commands used `PATH=$HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.10.linux-amd64/bin:$PATH GOTOOLCHAIN=local GOPROXY=off`.
+
+| Command | Result |
+|---|---|
+| `go build -o /dev/null ./...` | Exit 0, no output. |
+| `go vet ./...` | Exit 0, no output. |
+| `go test -count=1 ./...` | Exit 0, `ok github.com/jrswab/betterstack-cli/cmd/bs 2.221s`. |
+| `gofmt -l cmd/bs/*.go` | Exit 0, no paths. |
+| Focused builder, parser, SQL executor, routing, usage, help, and source warning tests | Exit 0, `ok github.com/jrswab/betterstack-cli/cmd/bs 0.170s`. |
+| `~/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master` | Exit 0, 94 Markdown files, zero findings. |
+| `python3 /tmp/factory-006/records-check.py` | Exit 0. README, changelog, memory links/line limits/current wording, all 16 anchors, routing order, `runWithAPI` signature, and provenance records passed. |
+| `git diff --check 2bed70b..HEAD` | Exit 0, no findings. |
+| `test ! -e ./bs` | Exit 0. No repository-root binary exists. |
+| Baseline fingerprint check before rendering | Matched `053c5c7b096d5990e38a2aa26b691865a29116f5754c268ce4b41cc62cde5fef`. |
+
+**Spec and acceptance comparison:** R1–R8 passed. A1 routes argv through the builder and SQL executor with distinct injected endpoints; A2 validates locally before requests. B1/B2 provide exact help and diagnostics, preserve source-token warnings, and test option-shaped query text. C1/C2 document the command and keep current records and anchors aligned. Route tests use fake credentials and guarded or in-memory transports. The source review confirmed no changes to production `main.go`, `logs.go`, or `help.go` in `93e3f11..HEAD`.
+
+**R1–R8 evidence:** R1 route tests assert one SQL POST, zero Uptime/REST requests, builder SQL and query parameters. R2 existing builder/executor coverage and focused route tests pass. R3 exact help vectors and required text pass with zero requests. R4 both source help warnings pass. R5 logs missing/unknown action, malformed input, and bare invocation diagnostics pass without requests. R6 direct README assertions pass for flags, defaults, SQL configuration, and response contract. R7 memory, changelog, and exact 16-anchor checks pass. R8 full tests, safe fake-only test review, unchanged `runWithAPI` signature, and no-root-binary check pass.
+
+**Completion evidence:** independent review gate 1 re-run PASS at this HEAD. The review mutation controls passed and M10/M29/M30 were killed. Go 1.26.10 pre-flight passed with `govulncheck: No vulnerabilities found`. The protected-path fingerprint passed before rendering. Git status contains the checkpoint change and the five expected untracked baseline paths. V1 and the completion gate are the only pending records.
+
+**Limitations and unrun checks:** no checks remain unrun. The repository has no `Makefile`, so `make help` exits 2 with “No rule to make target 'help'”; no Make targets exist to run. Earlier checkpoint entries used Go 1.26.9; this review and V1 use Go 1.26.10. The Go 1.26.10 vulnerability scan found no vulnerabilities. F4 remains non-blocking and deferred to milestone 007 (`changelog.d/008-telemetry-logs-search-005.md:3`). No live API, real credentials, push, or commit was used.
+- HEAD commit SHA: `4bd0f818301bfa1882828b4038313acd00752391`
+- Relevant work: `uncommitted` — stash ref `494aac6d84173e10c6bf06dfe834dfac68fffd45` (tracked files only; never applied)
+- `git status --porcelain` (before checkpoint/checkbox writes):
+
+```text
+ M docs/plans/008_telemetry-logs-search_006_checkpoint.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Untracked file Git objects (stored with hash-object -w, never applied):
+
+```text
+e69de29bb2d1d6434b8b29ae775ad8c2e48c5391  ".agents/scripts/.gitkeep"
+2268d6d1b4dd6b23950ea8bcbce44e2cc4fd02a5  ".agents/scripts/telemetry-live-probe.sh"
+c3626f955decd6b7ffa341c26703f857462954b5  ".agents/skills/changelog/SKILL.md"
+656c156bf90f78f9ac3a85412fe9e91145a5bebb  ".agents/skills/mem/SKILL.md"
+44304443f37776ec688c34be9840378e243c6f2f  ".agents/skills/pr/SKILL.md"
+f788b79f289c9adfcdbb156d309261b925c403ba  ".agents/skills/provenance-log/SKILL.md"
+704342b5c4c16287177f2da9f4b656aa526fba5b  ".agents/skills/release/SKILL.md"
+e5ecdd11f8df24415ebff5fdf63f6113213bf7ec  ".wayfinder/MAP.md"
+d2521bd5eae2907dbcfadafe090456e6781b6e41  ".wayfinder/README.md"
+54113199fec1e082615bbf1bf5691e42201085b9  ".wayfinder/assets/01-api-contract-research.md"
+623ab01ed0b0385ce5fedd654d847a02d9c52fdb  ".wayfinder/assets/02-incident-url-identity-research.md"
+c4c4fe4107105fd614a8f3a94b46812cb06b3960  ".wayfinder/assets/06-go-toolchain-research.md"
+c6158f0916332d3e3a80e61a67a8ecc2de8a5b32  ".wayfinder/telemetry/MAP.md"
+f4e847e79b9fb7619c846148a592d14b88a367c7  ".wayfinder/telemetry/assets/03-sources-api-contract-research.md"
+247ee7bc692682bc7b1a32fb05f315fa938f36f6  ".wayfinder/telemetry/assets/04-sql-api-contract-research.md"
+0a18fb73e0093239f584809f479b542e99fc7f76  ".wayfinder/telemetry/assets/05-live-verification-results.md"
+5ebc264f975b3e46e337f17435443bc29535825e  ".wayfinder/telemetry/assets/06-cold-storage-timeout-research.md"
+2b71e98af8af64a9cd36bd3d5bd5e6e9b5cf818b  ".wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md"
+b7482d50e399cdae487b573ae35176f069362341  ".wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md"
+572c8f131bb6a497254d5a63b1bd30f2ce28502f  ".wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md"
+77b5c75dbaac7620d469a638c8d77335c6624e04  ".wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md"
+1323bb7b057a980e8b536c7162cccd9b7b26cc71  ".wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md"
+66a7fd3e74798761babbcd7fbec61d0aac59b704  ".wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md"
+cde68ecfe35ee426d1bcc07e817d52eced3d06b1  ".wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md"
+e180004c8a35821bec3e2cb2feab300f3046f71e  ".wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md"
+bf05f4602afcf7692f7dd66ed6af5a85be9566f1  ".wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md"
+9d010dd4260be2a86b212eeb6d11637bc1b22dbb  ".wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md"
+9677e361c7ff035c55b374943bad13b068a39a16  ".wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md"
+13a7970f556e13dad98340b3b700fd98da438aaa  ".wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md"
+5ad4771181950a65021b600d0765b6f79ad59dd5  ".wayfinder/tickets/02-incident-url-identity-resolution.md"
+53f3d379ecaf4eefb35f44de0596dcd8db5c76c1  ".wayfinder/tickets/03-command-naming-and-argument-conventions.md"
+1a67e294757e2a2558ec29f2247cc4fe6d1cb1b6  ".wayfinder/tickets/04-pagination-and-json-envelope.md"
+0a2031f1210b6008a0da9a8f7d217ecf1233f4bf  ".wayfinder/tickets/05-errors-timeouts-retries-token-safety.md"
+dc414d2e4181c232972f98528077e0e0650c47ec  ".wayfinder/tickets/06-installation-distribution-acceptance.md"
+aca24cb6a5e5e366b6216d692a002839547a1ef3  "AGENTS.md"
+c2aa8050a6c704164fa53e3baa765b75dd09cd49  "docs/plans/008_telemetry-logs-search_milestones.md"
+a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
+```
+
+- Next action: Run Factory completion gate and render milestone 006 checked
+
+### Factory completion gate PASS
+
+- Gate: Factory completion gate PASS
+- Commands/results:
+**Factory completion gate — PASS at `4bd0f818301bfa1882828b4038313acd00752391`.** All four Factory completion checks passed: the full build, vet, test, and formatting checks passed; the spec requirements and milestone acceptance have recorded evidence; Git changes are accounted for; and review gate 1 re-run passed independently.
+
+- Review: PASS, range `93e3f11..HEAD`; production `main.go`, `logs.go`, and `help.go` unchanged in range. F1–F3 closed. F4 remains non-blocking and deferred to milestone 007.
+- V1: `go build -o /dev/null ./...`, `go vet ./...`, `go test -count=1 ./...`, focused route/builder/executor/usage/help/source-warning tests, `gofmt -l cmd/bs/*.go`, docs-lint, direct records checks, `git diff --check 2bed70b..HEAD`, and `test ! -e ./bs` all passed.
+- Environment: Go 1.26.10 with `PATH=$HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.10.linux-amd64/bin:$PATH GOTOOLCHAIN=local GOPROXY=off`. The Go pre-flight passed, including `govulncheck: No vulnerabilities found`.
+- Records: 94 Markdown files passed docs-lint with zero findings. README, changelog, memory links and line limits, exact 16-anchor TAGS index, active routing, and unchanged `runWithAPI` signature passed direct checks.
+- Baseline: the required protected-path fingerprint matched before rendering: `053c5c7b096d5990e38a2aa26b691865a29116f5754c268ce4b41cc62cde5fef`.
+- Git state: only `docs/plans/008_telemetry-logs-search_006_checkpoint.md` and `docs/plans/008_telemetry-logs-search_006_implement.md` are modified tracked paths. The five expected baseline paths remain untracked. The milestone source changes only by the authorized checkbox render. No commit or push occurred.
+- Unrun checks: none. The repository has no Makefile, so `make help` exits 2 with “No rule to make target 'help'”; no Make targets exist. No live API or real credentials were used. No repository-root binary exists.
+- Limitation: earlier checkpoint records used Go 1.26.9. This review and V1 use Go 1.26.10, whose vulnerability scan passed. F4 is deferred to milestone 007 at `changelog.d/008-telemetry-logs-search-005.md:3`.
+
+The next action is **Milestone 007: create spec**. The post-render fingerprint is `a6747200c523c45aab759ca7b3e673f90828c888c3c8dbd0e1028bc4f14659a3`.
+- HEAD commit SHA: `4bd0f818301bfa1882828b4038313acd00752391`
+- Relevant work: `uncommitted` — stash ref `c9ceea5577265cc0837c6b6395a62a4d642ea898` (tracked files only; never applied)
+- `git status --porcelain` (before checkpoint/checkbox writes):
+
+```text
+ M docs/plans/008_telemetry-logs-search_006_checkpoint.md
+ M docs/plans/008_telemetry-logs-search_006_implement.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Untracked file Git objects (stored with hash-object -w, never applied):
+
+```text
+e69de29bb2d1d6434b8b29ae775ad8c2e48c5391  ".agents/scripts/.gitkeep"
+2268d6d1b4dd6b23950ea8bcbce44e2cc4fd02a5  ".agents/scripts/telemetry-live-probe.sh"
+c3626f955decd6b7ffa341c26703f857462954b5  ".agents/skills/changelog/SKILL.md"
+656c156bf90f78f9ac3a85412fe9e91145a5bebb  ".agents/skills/mem/SKILL.md"
+44304443f37776ec688c34be9840378e243c6f2f  ".agents/skills/pr/SKILL.md"
+f788b79f289c9adfcdbb156d309261b925c403ba  ".agents/skills/provenance-log/SKILL.md"
+704342b5c4c16287177f2da9f4b656aa526fba5b  ".agents/skills/release/SKILL.md"
+e5ecdd11f8df24415ebff5fdf63f6113213bf7ec  ".wayfinder/MAP.md"
+d2521bd5eae2907dbcfadafe090456e6781b6e41  ".wayfinder/README.md"
+54113199fec1e082615bbf1bf5691e42201085b9  ".wayfinder/assets/01-api-contract-research.md"
+623ab01ed0b0385ce5fedd654d847a02d9c52fdb  ".wayfinder/assets/02-incident-url-identity-research.md"
+c4c4fe4107105fd614a8f3a94b46812cb06b3960  ".wayfinder/assets/06-go-toolchain-research.md"
+c6158f0916332d3e3a80e61a67a8ecc2de8a5b32  ".wayfinder/telemetry/MAP.md"
+f4e847e79b9fb7619c846148a592d14b88a367c7  ".wayfinder/telemetry/assets/03-sources-api-contract-research.md"
+247ee7bc692682bc7b1a32fb05f315fa938f36f6  ".wayfinder/telemetry/assets/04-sql-api-contract-research.md"
+0a18fb73e0093239f584809f479b542e99fc7f76  ".wayfinder/telemetry/assets/05-live-verification-results.md"
+5ebc264f975b3e46e337f17435443bc29535825e  ".wayfinder/telemetry/assets/06-cold-storage-timeout-research.md"
+2b71e98af8af64a9cd36bd3d5bd5e6e9b5cf818b  ".wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md"
+b7482d50e399cdae487b573ae35176f069362341  ".wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md"
+572c8f131bb6a497254d5a63b1bd30f2ce28502f  ".wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md"
+77b5c75dbaac7620d469a638c8d77335c6624e04  ".wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md"
+1323bb7b057a980e8b536c7162cccd9b7b26cc71  ".wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md"
+66a7fd3e74798761babbcd7fbec61d0aac59b704  ".wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md"
+cde68ecfe35ee426d1bcc07e817d52eced3d06b1  ".wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md"
+e180004c8a35821bec3e2cb2feab300f3046f71e  ".wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md"
+bf05f4602afcf7692f7dd66ed6af5a85be9566f1  ".wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md"
+9d010dd4260be2a86b212eeb6d11637bc1b22dbb  ".wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md"
+9677e361c7ff035c55b374943bad13b068a39a16  ".wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md"
+13a7970f556e13dad98340b3b700fd98da438aaa  ".wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md"
+5ad4771181950a65021b600d0765b6f79ad59dd5  ".wayfinder/tickets/02-incident-url-identity-resolution.md"
+53f3d379ecaf4eefb35f44de0596dcd8db5c76c1  ".wayfinder/tickets/03-command-naming-and-argument-conventions.md"
+1a67e294757e2a2558ec29f2247cc4fe6d1cb1b6  ".wayfinder/tickets/04-pagination-and-json-envelope.md"
+0a2031f1210b6008a0da9a8f7d217ecf1233f4bf  ".wayfinder/tickets/05-errors-timeouts-retries-token-safety.md"
+dc414d2e4181c232972f98528077e0e0650c47ec  ".wayfinder/tickets/06-installation-distribution-acceptance.md"
+aca24cb6a5e5e366b6216d692a002839547a1ef3  "AGENTS.md"
+c2aa8050a6c704164fa53e3baa765b75dd09cd49  "docs/plans/008_telemetry-logs-search_milestones.md"
+a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
+```
+
+- Next action: Milestone 007: create spec
 
 ## Limitations and blockers
 
