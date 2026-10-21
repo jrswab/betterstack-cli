@@ -20,7 +20,7 @@
 - Baseline fingerprint command: `find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum`.
 - Required and observed baseline fingerprint: `053c5c7b096d5990e38a2aa26b691865a29116f5754c268ce4b41cc62cde5fef  -`.
 - Protected paths: `.agents/`, `.wayfinder/`, `AGENTS.md`, `docs/plans/008_telemetry-logs-search_milestones.md`, and `verify-incident-id.sh`. Do not modify or stage these paths.
-- Authorization: Phase 3 tasks A1, A2, B1, B2, C1, and C2 under the execution assignment. Local commits on `master` only. V1, independent review, and completion rendering remain out of scope. Protected baseline paths, pushes, live requests, and real credentials remain forbidden.
+- Authorization: fix review gate 1 findings F1–F3, prove M10/M29/M30 in a `/tmp` git-archive scratch copy, and record this review gate. Local commits on `master` only. Review gate 1 re-run, V1, and completion rendering remain pending. Production Go code, protected baseline paths, pushes, network requests, and real credentials remain forbidden.
 
 ## Artifacts
 
@@ -31,9 +31,9 @@
 ## State
 
 - Lane: `full` — D1 assigns the full lane to every milestone because work affects external API contracts, security, or repository-wide records.
-- Current phase: `execute`
-- State: `execution in progress`; V1 and independent review remain pending.
-- Current task: A1-C2 implemented; V1 pending
+- Current phase: `review`
+- State: `review gate 1 failed; fixes committed; re-run pending`; V1 and completion remain pending.
+- Current task: review gate 1 re-run
 - Task states — checklist checkboxes render from this list:
 - A1 Replace the SQL side channel with a working logs search route: `checked`
 - A2 Prove local validation and established usage diagnostics: `checked`
@@ -43,8 +43,8 @@
 - C2 Update current routing memory and anchor index: `checked`
 - V1 Run the 006 verification and Factory completion gate: `unchecked`
 - Milestone checkbox: `unchecked`
-- Next safe action: Orchestrator: run D9 independent review, then V1 and Factory completion gate
-- Last completed phase/task/gate and timestamp: Caller-required handoff checks PASS; V1 remains pending, 2026-10-21T16:32:58.242406+00:00
+- Next safe action: Orchestrator: review gate 1 re-run
+- Last completed phase/task/gate and timestamp: Review gate 1 findings F1–F3 fixed with mutation evidence, 2026-10-21T16:48:47+00:00
 
 ## Restart validation and setup evidence
 
@@ -984,8 +984,79 @@ a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
 
 - Next action: Orchestrator: run D9 independent review, then V1 and Factory completion gate
 
+### Review gate 1 — FAIL at 93e3f11
+
+- Reviewed HEAD: `93e3f11869996b349b07f828678f94c732a45acc` (`93e3f11`).
+- Result: **FAIL**. The supplied review marks finding F1 red. Findings F2–F3 are non-blocking. Finding F4 is deferred to milestone 007.
+- Finding F1: `cmd/bs/main_test.go:TestRunWithEndpointsLogsHelp` asserted only option-order substrings. The example in `cmd/bs/help.go` also contains both substrings, so deleting either explanation survived. The test now asserts both complete help sentences:
+  - `--query --cold searches for --cold without enabling cold storage.`
+  - `Use --cold --query --cold to enable cold storage and search that text.`
+- Finding F2: **non-blocking, fixed**. `.mem/terminology.md` now identifies the Request executor's clients as “the seven Uptime/source handlers”. The separate `logsSearch` handler uses the SQL request executor. The wording agrees with `.mem/practices.md` and `.mem/uptime/requests.md`.
+- Finding F3: **non-blocking, fixed**. B1 in `docs/plans/008_telemetry-logs-search_006_implement.md` now spells the error `CLUSTER_DOESNT_EXIST`. Only the spelling changed. B1 remains checked.
+- Spelling check: **PASS — `CLUSTER_DOESNT_EXIST` is correct**. The authoritative `.wayfinder/telemetry/assets/05-live-verification-results.md:18` uses this name. The spec, checklist, help, test, README, and log-search memory use it without the rejected spelling. Historical checkpoint entries retain the earlier typo as history.
+- Finding F4: **deferred to 007, record only**. `changelog.d/008-telemetry-logs-search-005.md` says “The SQL command route remains unavailable.” The 006 fragment documents the active route. The combined fragments therefore contradict each other. Milestone 007 must reconcile this wording. Neither fragment changed in this fix.
+- Fix commit: `6442b7862163a0f615044ef22364e7d899b93a36` — `006: fix review findings F1 F2 F3`.
+- Fix commit paths: `cmd/bs/main_test.go`, `.mem/terminology.md`, and `docs/plans/008_telemetry-logs-search_006_implement.md`. Only `TestRunWithEndpointsLogsHelp` changed. No function was added. Production Go files remain unchanged.
+
+#### Mutation evidence
+
+- Command: `python3 /tmp/factory-006/review-gate-1-fix/check-mutations.py`.
+- Source: `git archive` of fix commit `6442b7862163a0f615044ef22364e7d899b93a36`, extracted into `/tmp/factory-006-review-gate-1-22esuz4s`.
+- Test command in that scratch copy: `go test -count=1 -run '^TestRunWithEndpointsLogsHelp$' ./cmd/bs`.
+- The script deleted only the selected explanation lines in the scratch copy. It left the example unchanged, restored the original help between mutations, and checked formatting each time. It never mutated repository production code.
+- Both credential configurations detected each deletion. Each missing-sentence diagnostic occurred twice, once with absent credentials and once with fake credentials.
+
+| Probe | Scratch change | Exit | Actual result |
+|---|---|---|---|
+| Control | No mutation | 0 | `ok github.com/jrswab/betterstack-cli/cmd/bs 0.006s` |
+| M10 | Drop the `Use --cold...` explanation line | 1 | **KILLED**. Both help cases report the missing complete `Use --cold...` sentence. |
+| M29 | Drop both explanation lines | 1 | **KILLED**. Both help cases report both missing complete sentences. |
+| M30 | Drop the `--query --cold searches...` explanation line | 1 | **KILLED**. Both help cases report the missing complete `--query --cold searches...` sentence. |
+| Restored control | Restore the original help | 0 | `ok github.com/jrswab/betterstack-cli/cmd/bs 0.007s` |
+
+- Full mutation output: `/tmp/factory-006/review-gate-1-fix/mutations.log`. Per-probe output: `control.log`, `M10.log`, `M29.log`, `M30.log`, and `restored-control.log` in that directory. `mutation-results.json` records the archive commit, scratch path, command, exits, and deleted sentences.
+
+#### Verification and scope evidence
+
+- Verification environment: `PATH=$HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64/bin:$PATH GOTOOLCHAIN=local GOPROXY=off`. This recovery record contains the environment. `.mem/` does not.
+- The full checks below ran against the fix contents before the fix commit. The range checks then ran at the fix commit. All commands exited 0:
+
+```text
+$ GOFLAGS=-o=/dev/null go build ./...
+exit=0
+$ go vet ./...
+exit=0
+$ go test -count=1 ./...
+ok  github.com/jrswab/betterstack-cli/cmd/bs  2.183s
+exit=0
+$ gofmt -l cmd/bs/*.go
+exit=0
+$ git diff --check 93e3f11..HEAD
+exit=0
+$ git diff --exit-code 93e3f11..HEAD -- cmd/bs/main.go cmd/bs/logs.go cmd/bs/help.go
+exit=0
+$ test ! -e ./bs
+exit=0
+$ find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum
+053c5c7b096d5990e38a2aa26b691865a29116f5754c268ce4b41cc62cde5fef  -
+exit=0
+```
+
+- `python3 /tmp/factory-006/records-check.py` exited 0. README, 006 fragment, memory links and line limits, all 16 production anchors, and routing/provenance checks passed.
+- `/home/jaron/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master` exited 0: `PASS: /home/jaron/dev/betterstack-cli/master: 94 Markdown files, 0 findings`.
+- `python3 /tmp/factory-006/review-gate-1-fix/check-record-fixes.py` exited 0. It verified F2 wording, F3's spelling-only diff and unchanged B1 checkbox, authoritative spelling agreement, and the unchanged 005 fragment.
+- Logs: `/tmp/factory-006/review-gate-1-fix/verification-before-fix-commit.log`, `verification-at-fix-commit.log`, and `record-fixes.log`.
+- `make help` exited 2: `make: *** No rule to make target 'help'. Stop.` The repository has no Makefile or configured Markdown formatter. Existing direct checks and docs-lint passed. The default Go launcher failed its toolchain lookup. Every verification and mutation test used the approved offline environment above. No vulnerability scan was run.
+- `.agents/scripts/script-triage.py` was absent before the fix commit. The normal pre-commit hook exited without changing files. Explicit paths alone were staged.
+- State at the fix commit: branch `master`, no tracked changes, and only the five protected untracked paths. The protected-path fingerprint matched before and after the fix.
+- Assumptions: the supplied review defines finding severity and mutation identities. Exact sentence assertions follow the supplied help text. This evidence fixes F1 but does not replace D9's independent review.
+- Decisions: the test retains targeted substring checks for other help requirements, but uses complete sentences for these two explanations. A full-help snapshot was rejected because unrelated formatting is outside this fix. The checkpoint uses a same-directory temporary file and atomic rename.
+- Skips: no production change, new test helper, or full-help snapshot is needed (ladder rung 1). README, anchors, changelog, and provenance records need no update for these scoped corrections (rung 1). F4 remains record-only under the explicit 007 deferral. Standard-library tools cover mutation and record checks (rung 2). No new dependency or symptom patch exists.
+- Gate state after fixes: **FAIL remains recorded at `93e3f11`; review gate 1 re-run is pending**. A1–C2 stay checked. V1 and the milestone stay unchecked.
+- Next action: **review gate 1 re-run**.
+
 ## Limitations and blockers
 
-- Limitations: the repository has no Makefile or diff-scoped lint target. The prior pre-flight found `GO-2026-6809` in Go 1.26.9, fixed in Go 1.26.10. This execution uses the caller-approved toolchain without claiming a clean vulnerability scan. No subagent tool is available. The orchestrator owns D9 independent review, V1, and the completion gate.
-- Blockers: none for assigned tasks A1–C2.
+- Limitations: the repository has no Makefile or diff-scoped lint target. The prior pre-flight found `GO-2026-6809` in Go 1.26.9, fixed in Go 1.26.10. This execution uses the caller-approved toolchain without claiming a clean vulnerability scan. No subagent tool is available. The orchestrator owns review gate 1 re-run, V1, and the completion gate.
+- Blockers: review gate 1 failed at `93e3f11`. F1–F3 fixes and mutation proof are complete, but the independent re-run remains pending.
 - Next action is the latest Gate evidence entry and State's Next safe action.
