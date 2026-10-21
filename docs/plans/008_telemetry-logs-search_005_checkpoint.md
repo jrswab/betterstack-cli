@@ -33,11 +33,11 @@
 
 - Lane: `full` — D1 assigns the full lane because this milestone changes an external SQL HTTP contract and handles credentials.
 - Current phase: `Phase 3 execution`.
-- Current task: `Phase 3: implement B2`.
+- Current task: `Phase 3: implement C1`.
 - Task states: Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 tasks `not started`.
 - Milestone checkbox: `unchecked`.
 - Last completed phase and gate: Phase 2 planning review passed at `2026-10-21T10:56:19-04:00`.
-- Next action: `Phase 3: implement B2`.
+- Next action: `Phase 3: implement C1`.
 
 ## Restart validation
 
@@ -206,6 +206,31 @@ Write this checkpoint through a temporary file in the same directory, then atomi
  M cmd/bs/logs_test.go
  M cmd/bs/main.go
  M docs/plans/008_telemetry-logs-search_005_implement.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+## Phase 3 task B2
+
+- Files and symbols: `cmd/bs/logs_test.go:TestLogsSQLNoRedirectsOrRetries` and task records. No production change was necessary.
+- B1 commit: `41d04eb`.
+- Focused command: `go test ./cmd/bs -run '^TestLogsSQLNoRedirectsOrRetries$' -count=1`. Exit 0, `ok github.com/jrswab/betterstack-cli/cmd/bs 0.016s`.
+- Formatter/lint: `gofmt -w cmd/bs/logs_test.go`, `go vet ./cmd/bs`, `git diff --check`. Exit 0, no findings.
+- Cases: 301, 302, 303, 307, 308, 500, 503, and a server-hijacked connection closed without a response. Every invocation has one guarded transport attempt, one source request, zero target requests, exit 1, and no stdout. Redirect bodies remain the original stderr body. The executor does not call or modify the caller's redirect callback.
+- Test-first result was already green because A2 supplied the no-redirect, single-Do path. No redundant production edit was added (ladder rung 1).
+- Risk tier: standard test-only proof. Independent milestone review remains pending under D9.
+
+- Task state: `B2` passed. The checklist renders this state.
+- Validated HEAD: `41d04eb48dc35749d59b1372c86725d917f0ea00`.
+- Relevant work: uncommitted task changes at this gate, committed in the following explicit-path task commit.
+- Worktree stash ref: `69d9e04463a585839deea7d1fbf7237601f40a77`.
+- `git status --porcelain` at the gate:
+
+```text
+ M cmd/bs/logs_test.go
 ?? .agents/
 ?? .wayfinder/
 ?? AGENTS.md

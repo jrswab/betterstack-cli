@@ -99,6 +99,53 @@ func TestLogsSearchRouteRemainsUnavailable(t *testing.T) {
 	}
 }
 
+// TestLogsSQLNoRedirectsOrRetries verifies one attempt for redirects, server errors, and broken connections.
+func TestLogsSQLNoRedirectsOrRetries(t *testing.T) {
+	setFakeSQLConfig(t)
+	var targetRequests atomic.Int32
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { targetRequests.Add(1) }))
+	defer target.Close()
+	for _, status := range []int{301, 302, 303, 307, 308, 500, 503, 0} {
+		t.Run(strconv.Itoa(status), func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				if status == 0 {
+					conn, _, err := w.(http.Hijacker).Hijack()
+					if err != nil {
+						t.Error(err)
+						return
+					}
+					_ = conn.Close()
+					return
+				}
+				w.Header().Set("Location", target.URL)
+				w.WriteHeader(status)
+				_, _ = io.WriteString(w, "original error body\n")
+			}))
+			defer srv.Close()
+			client := testHTTPClient()
+			guard := client.Transport.(*loopbackOnlyTransport)
+			probe := &sqlDeadlineTransport{base: guard.base, timeout: time.Second}
+			guard.base = probe
+			callbackCalls := 0
+			client.CheckRedirect = func(*http.Request, []*http.Request) error { callbackCalls++; return nil }
+			var out, err bytes.Buffer
+			code := doLogsSQLRequest("SELECT 1", nil, time.Second, &out, &err, srv.URL, client)
+			want := "original error body\n"
+			if status == 0 {
+				want = "bs: SQL request failed\n"
+			}
+			if code != 1 || out.Len() != 0 || err.String() != want || requests.Load() != 1 || targetRequests.Load() != 0 || probe.calls != 1 || callbackCalls != 0 {
+				t.Fatalf("code=%d, stderr=%q, requests=%d, target=%d, attempts=%d, callbacks=%d", code, err.String(), requests.Load(), targetRequests.Load(), probe.calls, callbackCalls)
+			}
+			if client.CheckRedirect == nil || client.CheckRedirect(nil, nil) != nil || callbackCalls != 1 {
+				t.Fatal("executor changed the supplied client")
+			}
+		})
+	}
+}
+
 // TestLogsSQLCredentials verifies required SQL variables, safe failures, and separate Basic auth.
 func TestLogsSQLCredentials(t *testing.T) {
 	var requests atomic.Int32
