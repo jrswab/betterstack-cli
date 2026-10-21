@@ -4,10 +4,13 @@
 
 [parseLogsSearchArgs](../../cmd/bs/logs.go) accepts space-separated search flags without requests, endpoint access, or credentials. It requires one full table identifier matching `^t[0-9]+_[a-z0-9_]+$`. All value-bearing flags reject duplicates before checking the repeated value. Unknown flags, equals forms, positionals, and missing values fail locally. Repeated `--cold` switches enable one option. A query pointer distinguishes an omitted query from an explicitly empty string.
 
-This parser example preserves an empty query and enables cold storage:
+This builder example returns SQL plus `param_from=0`, `param_to=3600000`, and an empty `param_query`:
 
 ```go
-parsed, err := parseLogsSearchArgs([]string{"--table", "t1_fake", "--query", "", "--cold"})
+sql, params, err := buildLogsSearchQuery(
+    []string{"--table", "t1_fake", "--query", "", "--cold"},
+    time.Unix(3600, 0),
+)
 ```
 
 ## Defaults and bounded values
@@ -32,6 +35,20 @@ Time values use separate `param_from` and `param_to` decimal strings with `Int64
 
 `--cold` selects an outer query over one hot branch and one `s3Cluster(primary, <table>_s3)` branch combined with `UNION ALL`. The cold branch filters `_row_type = 1`. The outer query applies the same time and optional text predicates to both branches, then one order, limit, timeout setting, and output format. Repeated switches do not add branches. Hot-only output remains the default. Cold uses the same 30-second default timeout.
 
-The parser has no command route or help entry. [Parser tests](../../cmd/bs/logs_test.go) use only fake strings.
+```mermaid
+flowchart TD
+    Args[Search flags] --> Parse[parseLogsSearchArgs]
+    Parse --> Bounds[Resolve bounds from captured time]
+    Parse -->|invalid| Error[Empty SQL and nil parameters]
+    Bounds -->|invalid| Error
+    Bounds --> Cold{Cold enabled?}
+    Cold -->|no| Hot[Hot table]
+    Cold -->|yes| Union[Hot UNION ALL filtered cold table]
+    Hot --> Build[Shared predicates and final clauses]
+    Union --> Build
+    Build --> Result[SQL and separate typed parameters]
+```
+
+The builder has no command route, request, credential access, or help entry. [Parser and builder tests](../../cmd/bs/logs_test.go) use only fake strings and fixed times.
 
 Related: [memory map](../mem-map.md), [terminology](../terminology.md), and [sources](sources.md).

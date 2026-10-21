@@ -21,4 +21,4 @@
 - **Full table identifier** - the required log-search `--table` value matching `^t[0-9]+_[a-z0-9_]+$`. Avoid: Source ID, SQL fragment.
 - **Loopback-only network guard** - the test transport and dial checks that admit literal loopback IPs and reject other hosts without DNS lookup. Avoid: localhost allowlist.
 
-Sources: [routing](../cmd/bs/main.go), [requests](../cmd/bs/monitors.go), [source handlers](../cmd/bs/sources.go), [secret redaction](../cmd/bs/telemetry.go), [incidents](../cmd/bs/incidents.go), and [test safety](../cmd/bs/safety_test.go). See the [memory map](mem-map.md).
+Sources: [routing](../cmd/bs/main.go), [requests](../cmd/bs/monitors.go), [source handlers](../cmd/bs/sources.go), [log search builder](../cmd/bs/logs.go), [secret redaction](../cmd/bs/telemetry.go), [incidents](../cmd/bs/incidents.go), and [test safety](../cmd/bs/safety_test.go). See the [memory map](mem-map.md).
