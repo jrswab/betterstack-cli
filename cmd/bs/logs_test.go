@@ -162,6 +162,69 @@ func TestBuildLogsSearchQueryRejectsArguments(t *testing.T) {
 	}
 }
 
+// TestBuildLogsSearchQueryTimeBounds verifies fixed-clock windows and RFC3339Nano conversion.
+func TestBuildLogsSearchQueryTimeBounds(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		args []string
+		from string
+		to   string
+	}{
+		{"default", nil, "3600123", "7200123"},
+		{"half hour", []string{"--since", "30m"}, "5400123", "7200123"},
+		{"one hour", []string{"--since", "1h"}, "3600123", "7200123"},
+		{"compound", []string{"--since", "2h45m"}, "-2699877", "7200123"},
+		{"submillisecond since", []string{"--since", "1ns"}, "7200123", "7200123"},
+		{"both", []string{"--from", "1970-01-01T00:00:01Z", "--to", "1970-01-01T00:00:02Z"}, "1000", "2000"},
+		{"from only", []string{"--from", "1970-01-01T00:00:01Z"}, "1000", "7200123"},
+		{"offset", []string{"--from", "1970-01-01T02:00:00+01:00", "--to", "1970-01-01T03:00:00+01:00"}, "3600000", "7200000"},
+		{"nanoseconds", []string{"--from", "1970-01-01T00:00:01.123456789Z", "--to", "1970-01-01T00:00:02.987654321Z"}, "1123", "2987"},
+		{"same millisecond", []string{"--from", "1970-01-01T00:00:01.0001Z", "--to", "1970-01-01T00:00:01.0009Z"}, "1000", "1000"},
+		{"pre epoch", []string{"--from", "1969-12-31T23:59:59.9991Z", "--to", "1970-01-01T00:00:00.0001Z"}, "-1", "0"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			sql, params, err := buildLogsSearchQuery(append([]string{"--table", "t1_fake"}, tc.args...), time.Unix(7200, 123456789))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !reflect.DeepEqual(map[string][]string(params), map[string][]string{"param_from": {tc.from}, "param_to": {tc.to}}) {
+				t.Fatalf("params = %v", params)
+			}
+			if !strings.Contains(sql, "dt >= fromUnixTimestamp64Milli({from:Int64}, 'UTC') AND dt < fromUnixTimestamp64Milli({to:Int64}, 'UTC')") {
+				t.Fatalf("SQL = %q", sql)
+			}
+		})
+	}
+}
+
+// TestBuildLogsSearchQueryRejectsTimeBounds verifies invalid and mutually exclusive time flags.
+func TestBuildLogsSearchQueryRejectsTimeBounds(t *testing.T) {
+	for _, tc := range []struct {
+		args []string
+		flag string
+	}{
+		{[]string{"--to", "1970-01-01T00:00:02Z"}, "--to"},
+		{[]string{"--from", ""}, "--from"},
+		{[]string{"--from", "1970-01-01"}, "--from"},
+		{[]string{"--from", "fake'); DROP TABLE fake; --"}, "--from"},
+		{[]string{"--from", "1970-13-01T00:00:00Z"}, "--from"},
+		{[]string{"--from", "1970-01-01T00:00:00Z", "--to", ""}, "--to"},
+		{[]string{"--from", "1970-01-01T00:00:00Z", "--to", "bad"}, "--to"},
+		{[]string{"--from", "1970-01-01T00:00:02Z", "--to", "1970-01-01T00:00:02Z"}, "--from"},
+		{[]string{"--from", "1970-01-01T00:00:03Z", "--to", "1970-01-01T00:00:02Z"}, "--from"},
+		{[]string{"--from", "1970-01-01T02:00:00.123456789Z"}, "--from"},
+		{[]string{"--from", "1970-01-01T03:00:00Z"}, "--from"},
+		{[]string{"--since", "1h", "--from", "1970-01-01T00:00:01Z"}, "--since"},
+		{[]string{"--since", "1h", "--to", "1970-01-01T00:00:02Z"}, "--since"},
+		{[]string{"--from", "1970-01-01T00:00:01Z", "--to", "1970-01-01T00:00:02Z", "--since", "1h"}, "--since"},
+	} {
+		sql, params, err := buildLogsSearchQuery(append([]string{"--table", "t1_fake"}, tc.args...), time.Unix(7200, 123456789))
+		if err == nil || !strings.Contains(err.Error(), tc.flag) || sql != "" || params != nil {
+			t.Fatalf("args = %q, SQL = %q, params = %v, error = %v", tc.args, sql, params, err)
+		}
+	}
+}
+
 // TestParseLogsSearchArgsDefaults verifies the approved search defaults.
 func TestParseLogsSearchArgsDefaults(t *testing.T) {
 	parsed, err := parseLogsSearchArgs([]string{"--table", "t1_fake"})

@@ -22,6 +22,12 @@ An optional query uses `positionCaseInsensitiveUTF8(raw, {query:String}) > 0` an
 
 Timeout settings use integer division and a remainder check to round up without overflowing the duration. This setting does not guarantee server cancellation.
 
+## Time bounds
+
+Relative windows subtract the positive duration from the same captured time used for the upper bound. Explicit `--from` and `--to` values parse with `time.RFC3339Nano`. An omitted `--to` uses the captured time. `--to` requires `--from`. An explicit `--since` cannot accompany either bound. Bounds must satisfy `from.Before(to)` before conversion with `UnixMilli()`.
+
+Time values use separate `param_from` and `param_to` decimal strings with `Int64` placeholders. The lower comparison is inclusive and the upper comparison is exclusive. Sub-millisecond precision is discarded. Distinct valid bounds can therefore bind the same millisecond, producing an empty interval. Positive sub-millisecond relative windows remain valid under the duration contract.
+
 The parser has no command route or help entry. [Parser tests](../../cmd/bs/logs_test.go) use only fake strings.
 
 Related: [memory map](../mem-map.md), [terminology](../terminology.md), and [sources](sources.md).

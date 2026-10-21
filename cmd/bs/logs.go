@@ -28,9 +28,33 @@ func buildLogsSearchQuery(args []string, now time.Time) (string, url.Values, err
 	if err != nil {
 		return "", nil, err
 	}
+	from, to := now.Add(-parsed.since), now
+	fromValue, hasFrom := parsed.values["--from"]
+	toValue, hasTo := parsed.values["--to"]
+	if _, hasSince := parsed.values["--since"]; hasSince && (hasFrom || hasTo) {
+		return "", nil, fmt.Errorf("--since cannot be combined with --from or --to")
+	}
+	if hasTo && !hasFrom {
+		return "", nil, fmt.Errorf("--to requires --from")
+	}
+	if hasFrom {
+		from, err = time.Parse(time.RFC3339Nano, fromValue)
+		if err != nil {
+			return "", nil, fmt.Errorf("invalid --from value %q", fromValue)
+		}
+	}
+	if hasTo {
+		to, err = time.Parse(time.RFC3339Nano, toValue)
+		if err != nil {
+			return "", nil, fmt.Errorf("invalid --to value %q", toValue)
+		}
+	}
+	if !from.Before(to) {
+		return "", nil, fmt.Errorf("--from must be before --to")
+	}
 	params := url.Values{
-		"param_from": {strconv.FormatInt(now.Add(-parsed.since).UnixMilli(), 10)},
-		"param_to":   {strconv.FormatInt(now.UnixMilli(), 10)},
+		"param_from": {strconv.FormatInt(from.UnixMilli(), 10)},
+		"param_to":   {strconv.FormatInt(to.UnixMilli(), 10)},
 	}
 	predicate := "dt >= fromUnixTimestamp64Milli({from:Int64}, 'UTC') AND dt < fromUnixTimestamp64Milli({to:Int64}, 'UTC')"
 	if parsed.query != nil {
