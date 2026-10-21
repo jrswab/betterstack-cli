@@ -2,6 +2,20 @@
 
 `bs` is a read-only CLI for Better Stack Uptime and Telemetry APIs.
 
+## Telemetry SQL configuration
+
+The SQL executor uses these separate environment variables. The command route is not available yet.
+
+| Variable | Role |
+|---|---|
+| `BETTERSTACK_TELEMETRY_SQL_URL` | Regional SQL host, `host:443`, or `https://host[:port]`. |
+| `BETTERSTACK_TELEMETRY_SQL_USERNAME` | Nonempty HTTP Basic-auth username. |
+| `BETTERSTACK_TELEMETRY_SQL_PASSWORD` | Nonempty HTTP Basic-auth password. |
+
+All three values are required. SQL credentials never fall back to Uptime or Telemetry API tokens. Only the SQL host is configurable. Absolute HTTPS URLs allow an empty path or `/`, but no userinfo, query, or fragment.
+
+See [the SQL executor](cmd/bs/logs.go).
+
 ## Telemetry sources
 
 Source commands use only `BETTERSTACK_TELEMETRY_API_TOKEN`. Set this environment variable to your Telemetry API token before requesting sources. Uptime commands continue to use `BETTERSTACK_UPTIME_API_TOKEN` without credential fallback.

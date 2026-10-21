@@ -33,11 +33,11 @@
 
 - Lane: `full` — D1 assigns the full lane because this milestone changes an external SQL HTTP contract and handles credentials.
 - Current phase: `Phase 3 execution`.
-- Current task: `Phase 3: implement A2`.
+- Current task: `Phase 3: implement B1`.
 - Task states: Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 tasks `not started`.
 - Milestone checkbox: `unchecked`.
 - Last completed phase and gate: Phase 2 planning review passed at `2026-10-21T10:56:19-04:00`.
-- Next action: `Phase 3: implement A2`.
+- Next action: `Phase 3: implement B1`.
 
 ## Restart validation
 
@@ -138,6 +138,42 @@ Write this checkpoint through a temporary file in the same directory, then atomi
 ?? .wayfinder/
 ?? AGENTS.md
 ?? changelog.d/008-telemetry-logs-search-005.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+## Phase 3 task A2
+
+- Files and symbols: `cmd/bs/logs.go:doLogsSQLRequest` and SQL configuration constants; `cmd/bs/logs_test.go:TestLogsSQLCredentials,setFakeSQLConfig`; `cmd/bs/safety_test.go:clearCredentialEnv,envWithoutCredentials,TestSafetyHarnessStripsInheritedCredentials,TestSafetyHarnessIsolatedProcessSeesNoCredentials`; README, TAGS, terminology, logs memory, and the 005 fragment.
+- Test-first: `go test ./cmd/bs -run '^TestLogsSQLCredentials$' -count=1`. Exit 1, undefined `doLogsSQLRequest` at lines 49, 61, 69, and 76.
+- Focused checks: `go test ./cmd/bs -run '^(TestLogsSQLCredentials|TestParseTelemetrySQLURL|TestSafetyHarnessStripsInheritedCredentials)$' -count=1`. Exit 0, `ok github.com/jrswab/betterstack-cli/cmd/bs 0.655s`.
+- Formatter/lint: `gofmt -w cmd/bs/logs.go cmd/bs/logs_test.go cmd/bs/safety_test.go`, `go vet ./cmd/bs`, `git diff --check`. Exit 0, no findings.
+- A1 commit: `471e5d1`.
+- Decision: the injectable endpoint changes only the destination after real configuration validation. Guarded HTTP loopback tests do not weaken the production HTTPS parser.
+- Decision: fixed local diagnostics omit underlying errors instead of redacting them. This keeps `redactSecrets` exclusive to non-2xx SQL bodies in C2.
+- Trade-off: A2 establishes the minimal functioning POST/success path to prove Basic auth. B1 proves its complete shape and seam next. C1 adds full byte coverage later.
+- Safety addition: TestMain strips the three newly consumed SQL variables. The isolated subprocess test verifies fake sentinels disappear.
+- Risk tier: design-bearing. Independent review remains pending under D9.
+- Ladder: stdlib `net/http`, context, and `io.ReadAll` cover the executor (rung 2). No dependency or route activation (rung 1).
+
+- Task state: `A2` passed. The checklist renders this state.
+- Validated HEAD: `471e5d14b55d70e40f3e8d87d2fb521bf458f02d`.
+- Relevant work: uncommitted task changes at this gate, committed in the following explicit-path task commit.
+- Worktree stash ref: `5763bab505e270cc0db7e4635a9a376c7d2a7127`.
+- `git status --porcelain` at the gate:
+
+```text
+ M .mem/telemetry/logs.md
+ M .mem/terminology.md
+ M README.md
+ M TAGS.md
+ M changelog.d/008-telemetry-logs-search-005.md
+ M cmd/bs/logs.go
+ M cmd/bs/logs_test.go
+ M cmd/bs/safety_test.go
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
 ?? docs/plans/008_telemetry-logs-search_milestones.md
 ?? verify-incident-id.sh
 ```

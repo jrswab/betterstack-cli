@@ -53,6 +53,12 @@ flowchart TD
 
 [parseTelemetrySQLURL](../../cmd/bs/logs.go) accepts a DNS host or bracketed IPv6 address, optionally with raw port `443`. Absolute `https://host[:port]` URLs allow an empty path or `/`. Explicit HTTPS ports range from 1 through 65535. Host-only forms receive HTTPS. Userinfo, queries, fragments, non-root paths, other schemes, malformed hosts, and unsupported raw ports fail with a fixed diagnostic that does not echo input. The parser sends no request.
 
+## SQL execution
+
+[doLogsSQLRequest](../../cmd/bs/logs.go) requires nonempty `BETTERSTACK_TELEMETRY_SQL_URL`, `BETTERSTACK_TELEMETRY_SQL_USERNAME`, and `BETTERSTACK_TELEMETRY_SQL_PASSWORD`. It validates the configured URL before using an injected test endpoint. Only SQL username/password supply Basic authentication. Neither API token substitutes for SQL credentials. Missing values name the variable without echoing input.
+
+The executor sends one timed POST with SQL in the body, encoded parameters in the URL, and `Content-Type: plain/text`. It copies the supplied client before disabling redirects. Complete 2xx bodies reach stdout unchanged. Other bodies currently reach stderr unchanged with exit 1. Transport and body-read failures use fixed diagnostics and no success output. Tests clear inherited SQL configuration and use guarded loopback clients.
+
 The builder has no command route, request, credential access, or help entry. [Parser and builder tests](../../cmd/bs/logs_test.go) use only fake strings and fixed times.
 
 Related: [memory map](../mem-map.md), [terminology](../terminology.md), and [sources](sources.md).

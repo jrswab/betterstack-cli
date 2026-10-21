@@ -1,11 +1,83 @@
 package main
 
 import (
+	"bytes"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"os"
 	"reflect"
+	"strconv"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 )
+
+func setFakeSQLConfig(t *testing.T) {
+	t.Helper()
+	t.Setenv("BETTERSTACK_TELEMETRY_SQL_URL", "sql.example")
+	t.Setenv("BETTERSTACK_TELEMETRY_SQL_USERNAME", "fake-sql-user")
+	t.Setenv("BETTERSTACK_TELEMETRY_SQL_PASSWORD", "fake-sql-password")
+	t.Setenv(telemetryTokenEnvVar, "fake-telemetry-token")
+	t.Setenv(tokenEnvVar, "fake-uptime-token")
+}
+
+// TestLogsSQLCredentials verifies required SQL variables, safe failures, and separate Basic auth.
+func TestLogsSQLCredentials(t *testing.T) {
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		username, password, ok := r.BasicAuth()
+		if !ok || username != "fake-sql-user" || password != "fake-sql-password" || strings.HasPrefix(r.Header.Get("Authorization"), "Bearer ") {
+			t.Error("SQL request did not use separate Basic credentials")
+		}
+		_, _ = io.WriteString(w, "ok")
+	}))
+	defer srv.Close()
+	for _, name := range []string{"BETTERSTACK_TELEMETRY_SQL_URL", "BETTERSTACK_TELEMETRY_SQL_USERNAME", "BETTERSTACK_TELEMETRY_SQL_PASSWORD"} {
+		for _, unset := range []bool{false, true} {
+			t.Run(name+"/unset="+strconv.FormatBool(unset), func(t *testing.T) {
+				setFakeSQLConfig(t)
+				t.Setenv(name, "")
+				if unset {
+					if err := os.Unsetenv(name); err != nil {
+						t.Fatal(err)
+					}
+				}
+				var out, err bytes.Buffer
+				code := doLogsSQLRequest("SELECT 1", nil, time.Second, &out, &err, srv.URL, testHTTPClient())
+				if code != 1 || out.Len() != 0 || err.String() != "bs: "+name+" is not set\n" || requests.Load() != 0 {
+					t.Fatalf("local validation failed: code=%d, stderr=%q, requests=%d", code, err.String(), requests.Load())
+				}
+			})
+		}
+	}
+	t.Run("API tokens do not replace SQL credentials", func(t *testing.T) {
+		setFakeSQLConfig(t)
+		t.Setenv("BETTERSTACK_TELEMETRY_SQL_USERNAME", "")
+		t.Setenv("BETTERSTACK_TELEMETRY_SQL_PASSWORD", "")
+		var out, err bytes.Buffer
+		if code := doLogsSQLRequest("SELECT 1", nil, time.Second, &out, &err, srv.URL, testHTTPClient()); code != 1 || out.Len() != 0 || requests.Load() != 0 {
+			t.Fatal("API tokens substituted for SQL credentials")
+		}
+	})
+	t.Run("invalid configured URL", func(t *testing.T) {
+		setFakeSQLConfig(t)
+		t.Setenv("BETTERSTACK_TELEMETRY_SQL_URL", "https://fake-sql-user:fake-sql-password@sql.example")
+		var out, err bytes.Buffer
+		if code := doLogsSQLRequest("SELECT 1", nil, time.Second, &out, &err, srv.URL, testHTTPClient()); code != 1 || out.Len() != 0 || err.String() != "bs: invalid BETTERSTACK_TELEMETRY_SQL_URL\n" || requests.Load() != 0 {
+			t.Fatal("invalid configured URL was not rejected safely before a request")
+		}
+	})
+	t.Run("valid separate credentials", func(t *testing.T) {
+		setFakeSQLConfig(t)
+		var out, err bytes.Buffer
+		if code := doLogsSQLRequest("SELECT 1", nil, time.Second, &out, &err, srv.URL, testHTTPClient()); code != 0 || out.String() != "ok" || err.Len() != 0 || requests.Load() != 1 {
+			t.Fatalf("code=%d, stdout=%q, stderr=%q, requests=%d", code, out.String(), err.String(), requests.Load())
+		}
+	})
+}
 
 // TestParseTelemetrySQLURL verifies approved HTTPS authorities and safe rejection.
 func TestParseTelemetrySQLURL(t *testing.T) {

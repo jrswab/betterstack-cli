@@ -1,15 +1,81 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"io"
+	"net/http"
 	"net/netip"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 	"unicode"
 )
+
+// @anchor:telemetry:config sql
+const (
+	telemetrySQLURLEnvVar      = "BETTERSTACK_TELEMETRY_SQL_URL"
+	telemetrySQLUsernameEnvVar = "BETTERSTACK_TELEMETRY_SQL_USERNAME"
+	telemetrySQLPasswordEnvVar = "BETTERSTACK_TELEMETRY_SQL_PASSWORD"
+)
+
+// doLogsSQLRequest sends SQL with separate Basic credentials and safe local diagnostics.
+// @anchor:telemetry:request-executor sql
+func doLogsSQLRequest(sql string, params url.Values, timeout time.Duration, stdout, stderr io.Writer, telemetrySQLURL string, client *http.Client) int {
+	values := make([]string, 0, 3)
+	for _, name := range []string{telemetrySQLURLEnvVar, telemetrySQLUsernameEnvVar, telemetrySQLPasswordEnvVar} {
+		value := os.Getenv(name)
+		if value == "" {
+			fmt.Fprintf(stderr, "bs: %s is not set\n", name)
+			return 1
+		}
+		values = append(values, value)
+	}
+	endpoint, err := parseTelemetrySQLURL(values[0])
+	if err != nil {
+		fmt.Fprintf(stderr, "bs: %s\n", err)
+		return 1
+	}
+	if telemetrySQLURL != "" {
+		endpoint, err = url.Parse(telemetrySQLURL)
+		if err != nil {
+			fmt.Fprintln(stderr, "bs: could not build SQL request")
+			return 1
+		}
+	}
+	endpoint.RawQuery = params.Encode()
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), strings.NewReader(sql))
+	if err != nil {
+		fmt.Fprintln(stderr, "bs: could not build SQL request")
+		return 1
+	}
+	req.SetBasicAuth(values[1], values[2])
+	req.Header.Set("Content-Type", "plain/text")
+	c := *client
+	c.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	resp, err := c.Do(req)
+	if err != nil {
+		fmt.Fprintln(stderr, "bs: SQL request failed")
+		return 1
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Fprintln(stderr, "bs: could not read SQL response")
+		return 1
+	}
+	if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
+		_, _ = stdout.Write(body)
+		return 0
+	}
+	_, _ = stderr.Write(body)
+	return 1
+}
 
 var logsTablePattern = regexp.MustCompile(`^t[0-9]+_[a-z0-9_]+$`)
 

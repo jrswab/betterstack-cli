@@ -57,10 +57,10 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-// clearCredentialEnv removes the active and legacy API credential variables.
+// clearCredentialEnv removes API credentials and SQL configuration.
 // It reports an error instead of dumping the environment.
 func clearCredentialEnv() error {
-	for _, name := range []string{tokenEnvVar, "BETTERSTACK_API_TOKEN", telemetryTokenEnvVar} {
+	for _, name := range []string{tokenEnvVar, "BETTERSTACK_API_TOKEN", telemetryTokenEnvVar, telemetrySQLURLEnvVar, telemetrySQLUsernameEnvVar, telemetrySQLPasswordEnvVar} {
 		if err := os.Unsetenv(name); err != nil {
 			return fmt.Errorf("could not unset %s: %w", name, err)
 		}
@@ -330,7 +330,7 @@ func envWithoutCredentials() []string {
 	out := make([]string, 0, len(os.Environ()))
 	for _, entry := range os.Environ() {
 		name, _, ok := strings.Cut(entry, "=")
-		if ok && (name == tokenEnvVar || name == "BETTERSTACK_API_TOKEN" || name == telemetryTokenEnvVar) {
+		if ok && (name == tokenEnvVar || name == "BETTERSTACK_API_TOKEN" || name == telemetryTokenEnvVar || name == telemetrySQLURLEnvVar || name == telemetrySQLUsernameEnvVar || name == telemetrySQLPasswordEnvVar) {
 			continue
 		}
 		out = append(out, entry)
@@ -348,6 +348,9 @@ func TestSafetyHarnessStripsInheritedCredentials(t *testing.T) {
 		uptimeSentinel    = "sentinel-uptime-token-do-not-use"
 		legacySentinel    = "sentinel-legacy-token-do-not-use"
 		telemetrySentinel = "sentinel-telemetry-token-do-not-use"
+		sqlURLSentinel    = "sentinel-sql-url-do-not-use"
+		sqlUserSentinel   = "sentinel-sql-user-do-not-use"
+		sqlPassSentinel   = "sentinel-sql-password-do-not-use"
 		probeTestName     = "TestSafetyHarnessIsolatedProcessSeesNoCredentials"
 	)
 
@@ -372,6 +375,9 @@ func TestSafetyHarnessStripsInheritedCredentials(t *testing.T) {
 		tokenEnvVar+"="+uptimeSentinel,
 		"BETTERSTACK_API_TOKEN="+legacySentinel,
 		telemetryTokenEnvVar+"="+telemetrySentinel,
+		telemetrySQLURLEnvVar+"="+sqlURLSentinel,
+		telemetrySQLUsernameEnvVar+"="+sqlUserSentinel,
+		telemetrySQLPasswordEnvVar+"="+sqlPassSentinel,
 	)
 	run.Stdout = logFile
 	run.Stderr = logFile
@@ -387,7 +393,7 @@ func TestSafetyHarnessStripsInheritedCredentials(t *testing.T) {
 	logText := string(logBytes)
 
 	// Check for leaked sentinels before any failure path prints the log.
-	for _, sentinel := range []string{uptimeSentinel, legacySentinel, telemetrySentinel} {
+	for _, sentinel := range []string{uptimeSentinel, legacySentinel, telemetrySentinel, sqlURLSentinel, sqlUserSentinel, sqlPassSentinel} {
 		if strings.Contains(logText, sentinel) {
 			t.Fatal("the probe log contains a sentinel credential value; the harness must never print credentials")
 		}
@@ -405,7 +411,7 @@ func TestSafetyHarnessIsolatedProcessSeesNoCredentials(t *testing.T) {
 	if os.Getenv(safetyProbeEnv) != "1" {
 		t.Skip("isolated-process probe; run through TestSafetyHarnessStripsInheritedCredentials")
 	}
-	for _, name := range []string{tokenEnvVar, "BETTERSTACK_API_TOKEN", telemetryTokenEnvVar} {
+	for _, name := range []string{tokenEnvVar, "BETTERSTACK_API_TOKEN", telemetryTokenEnvVar, telemetrySQLURLEnvVar, telemetrySQLUsernameEnvVar, telemetrySQLPasswordEnvVar} {
 		if os.Getenv(name) != "" {
 			t.Fatalf("inherited credential %s survived TestMain", name)
 		}
