@@ -419,3 +419,36 @@ bcb94c4 005: A2 require separate SQL credentials
 ?? docs/plans/008_telemetry-logs-search_milestones.md
 ?? verify-incident-id.sh
 ```
+
+## Committed execution handoff
+
+- Validated HEAD: `53d2c9191b0ab437c5e924e88b45c219164ff3da` (E1 commit).
+- Relevant implementation and records: committed. This handoff update changes only the checkpoint.
+- The eight task gates preserve pre-commit stash objects and exact gate status. E1 verifies the committed source and records at `65192fb`, whose runtime and records tree is unchanged at `53d2c9191b0ab437c5e924e88b45c219164ff3da`.
+- Commands after E1: `git diff --check 47a6666..HEAD` and `test ! -e ./bs` exited 0 without output. The baseline fingerprint remains `41306493735a9bfeeae10d179385968acfd8af3d46e7a2cd897893aba32209fe  -`.
+- Restart rule: allow subsequent checkpoint-only commits after this HEAD when the verified Go files, README, TAGS, changelog, and memory match this HEAD. Re-run the smallest affected gate if relevant files differ.
+- All assigned task boxes A1–E1 render checked. No V1 box exists in this checklist. Milestone 005 stays unchecked. The next authorized execution boundary is the independent review gate, not milestone 006.
+- No implementation blocker remains. The Go vulnerability scan limitation remains open.
+- `git status --porcelain` after E1:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- `git log --oneline 47a6666..HEAD` after E1:
+
+```text
+53d2c91 005: E1 verify executor and record requirement evidence
+65192fb 005: D1 complete SQL executor records
+893d103 005: C3 handle SQL local failures safely
+b30e592 005: C2 redact only SQL error bodies
+8cbe040 005: C1 prove unchanged SQL success bytes
+301fb84 005: B2 prove no redirects or retries
+41d04eb 005: B1 prove prepared SQL endpoint routing
+bcb94c4 005: A2 require separate SQL credentials
+471e5d1 005: A1 validate SQL URL forms
+```
