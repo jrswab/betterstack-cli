@@ -42,6 +42,8 @@ Tasks are sequential because they converge on one SQL request and response contr
 
 - [x] **E1 — Run milestone verification and map each requirement to evidence.** Run `GOFLAGS=-o=/dev/null go build ./...`, `go vet ./...`, `go test -count=1 ./...`, and `gofmt -l cmd/bs/*.go` with the approved local toolchain environment. Run focused SQL executor tests and direct checks for URL forms, credential separation, one request, SQL endpoint injection, content type, timeout, no redirects/retries, exact success bytes, non-2xx redaction, no command route/help, README env documentation, memory links/line limits, changelog shape, and tag consistency. Use `/tmp/factory-005/` for scratch check scripts and quoted heredocs. Record the exact Go pre-flight result and any vulnerability scan limitation. Produce an R1–R8 requirement-to-evidence table. Inspect all changes and confirm the five protected baseline paths are unchanged. Do not check milestone 005 or edit the milestone source. The independent review gate and Factory completion gate occur after this planning/execution task sequence. Covers R1–R8.
 
+- [x] **V1 — Run the Factory completion gate.** After the independent review gate passes, run the required full test suite and available lint/type checks once. Compare the implementation with every spec requirement and milestone acceptance criterion, account for all Git changes, and record gate evidence in the checkpoint. Mark this item complete and render milestone 005 checked only when all completion checks pass.
+
 ## Requirement Coverage Map
 
 | Spec requirement | Checklist coverage |

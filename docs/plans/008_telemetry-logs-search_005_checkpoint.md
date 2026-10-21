@@ -32,12 +32,23 @@
 ## State
 
 - Lane: `full` — D1 assigns the full lane because this milestone changes an external SQL HTTP contract and handles credentials.
-- Current phase: `Phase 3 — review gate 1 re-run failed, F7 fix committed`.
-- Current task: `review gate 1 re-run 2`.
-- Task states: Phase 1 and Phase 2 passed. Phase 3 tasks A1, A2, B1, B2, C1, C2, C3, D1, and E1 passed. Review gate 1 re-run failed at `92df9c0`. F1–F4 are closed. The F7 fix is committed. Review gate 1 re-run 2 and Factory completion remain pending.
-- Milestone checkbox: `unchecked`.
-- Last completed execution gate: E1 verification passed. Review gate 1 re-run failed with blocking F7. The F7 fix passed local verification. The milestone remains unchecked.
+- Current phase: `complete`
+- Current task: none
+- Task states — checklist checkboxes render from this list:
+- A1 — Parse SQL URL forms: `checked`
+- A2 — Validate SQL credentials: `checked`
+- B1 — Send SQL POST and prove routing: `checked`
+- B2 — Prove no redirects or retries: `checked`
+- C1 — Preserve successful response bytes: `checked`
+- C2 — Redact non-2xx SQL bodies: `checked`
+- C3 — Handle local failures safely: `checked`
+- D1 — Document configuration and records: `checked`
+- E1 — Verify implementation and evidence: `checked`
+- V1 — Run the Factory completion gate: `checked`
+- Milestone checkbox: `checked`
 - Next action: `review gate 1 re-run 2`.
+- Next safe action: Verify rendered state and commit only the checkpoint and implementation checklist
+- Last completed phase/task/gate and timestamp: Factory completion gate PASS, 2026-10-21T16:11:36.000958+00:00
 
 ## Restart validation
 
@@ -606,3 +617,251 @@ bcb94c4 005: A2 require separate SQL credentials
 ?? docs/plans/008_telemetry-logs-search_milestones.md
 ?? verify-incident-id.sh
 ```
+
+## Gate evidence
+
+### Review gate 1 re-run 2 PASS; V1 verification PASS
+
+- Gate: Review gate 1 re-run 2 PASS; V1 verification PASS
+- Commands/results:
+
+### Factory completion gate PASS
+
+- Gate: Factory completion gate PASS
+- Commands/results:
+## Factory completion gate — PASS
+
+- Validated HEAD: `057394038b43f785733d02df751b584e5d40394a` (`0573940`).
+- `git status --porcelain` before completion bookkeeping:
+
+```text
+ M docs/plans/008_telemetry-logs-search_005_checkpoint.md
+ M docs/plans/008_telemetry-logs-search_005_implement.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Relevant changes are limited to the authorized checkpoint and implementation checklist. The five baseline paths are unchanged. The milestone document remains untracked, and its only permitted edit is the single checkbox character render.
+- Completion checks passed: the full suite and Go checks passed; the requirement and milestone acceptance table is complete; Git changes are accounted for; the independent review gate passed.
+- Before render, the baseline fingerprint was `41306493735a9bfeeae10d179385968acfd8af3d46e7a2cd897893aba32209fe  -`.
+- Missing Make targets (`help`, `docs-check`, `fragments-check`) remain environmental limitations. Direct records checks and `docs-lint` passed. `GO-2026-6809` remains an environmental vulnerability-scan limitation for Go 1.26.9, fixed in Go 1.26.10. Non-blocking findings F5 and F6 remain open. F8 is deferred to milestone 007 records finalization.
+- Milestone 005 may now render checked. The implementation checklist V1 item may render checked.
+- HEAD commit SHA: `057394038b43f785733d02df751b584e5d40394a`
+- Relevant work: `uncommitted` — stash ref `db094ed516eb0f2f29c736814d6ebb0fbbac35a5` (tracked files only; never applied)
+- `git status --porcelain` (before checkpoint/checkbox writes):
+
+```text
+ M docs/plans/008_telemetry-logs-search_005_checkpoint.md
+ M docs/plans/008_telemetry-logs-search_005_implement.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Untracked file Git objects (stored with hash-object -w, never applied):
+
+```text
+e69de29bb2d1d6434b8b29ae775ad8c2e48c5391  ".agents/scripts/.gitkeep"
+2268d6d1b4dd6b23950ea8bcbce44e2cc4fd02a5  ".agents/scripts/telemetry-live-probe.sh"
+c3626f955decd6b7ffa341c26703f857462954b5  ".agents/skills/changelog/SKILL.md"
+656c156bf90f78f9ac3a85412fe9e91145a5bebb  ".agents/skills/mem/SKILL.md"
+44304443f37776ec688c34be9840378e243c6f2f  ".agents/skills/pr/SKILL.md"
+f788b79f289c9adfcdbb156d309261b925c403ba  ".agents/skills/provenance-log/SKILL.md"
+704342b5c4c16287177f2da9f4b656aa526fba5b  ".agents/skills/release/SKILL.md"
+e5ecdd11f8df24415ebff5fdf63f6113213bf7ec  ".wayfinder/MAP.md"
+d2521bd5eae2907dbcfadafe090456e6781b6e41  ".wayfinder/README.md"
+54113199fec1e082615bbf1bf5691e42201085b9  ".wayfinder/assets/01-api-contract-research.md"
+623ab01ed0b0385ce5fedd654d847a02d9c52fdb  ".wayfinder/assets/02-incident-url-identity-research.md"
+c4c4fe4107105fd614a8f3a94b46812cb06b3960  ".wayfinder/assets/06-go-toolchain-research.md"
+c6158f0916332d3e3a80e61a67a8ecc2de8a5b32  ".wayfinder/telemetry/MAP.md"
+f4e847e79b9fb7619c846148a592d14b88a367c7  ".wayfinder/telemetry/assets/03-sources-api-contract-research.md"
+247ee7bc692682bc7b1a32fb05f315fa938f36f6  ".wayfinder/telemetry/assets/04-sql-api-contract-research.md"
+0a18fb73e0093239f584809f479b542e99fc7f76  ".wayfinder/telemetry/assets/05-live-verification-results.md"
+5ebc264f975b3e46e337f17435443bc29535825e  ".wayfinder/telemetry/assets/06-cold-storage-timeout-research.md"
+2b71e98af8af64a9cd36bd3d5bd5e6e9b5cf818b  ".wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md"
+b7482d50e399cdae487b573ae35176f069362341  ".wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md"
+572c8f131bb6a497254d5a63b1bd30f2ce28502f  ".wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md"
+77b5c75dbaac7620d469a638c8d77335c6624e04  ".wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md"
+1323bb7b057a980e8b536c7162cccd9b7b26cc71  ".wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md"
+66a7fd3e74798761babbcd7fbec61d0aac59b704  ".wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md"
+cde68ecfe35ee426d1bcc07e817d52eced3d06b1  ".wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md"
+e180004c8a35821bec3e2cb2feab300f3046f71e  ".wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md"
+bf05f4602afcf7692f7dd66ed6af5a85be9566f1  ".wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md"
+9d010dd4260be2a86b212eeb6d11637bc1b22dbb  ".wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md"
+9677e361c7ff035c55b374943bad13b068a39a16  ".wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md"
+13a7970f556e13dad98340b3b700fd98da438aaa  ".wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md"
+5ad4771181950a65021b600d0765b6f79ad59dd5  ".wayfinder/tickets/02-incident-url-identity-resolution.md"
+53f3d379ecaf4eefb35f44de0596dcd8db5c76c1  ".wayfinder/tickets/03-command-naming-and-argument-conventions.md"
+1a67e294757e2a2558ec29f2247cc4fe6d1cb1b6  ".wayfinder/tickets/04-pagination-and-json-envelope.md"
+0a2031f1210b6008a0da9a8f7d217ecf1233f4bf  ".wayfinder/tickets/05-errors-timeouts-retries-token-safety.md"
+dc414d2e4181c232972f98528077e0e0650c47ec  ".wayfinder/tickets/06-installation-distribution-acceptance.md"
+aca24cb6a5e5e366b6216d692a002839547a1ef3  "AGENTS.md"
+f0b4c212916b7023792b76535bbd9f6cbe354f7b  "docs/plans/008_telemetry-logs-search_milestones.md"
+a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
+```
+
+- Next action: Verify rendered state and commit only the checkpoint and implementation checklist
+
+## Review gate 1 re-run 2
+
+- Verdict: **PASS** at `057394038b43f785733d02df751b584e5d40394a` (`0573940`) by the independent review subagent. The supplied review found F7 closed and no new blocking issue.
+- F5 (the variadic `runWithEndpoints` seam drift) and F6 (numeric host acceptance) remain non-blocking.
+- F8 is non-blocking and deferred to milestone 007 records finalization. The diagrams in `.mem/uptime/summary.md:3` (lines 7–9) and `.mem/telemetry/sources.md:38` omit the prepared-SQL branch that runs before `helpFor` in `cmd/bs/main.go:38–41`. Finalize these memory diagrams during milestone 007.
+- GO-2026-6809 remains an environmental `govulncheck` limitation. The finding affects `crypto/x509` in Go 1.26.9 and is fixed in Go 1.26.10.
+- This record follows the supplied independent review result. The orchestrator did not conduct an independent review or change its verdict.
+
+### Gate evidence
+
+- Validated HEAD: `057394038b43f785733d02df751b584e5d40394a`.
+- `git status --porcelain` before checkpoint and checklist writes:
+
+```text
+ M docs/plans/008_telemetry-logs-search_005_implement.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Relevant work was uncommitted documentation. `git stash create` returned `587033b95474a9a4fb9f1098c75e1eb10e9495ac`, which holds the tracked documentation worktree state. The ref was not applied.
+
+## V1 and Factory completion gate
+
+- V1 result: **PASS**. The full suite, focused SQL tests, records checks, lint, route/help checks, and protected fingerprint passed.
+- V1 used this local environment only: `PATH=$HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64/bin:$PATH GOTOOLCHAIN=local GOPROXY=off`. This environment was not recorded in `.mem/`.
+
+### V1 command results
+
+```text
+$ env GOFLAGS=-o=/dev/null go build ./...
+exit 0, no output
+$ go vet ./...
+exit 0, no output
+$ go test -count=1 ./...
+ok   github.com/jrswab/betterstack-cli/cmd/bs  2.232s
+exit 0
+$ gofmt -l cmd/bs/*.go
+exit 0, no paths
+$ test ! -e ./bs
+exit 0
+$ go test -count=1 -run '^(TestParseTelemetrySQLURL|TestLogsSQL.*|TestRunWithEndpointsRoutesSQL|TestLogsSearchRouteRemainsUnavailable|TestSQLRedactionLeavesOtherResponsesRaw)$' ./cmd/bs
+ok   github.com/jrswab/betterstack-cli/cmd/bs  0.150s
+exit 0
+$ python3 /tmp/factory-005/check-records.py
+PASS: memory links and 250-line limit
+PASS: memory map covers all memory files
+PASS: README SQL environment variables
+PASS: changelog category, bullet, and repo-root backticked paths
+PASS: exact anchor index counts and paths
+PASS: no logs dispatch or help
+PASS: memory execution example and flow diagram
+exit 0
+$ /home/jaron/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master
+PASS: 90 Markdown files, 0 findings
+exit 0
+$ direct route/help check
+PASS: no logs dispatch/help
+exit 0
+$ direct README SQL environment check
+PASS: all three SQL environment variables are listed
+exit 0
+$ make help
+No rule to make target 'help'
+exit 2
+$ make docs-check
+No rule to make target 'docs-check'
+exit 2
+$ make fragments-check
+No rule to make target 'fragments-check'
+exit 2
+$ git diff --check
+exit 0, no output
+$ test ! -e ./bs
+exit 0
+```
+
+- The missing Make targets are an environmental limitation. Direct record validation and documentation lint passed.
+- Requirement evidence is recorded in the table below. Test line numbers refer to `cmd/bs/logs_test.go` at V1.
+
+| Requirement | Evidence |
+|---|---|
+| R1 — approved SQL URL parsing | `cmd/bs/logs_test.go:388` `TestParseTelemetrySQLURL`; `cmd/bs/logs_test.go:332` `TestLogsSQLCredentials` validates invalid configured URLs without requests. |
+| R2 — separate SQL credentials | `cmd/bs/logs_test.go:332` `TestLogsSQLCredentials`; `cmd/bs/safety_test.go:346` `TestSafetyHarnessStripsInheritedCredentials`. |
+| R3 — one bounded POST and approved request shape | `cmd/bs/logs_test.go:64` `TestRunWithEndpointsRoutesSQL` checks SQL-only routing, POST, body, encoded parameters, content type, Basic auth, deadline, and one request. |
+| R4 — no redirects or retries | `cmd/bs/logs_test.go:285` `TestLogsSQLNoRedirectsOrRetries` covers redirect statuses, server errors, and broken connections without follow-up attempts. |
+| R5 — unchanged 2xx response bytes | `cmd/bs/logs_test.go:259` `TestLogsSQLSuccessBytes` checks exact text and binary output, including empty bodies and fake secrets. |
+| R6 — redaction only on non-2xx SQL bodies | `cmd/bs/logs_test.go:201` `TestLogsSQLErrorRedaction`; `cmd/bs/logs_test.go:228` `TestSQLRedactionLeavesOtherResponsesRaw`; `cmd/bs/logs_test.go:259` `TestLogsSQLSuccessBytes`. |
+| R7 — safe local failures | `cmd/bs/logs_test.go:140` `TestLogsSQLLocalFailures` checks timeouts, transport and body-read failures, safe diagnostics, no partial output, and no retries. |
+| R8 — no command activation | `cmd/bs/logs_test.go:125` `TestLogsSearchRouteRemainsUnavailable`; the direct route/help check passed, and the full suite passed. |
+| Milestone 005 acceptance — configured URL, separate Basic auth, single timed POST, no redirects/retries, unchanged 2xx output, redacted non-2xx output | `cmd/bs/logs_test.go:27` `TestLogsSQLUsesConfiguredEndpoint`; `cmd/bs/logs_test.go:64` `TestRunWithEndpointsRoutesSQL`; `cmd/bs/logs_test.go:285` `TestLogsSQLNoRedirectsOrRetries`; `cmd/bs/logs_test.go:259` `TestLogsSQLSuccessBytes`; `cmd/bs/logs_test.go:201` `TestLogsSQLErrorRedaction`. |
+
+### Completion checks
+
+- The full relevant test suite and available Go lint/type checks passed. `gofmt` reported no files.
+- The implementation meets R1–R8 and milestone acceptance based on the evidence table. D5 is proven by `TestRunWithEndpointsRoutesSQL`, and D6 is proven by `TestLogsSQLErrorRedaction` and `TestSQLRedactionLeavesOtherResponsesRaw`.
+- Git status contains only the authorized checklist edit and the five unchanged protected baseline paths. The baseline fingerprint before render remains `41306493735a9bfeeae10d179385968acfd8af3d46e7a2cd897893aba32209fe  -`.
+- Review gate 1 re-run 2 passed. F5 and F6 remain non-blocking. F8 is deferred to milestone 007. Missing Make targets and GO-2026-6809 are environmental limitations.
+- This record does not yet mark the milestone checked. The final completion-gate update will render V1 checked and milestone 005 checked only after the requirement audit and Git-change accounting pass.
+- HEAD commit SHA: `057394038b43f785733d02df751b584e5d40394a`
+- Relevant work: `uncommitted` — stash ref `a7304494c9ecba447dedab8757a0f30e9a57702c` (tracked files only; never applied)
+- `git status --porcelain` (before checkpoint/checkbox writes):
+
+```text
+ M docs/plans/008_telemetry-logs-search_005_checkpoint.md
+ M docs/plans/008_telemetry-logs-search_005_implement.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Untracked file Git objects (stored with hash-object -w, never applied):
+
+```text
+e69de29bb2d1d6434b8b29ae775ad8c2e48c5391  ".agents/scripts/.gitkeep"
+2268d6d1b4dd6b23950ea8bcbce44e2cc4fd02a5  ".agents/scripts/telemetry-live-probe.sh"
+c3626f955decd6b7ffa341c26703f857462954b5  ".agents/skills/changelog/SKILL.md"
+656c156bf90f78f9ac3a85412fe9e91145a5bebb  ".agents/skills/mem/SKILL.md"
+44304443f37776ec688c34be9840378e243c6f2f  ".agents/skills/pr/SKILL.md"
+f788b79f289c9adfcdbb156d309261b925c403ba  ".agents/skills/provenance-log/SKILL.md"
+704342b5c4c16287177f2da9f4b656aa526fba5b  ".agents/skills/release/SKILL.md"
+e5ecdd11f8df24415ebff5fdf63f6113213bf7ec  ".wayfinder/MAP.md"
+d2521bd5eae2907dbcfadafe090456e6781b6e41  ".wayfinder/README.md"
+54113199fec1e082615bbf1bf5691e42201085b9  ".wayfinder/assets/01-api-contract-research.md"
+623ab01ed0b0385ce5fedd654d847a02d9c52fdb  ".wayfinder/assets/02-incident-url-identity-research.md"
+c4c4fe4107105fd614a8f3a94b46812cb06b3960  ".wayfinder/assets/06-go-toolchain-research.md"
+c6158f0916332d3e3a80e61a67a8ecc2de8a5b32  ".wayfinder/telemetry/MAP.md"
+f4e847e79b9fb7619c846148a592d14b88a367c7  ".wayfinder/telemetry/assets/03-sources-api-contract-research.md"
+247ee7bc692682bc7b1a32fb05f315fa938f36f6  ".wayfinder/telemetry/assets/04-sql-api-contract-research.md"
+0a18fb73e0093239f584809f479b542e99fc7f76  ".wayfinder/telemetry/assets/05-live-verification-results.md"
+5ebc264f975b3e46e337f17435443bc29535825e  ".wayfinder/telemetry/assets/06-cold-storage-timeout-research.md"
+2b71e98af8af64a9cd36bd3d5bd5e6e9b5cf818b  ".wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md"
+b7482d50e399cdae487b573ae35176f069362341  ".wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md"
+572c8f131bb6a497254d5a63b1bd30f2ce28502f  ".wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md"
+77b5c75dbaac7620d469a638c8d77335c6624e04  ".wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md"
+1323bb7b057a980e8b536c7162cccd9b7b26cc71  ".wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md"
+66a7fd3e74798761babbcd7fbec61d0aac59b704  ".wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md"
+cde68ecfe35ee426d1bcc07e817d52eced3d06b1  ".wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md"
+e180004c8a35821bec3e2cb2feab300f3046f71e  ".wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md"
+bf05f4602afcf7692f7dd66ed6af5a85be9566f1  ".wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md"
+9d010dd4260be2a86b212eeb6d11637bc1b22dbb  ".wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md"
+9677e361c7ff035c55b374943bad13b068a39a16  ".wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md"
+13a7970f556e13dad98340b3b700fd98da438aaa  ".wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md"
+5ad4771181950a65021b600d0765b6f79ad59dd5  ".wayfinder/tickets/02-incident-url-identity-resolution.md"
+53f3d379ecaf4eefb35f44de0596dcd8db5c76c1  ".wayfinder/tickets/03-command-naming-and-argument-conventions.md"
+1a67e294757e2a2558ec29f2247cc4fe6d1cb1b6  ".wayfinder/tickets/04-pagination-and-json-envelope.md"
+0a2031f1210b6008a0da9a8f7d217ecf1233f4bf  ".wayfinder/tickets/05-errors-timeouts-retries-token-safety.md"
+dc414d2e4181c232972f98528077e0e0650c47ec  ".wayfinder/tickets/06-installation-distribution-acceptance.md"
+aca24cb6a5e5e366b6216d692a002839547a1ef3  "AGENTS.md"
+f0b4c212916b7023792b76535bbd9f6cbe354f7b  "docs/plans/008_telemetry-logs-search_milestones.md"
+a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
+```
+
+- Next action: Record completion gate, render milestone 005 checked, and verify the final commit
