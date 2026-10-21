@@ -99,6 +99,32 @@ func TestLogsSearchRouteRemainsUnavailable(t *testing.T) {
 	}
 }
 
+// TestLogsSQLSuccessBytes verifies all success status branches preserve complete raw bodies.
+func TestLogsSQLSuccessBytes(t *testing.T) {
+	setFakeSQLConfig(t)
+	for _, status := range []int{200, 201, 202, 204, 205, 206, 299} {
+		for _, body := range []string{"", `{"error":"not interpreted"}`, "not JSON\x00\xff", "line\n", "fake-sql-user fake-sql-password fake-telemetry-token ZmFrZS1zcWwtdXNlcjpmYWtlLXNxbC1wYXNzd29yZA=="} {
+			if status == 204 && body != "" {
+				continue
+			}
+			t.Run(strconv.Itoa(status)+"/"+body, func(t *testing.T) {
+				var requests atomic.Int32
+				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					requests.Add(1)
+					w.WriteHeader(status)
+					_, _ = io.WriteString(w, body)
+				}))
+				defer srv.Close()
+				var out, err bytes.Buffer
+				code := doLogsSQLRequest("SELECT 1", nil, time.Second, &out, &err, srv.URL, testHTTPClient())
+				if code != 0 || out.String() != body || err.Len() != 0 || requests.Load() != 1 {
+					t.Fatalf("code=%d, stdout=%q, stderr=%q, requests=%d", code, out.String(), err.String(), requests.Load())
+				}
+			})
+		}
+	}
+}
+
 // TestLogsSQLNoRedirectsOrRetries verifies one attempt for redirects, server errors, and broken connections.
 func TestLogsSQLNoRedirectsOrRetries(t *testing.T) {
 	setFakeSQLConfig(t)

@@ -33,11 +33,11 @@
 
 - Lane: `full` — D1 assigns the full lane because this milestone changes an external SQL HTTP contract and handles credentials.
 - Current phase: `Phase 3 execution`.
-- Current task: `Phase 3: implement C1`.
+- Current task: `Phase 3: implement C2`.
 - Task states: Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 tasks `not started`.
 - Milestone checkbox: `unchecked`.
 - Last completed phase and gate: Phase 2 planning review passed at `2026-10-21T10:56:19-04:00`.
-- Next action: `Phase 3: implement C1`.
+- Next action: `Phase 3: implement C2`.
 
 ## Restart validation
 
@@ -227,6 +227,30 @@ Write this checkpoint through a temporary file in the same directory, then atomi
 - Validated HEAD: `41d04eb48dc35749d59b1372c86725d917f0ea00`.
 - Relevant work: uncommitted task changes at this gate, committed in the following explicit-path task commit.
 - Worktree stash ref: `69d9e04463a585839deea7d1fbf7237601f40a77`.
+- `git status --porcelain` at the gate:
+
+```text
+ M cmd/bs/logs_test.go
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+## Phase 3 task C1
+
+- Files and symbols: `cmd/bs/logs_test.go:TestLogsSQLSuccessBytes` and task records.
+- B2 commit: `301fb84`.
+- Focused command: `go test ./cmd/bs -run '^TestLogsSQLSuccessBytes$' -count=1`. Exit 0, `ok github.com/jrswab/betterstack-cli/cmd/bs 0.024s`.
+- Formatter/lint: `gofmt -w cmd/bs/logs_test.go`, `go vet ./cmd/bs`, `git diff --check`. Exit 0, no findings.
+- Cases: 200, 201, 202, 204 (empty as required by HTTP), 205, 206, and 299. Bodies include empty, JSON-looking embedded error, non-JSON, NUL, invalid UTF-8, trailing newline, and fake secrets including the literal derived Basic-auth encoding. Each returns 0, exact stdout, no stderr, one request.
+- The initial test was green against A2's complete-body success branch. No duplicate implementation was needed (ladder rung 1). Risk tier: standard test-only proof. Independent milestone review remains pending.
+
+- Task state: `C1` passed. The checklist renders this state.
+- Validated HEAD: `301fb8444ad33493906a50caa38a3d69b6baecde`.
+- Relevant work: uncommitted task changes at this gate, committed in the following explicit-path task commit.
+- Worktree stash ref: `54249229f48525c39ec7f2db25f1e966d966f99a`.
 - `git status --porcelain` at the gate:
 
 ```text
