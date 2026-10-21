@@ -5,7 +5,7 @@
 - [System summary](summary.md) describes the current executable and its boundaries.
 - [Terminology](terminology.md) defines names used in the memory set.
 - [Practices](practices.md) records implementation, verification, and documentation patterns.
-- [Memory map](mem-map.md) indexes every memory file, including itself.
+- [Memory map](mem-map.md) indexes itself and every memory file except session scratch under `.mem/tmp/`.
 
 ## Telemetry
 
