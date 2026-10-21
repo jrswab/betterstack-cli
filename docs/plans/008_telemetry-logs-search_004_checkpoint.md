@@ -34,10 +34,10 @@ The checkpoint owns task state. Milestone 004 remains unchecked until a later im
 
 - Lane: `full` — D1 requires the full lane for every milestone because the work affects external API contracts, security, or repository-wide records. S3 safely interpolates a validated SQL identifier and binds query/time values.
 - Current phase: Phase 3 (execution) — the orchestrator authorized tasks A1 through E1 after Phases 1 and 2 passed at `79e2931`.
-- Current task: D1.
-- Next action: implement D1.
+- Current task: E1.
+- Next action: implement E1.
 - Phase states: setup/restart validation `passed`; Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 `in progress`.
-- Task states: A1 `passed`; A2 `passed`; B1 `passed`; C1 `passed`; D1 `not started`; E1 `not started`; V1 `not started`.
+- Task states: A1 `passed`; A2 `passed`; B1 `passed`; C1 `passed`; D1 `passed`; E1 `not started`; V1 `not started`.
 - Milestone checkbox: `unchecked`.
 - Last completed phase and gate: Phase 2 artifact criterion passed on 2026-10-26. No implementation, review, or completion gate ran.
 
@@ -145,7 +145,7 @@ Boundary probes and outputs are in the implementation checklist. The current par
 
 - Limitations: `make help` is unavailable because no Makefile target exists. V1 review and completion gates remain outside this invocation.
 - Blockers: none at restart.
-- Next action: implement D1.
+- Next action: implement E1.
 
 ## Task A1 evidence
 
@@ -245,3 +245,27 @@ Boundary probes and outputs are in the implementation checklist. The current par
 ?? verify-incident-id.sh
 ```
 - Task C1 focused checks passed. The checkpoint renders its task checkbox after this record.
+
+## Task D1 evidence
+
+- Tier: design-bearing because the cold union changes the external query shape. D9 review remains pending under excluded V1.
+- Files and symbols: modified `cmd/bs/logs.go` (`buildLogsSearchQuery`), `cmd/bs/logs_test.go`, `.mem/telemetry/logs.md`, and `changelog.d/008-telemetry-logs-search-004.md`.
+- Test names: `TestBuildLogsSearchQueryCold` and `TestBuildLogsSearchQueryColdDefaults`.
+- Red command: `go test -run 'TestBuildLogsSearchQueryCold' ./cmd/bs` exited 1. Single/repeated cold switches and cold defaults all returned hot-only SQL.
+- Green commands: the same cold test exited 0 with `ok github.com/jrswab/betterstack-cli/cmd/bs 0.005s`. `go test -run 'TestBuildLogsSearchQuery|TestParseLogsSearchArgs|TestParseSourcesListArgs|TestParseMonitorsListArgs|TestParseIncidentsListArgs|TestIncidentsList.*Duplicate' ./cmd/bs` exited 0 with `ok github.com/jrswab/betterstack-cli/cmd/bs 0.020s`.
+- `gofmt -w cmd/bs/logs.go cmd/bs/logs_test.go`, `GOFLAGS=-o=/dev/null go build ./cmd/bs`, `go vet ./cmd/bs`, `gofmt -l cmd/bs/logs.go cmd/bs/logs_test.go`, `git diff --check`, and `git diff --cached --check` exited 0 without output.
+- Decision: one outer filter over the hot/cold union ensures both branches share the same text/time predicate and one final clause set. This avoids duplicated filter construction. The boolean cold option adds only one branch even after repeated flags.
+- Skips: no helper anchor/TAGS change and no inactive-command README documentation (ladder rung 1). SQL execution, routing, and help remain absent under R9.
+- Dependencies, scope deviations, and symptom patches: none.
+
+- Validated HEAD: `bc20b5ed1f84354095bf6700d7473c29c5a8211f`. Relevant task work is committed. No stash ref applies.
+- `git status --porcelain` at the task gate:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+- Task D1 focused checks passed. The checkpoint renders its task checkbox after this record.

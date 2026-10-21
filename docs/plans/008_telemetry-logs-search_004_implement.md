@@ -33,7 +33,7 @@ Tasks are sequential because each slice depends on the same parsed search argume
 
 ### Slice D — Add cold storage without changing hot defaults
 
-- [ ] **D1 — Add the opt-in cold branch and row filter.** Add test-first cases in `cmd/bs/logs_test.go`, then implement the `--cold` query form in `cmd/bs/logs.go:buildLogsSearchQuery`. Add exactly one `s3Cluster(primary, <table>_s3)` branch with `_row_type = 1`, combined with the hot branch through `UNION ALL`. Apply the chosen time and raw-text predicates to the complete result, followed by one final order, limit, timeout setting, and `FORMAT JSONEachRow`. Repeated `--cold` flags remain one enabled option. Verify default hot-only output and that the cold query has one branch of each kind. Run focused builder tests before and after implementation. Covers R2, R3, and R9.
+- [x] **D1 — Add the opt-in cold branch and row filter.** Add test-first cases in `cmd/bs/logs_test.go`, then implement the `--cold` query form in `cmd/bs/logs.go:buildLogsSearchQuery`. Add exactly one `s3Cluster(primary, <table>_s3)` branch with `_row_type = 1`, combined with the hot branch through `UNION ALL`. Apply the chosen time and raw-text predicates to the complete result, followed by one final order, limit, timeout setting, and `FORMAT JSONEachRow`. Repeated `--cold` flags remain one enabled option. Verify default hot-only output and that the cold query has one branch of each kind. Run focused builder tests before and after implementation. Covers R2, R3, and R9.
 
 ### Slice E — Records and implementation verification
 
