@@ -32,18 +32,18 @@
 
 - Lane: `full` — D1 assigns the full lane because milestone 007 affects repository-wide records.
 - Current phase: `execute`
-- Current task: A1
+- Current task: A2
 - Task states — checklist checkboxes render from this list:
 - A1 align current memory behavior: `checked`
-- A2 index memory records: `unchecked`
+- A2 index memory records: `checked`
 - B1 reconcile production anchor index: `unchecked`
 - B2 document command and configuration contract: `unchecked`
 - C1 add repository-record changelog: `unchecked`
 - V1 verify records and Factory gate: `unchecked`
 - Milestone checkbox: `unchecked`
 - Next action: Phase 3: implement first task A1.
-- Next safe action: Implement A2
-- Last completed phase/task/gate and timestamp: A1 verification PASS, 2026-10-21T20:27:20.678568+00:00
+- Next safe action: Implement B1
+- Last completed phase/task/gate and timestamp: A2 verification PASS, 2026-10-21T20:28:26.579836+00:00
 
 ## Gate evidence
 
@@ -1338,6 +1338,217 @@ a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
 ```
 
 - Next action: Implement A2
+
+### A2 verification PASS
+
+- Gate: A2 verification PASS
+- Commands/results:
+A2 uses the mechanical tier. TDD and per-task review are skipped for records-only work.
+
+Command: find .mem -type f -name '*.md' ! -path '.mem/tmp/*' -print | sort
+stdout:
+```text
+.mem/mem-map.md
+.mem/practices.md
+.mem/summary.md
+.mem/telemetry/logs.md
+.mem/telemetry/sources.md
+.mem/telemetry/summary.md
+.mem/terminology.md
+.mem/uptime/commands.md
+.mem/uptime/incidents.md
+.mem/uptime/requests.md
+.mem/uptime/summary.md
+.mem/uptime/testing.md
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: rg -n '\]\(' .mem --glob '*.md'
+stdout:
+```text
+.mem/uptime/testing.md:5:[main_test.go](../../cmd/bs/main_test.go) uses `invoke` → `run(args, stdout, stderr)` to capture output for exact help forms and invalid usage. `run` supplies the production base URL and `newHTTPClient()` before delegating to `runWithAPI` in [main.go](../../cmd/bs/main.go). It does not inject a loopback endpoint.
+.mem/uptime/testing.md:7:[Commands](commands.md) documents usage diagnostics and the resource gate that later resources must extend.
+.mem/uptime/testing.md:9:Routing tests use `invokeAPI` to call `runWithAPI` with captured stdout/stderr, a loopback `httptest.NewServer` URL, and an HTTP client. `runWithAPI` delegates to `runWithEndpoints` without changing its signature. `main_test.go` also calls `runWithEndpoints` directly with three distinct loopback endpoint inputs. It verifies all five Uptime routes use the Uptime input, not the Telemetry REST or SQL inputs, and that help and invalid usage send no requests through either interface. Source tests also verify Telemetry REST routing, with zero Uptime or SQL requests. `TestRunWithEndpointsRoutesSQL` invokes the real [logs search route](../telemetry/logs.md) with three distinct guarded loopback endpoints. It verifies one POST through the SQL input, zero Uptime/REST requests, explicit time-bound parameters, exact SQL, Basic credentials, and the parsed timeout. Route tests also verify local validation, raw success/redacted SQL failure, both option-shaped query orders, and exact help without requests. [monitors_test.go](../../cmd/bs/monitors_test.go) defines `invokeAPI` and the fixed dummy `testToken`. Other tests call handlers directly through helpers such as `invokeMonitorsList` and `invokeIncidentsList`. These tests verify path escaping, bearer headers, query translation, raw output, exit codes, invalid arguments, timeouts, and disabled redirects.
+.mem/uptime/testing.md:11:The in-memory `TestRunWithAPIUsesFixedTelemetryHost` transport records production routing without dialing or delegating to another transport. It asserts the exact Telemetry base URL, HTTPS source host and path, separate bearer credentials, and injected Uptime URL. [TestLogsSQLUsesConfiguredEndpoint](../../cmd/bs/logs_test.go) uses the same transport to verify the configured SQL scheme, host, path, and builder query parameters. It checks every request header value for the fake Telemetry API token.
+.mem/uptime/testing.md:25:[incidents_test.go](../../cmd/bs/incidents_test.go) covers dashboard URL acceptance/rejection, metadata bracket encoding, duplicate-key rejection, and timeline passthrough. No test needs a live API response or an ambient credential.
+.mem/uptime/testing.md:29:[TestMain](../../cmd/bs/safety_test.go) removes six environment variables before tests run: `BETTERSTACK_UPTIME_API_TOKEN`, `BETTERSTACK_API_TOKEN`, `BETTERSTACK_TELEMETRY_API_TOKEN`, `BETTERSTACK_TELEMETRY_SQL_URL`, `BETTERSTACK_TELEMETRY_SQL_USERNAME`, and `BETTERSTACK_TELEMETRY_SQL_PASSWORD`. Tests set dummy values explicitly. The isolated-process safety test uses six fixed sentinel values to verify inherited credential and SQL configuration removal. It checks that its captured log contains none of the six sentinels.
+.mem/uptime/testing.md:41:The suite compiles an isolated test binary in a temporary test directory for its credential-removal probe. The production CLI is not needed for test HTTP requests. Related: [commands](commands.md), [requests](requests.md), [incidents](incidents.md), and [summary](summary.md).
+.mem/uptime/summary.md:3:The [command package](../../cmd/bs/main.go) implements five read-only Uptime commands. `main` supplies the fixed production base URL and an HTTP client. `runWithAPI` accepts those dependencies and the stdout/stderr writers so tests can use local servers. It delegates to `runWithEndpoints`, which accepts distinct Uptime, Telemetry REST, and SQL endpoint inputs. Uptime, [source REST handlers](../telemetry/sources.md), and [logs search](../telemetry/logs.md) are active. `helpFor` runs before every command route. Logs search validates builder output before the separate SQL executor reads configuration.
+.mem/uptime/summary.md:48:[Commands](commands.md) maps every route to its endpoint and help boundary. [Requests](requests.md) defines the common output and credential contract. [Incidents](incidents.md) covers target and metadata rules. [Testing](testing.md) describes loopback-only checks. The [memory map](../mem-map.md) indexes the complete set.
+.mem/uptime/incidents.md:5:[resolveIncidentTarget](../../cmd/bs/incidents.go) performs local parsing without network access. A scheme-less target remains an opaque bare ID, including lookalike paths and protocol-relative strings. A malformed scheme-less target also remains opaque. The command handler subsequently escapes the candidate as one API path segment.
+.mem/uptime/incidents.md:39:Other incident-list flags and their mappings appear in [commands](commands.md). Shared credentials and raw output follow [requests](requests.md). [Testing](testing.md) links the URL and query acceptance tests. See [summary](summary.md).
+.mem/uptime/commands.md:13:[runWithEndpoints](../../cmd/bs/main.go), reached through the compatible `runWithAPI` interface, checks exact help forms first, then routes these five Uptime commands alongside [sources](../telemetry/sources.md) and [logs search](../telemetry/logs.md). Uptime endpoints use the base URL `https://incidents.betterstack.com` from [monitors.go](../../cmd/bs/monitors.go).
+.mem/uptime/commands.md:25:Monitor help describes a bare ID. The current monitor parser treats the target as opaque and escapes it without a numeric or URL-format check. Incident get/timeline apply the separate [incident target rules](incidents.md).
+.mem/uptime/commands.md:39:`incidentsList` accepts `--from`, `--to`, `--monitor-id`, `--heartbeat-id`, `--team-name`, `--page`, and `--per-page`. They map to `from`, `to`, `monitor_id`, `heartbeat_id`, `team_name`, `page`, and `per_page`. It also accepts explicit boolean `--resolved`/`--acknowledged` values and repeatable `--metadata` pairs. [Incidents](incidents.md) defines their validation and encoding.
+.mem/uptime/commands.md:45:`helpFor` returns constants from [help.go](../../cmd/bs/help.go) for exactly `bs --help`, `bs monitors --help`, `bs incidents --help`, and `<resource> <action> --help` for the five Uptime commands, plus source resource/list/get help and logs resource/search help. [Sources](../telemetry/sources.md) and [logs search](../telemetry/logs.md) document the Telemetry behavior. Help writes human-readable text to stdout and exits 0 without reading a token or making a request. Extra tokens and `-h` are not help forms. Invalid arguments produce local stderr diagnostics and exit 1.
+.mem/uptime/commands.md:53:`ok` is true, and `text` is `incidentsTimelineHelp`. See [summary](summary.md), [requests](requests.md), and [testing](testing.md).
+.mem/uptime/requests.md:5:All five [command handlers](commands.md) read only `BETTERSTACK_UPTIME_API_TOKEN` through `tokenEnvVar`. They do not use `BETTERSTACK_API_TOKEN` as a fallback. The handler reads the token before parsing so local argument diagnostics can redact its value. Argument validation, incident target resolution, and duplicate metadata rejection precede the missing-token check. Invalid arguments and a missing token return 1 before HTTP execution. Exact help forms return before any handler reads credentials.
+.mem/uptime/requests.md:11:[redactSecrets](../../cmd/bs/telemetry.go) accepts diagnostic text, a Telemetry API token, SQL username, and SQL password as explicit strings. It does not read environment variables. It replaces literal case-sensitive occurrences with `[REDACTED]` and ignores empty values. When either SQL credential is non-empty, it includes standard base64 encoding of `username:password`. Longer values take priority over shorter values, including overlaps starting at different positions. The helper splits unredacted text in longest-first order and joins the remaining parts with the marker. It never scans replacement text again, so credentials matching the marker cannot alter new markers.
+.mem/uptime/requests.md:19:Only non-2xx [SQL response bodies](../telemetry/logs.md) call this helper. Uptime local diagnostics continue using `redactToken`, and upstream Uptime and source bodies remain raw. [telemetry_test.go](../../cmd/bs/telemetry_test.go) tests explicit dummy strings, overlap, repeated matches, case differences, empty credentials, and unrelated text.
+.mem/uptime/requests.md:23:[doMonitorsRequest](../../cmd/bs/monitors.go) serves all seven Uptime and source handlers despite its monitor-oriented name. It creates a timeout context, builds an HTTP GET with no body, and sets the bearer header:
+.mem/uptime/requests.md:49:Sources: [monitors.go](../../cmd/bs/monitors.go), [incidents.go](../../cmd/bs/incidents.go), and [sources.go](../../cmd/bs/sources.go). Related: [incident rules](incidents.md), [testing](testing.md), and [summary](summary.md).
+.mem/terminology.md:26:Sources: [routing](../cmd/bs/main.go), [requests](../cmd/bs/monitors.go), [source handlers](../cmd/bs/sources.go), [log search builder](../cmd/bs/logs.go), [secret redaction](../cmd/bs/telemetry.go), [incidents](../cmd/bs/incidents.go), and [test safety](../cmd/bs/safety_test.go). See the [memory map](mem-map.md).
+.mem/mem-map.md:5:- [System summary](summary.md) describes the current executable and its boundaries.
+.mem/mem-map.md:6:- [Terminology](terminology.md) defines names used in the memory set.
+.mem/mem-map.md:7:- [Practices](practices.md) records implementation, verification, and documentation patterns.
+.mem/mem-map.md:8:- [Memory map](mem-map.md) indexes itself and every memory file except session scratch under `.mem/tmp/`.
+.mem/mem-map.md:12:- [Telemetry summary](telemetry/summary.md) describes active routes, separate REST and SQL contracts, help, and test safety.
+.mem/mem-map.md:13:- [Sources](telemetry/sources.md) describes REST routing, credentials, pagination, opaque IDs, raw responses, and secret warnings.
+.mem/mem-map.md:14:- [Log search](telemetry/logs.md) describes the active logs search route, exact help, argument validation, typed SQL parameters, time bounds, the optional cold union, and the separate SQL HTTP executor.
+.mem/mem-map.md:18:- [Uptime summary](uptime/summary.md) shows routing and the shared request flow.
+.mem/mem-map.md:19:- [Commands](uptime/commands.md) lists the five handlers, endpoints, arguments, flags, and help forms.
+.mem/mem-map.md:20:- [Requests](uptime/requests.md) describes credentials, timeouts, redirects, and output behavior.
+.mem/mem-map.md:21:- [Incidents](uptime/incidents.md) describes dashboard URL resolution, metadata, and timeline behavior.
+.mem/mem-map.md:22:- [Testing](uptime/testing.md) describes the Command routing boundary and loopback-only protections.
+.mem/telemetry/logs.md:5:[runWithEndpoints](../../cmd/bs/main.go) checks `helpFor` before routing `bs logs search` to `logsSearch`. The handler calls `buildLogsSearchQuery` with one captured current time, then passes SQL, typed parameters, and the parsed timeout to `doLogsSQLRequest`. Invalid flags or bounds produce a command-specific `bs logs search --help` hint and exit 1 before SQL configuration or requests. `bs logs` and unknown actions use the established resource diagnostics. `runWithAPI` preserves its signature and supplies an empty SQL injection input, so production SQL uses the configured URL.
+.mem/telemetry/logs.md:7:Exact root, logs resource, and logs search help returns without credentials or HTTP access. [Command help](../../cmd/bs/help.go) documents all flags, the full `t<team_id>_<table_name>` identifier, and that `bs sources get <id>` shows both parts. The argument after `--query` is data, including option-shaped text: `--query --cold` does not enable cold storage. `--cold --query --cold` enables cold storage while searching for that text. HTTP 500 `CLUSTER_DOESNT_EXIST` means the source has no hot table. Help suggests rerunning with `--cold` without changing error handling or guaranteeing success.
+.mem/telemetry/logs.md:22:[parseLogsSearchArgs](../../cmd/bs/logs.go) accepts space-separated search flags without requests, endpoint access, or credentials. It requires one full table identifier matching `^t[0-9]+_[a-z0-9_]+$`. All value-bearing flags reject duplicates before checking the repeated value. Unknown flags, equals forms, positionals, and missing values fail locally. Repeated `--cold` switches enable one option. A query pointer distinguishes an omitted query from an explicitly empty string.
+.mem/telemetry/logs.md:39:[buildLogsSearchQuery](../../cmd/bs/logs.go) accepts raw arguments and a captured `time.Time`, validates arguments, and returns SQL plus `url.Values`. Invalid input returns empty SQL and nil parameters. It selects `dt, raw` from `remote(<table>_logs)`, applies typed inclusive-lower and exclusive-upper time parameters, then uses one order, bounded limit, timeout setting, and `FORMAT JSONEachRow`. It computes the relative window from the supplied time.
+.mem/telemetry/logs.md:71:[parseTelemetrySQLURL](../../cmd/bs/logs.go) accepts a DNS host or bracketed IPv6 address, optionally with raw port `443`. Absolute `https://host[:port]` URLs allow an empty path or `/`. Explicit HTTPS ports range from 1 through 65535. Host-only forms receive HTTPS. Userinfo, queries, fragments, non-root paths, other schemes, malformed hosts, and unsupported raw ports fail with a fixed diagnostic that does not echo input. The parser sends no request.
+.mem/telemetry/logs.md:75:[doLogsSQLRequest](../../cmd/bs/logs.go) requires nonempty `BETTERSTACK_TELEMETRY_SQL_URL`, `BETTERSTACK_TELEMETRY_SQL_USERNAME`, and `BETTERSTACK_TELEMETRY_SQL_PASSWORD`. It validates the configured URL before using an injected test endpoint. Only SQL username/password supply Basic authentication. Neither API token substitutes for SQL credentials. Missing values name the variable without echoing input.
+.mem/telemetry/logs.md:99:The builder itself has no request or credential access. [Route, parser, builder, and executor tests](../../cmd/bs/logs_test.go) use fake strings, fixed explicit route bounds, fixed builder times, guarded loopback servers, and in-memory transports. `TestRunWithEndpointsRoutesSQL` proves the real argv route sends one POST through `telemetrySQLURL`, with zero Uptime or REST requests.
+.mem/telemetry/logs.md:101:Related: [memory map](../mem-map.md), [terminology](../terminology.md), and [sources](sources.md).
+.mem/telemetry/summary.md:7:Sources: [routing](../../cmd/bs/main.go), `cmd/bs/main.go:13-67,74-103,113-152,179-190`.
+.mem/telemetry/summary.md:11:- [Sources](sources.md) use `BETTERSTACK_TELEMETRY_API_TOKEN` for bearer authentication at `https://telemetry.betterstack.com`.
+.mem/telemetry/summary.md:14:  Sources: [handlers](../../cmd/bs/sources.go), `cmd/bs/sources.go:14-84,92-151`, and `cmd/bs/main.go:13,30-31`.
+.mem/telemetry/summary.md:18:  Sources: [requests](../../cmd/bs/monitors.go), `cmd/bs/monitors.go:81-135`, and [help](../../cmd/bs/help.go), `cmd/bs/help.go:80-120`.
+.mem/telemetry/summary.md:19:- [Log search](logs.md) validates the full table identifier, flags, and time bounds before SQL configuration or HTTP access.
+.mem/telemetry/summary.md:22:  Sources: [builder](../../cmd/bs/logs.go), `cmd/bs/logs.go:27-34,158-272`.
+.mem/telemetry/summary.md:28:  Sources: [executor and URL parser](../../cmd/bs/logs.go), `cmd/bs/logs.go:18-23,39-94,111-156`, and [redaction](../../cmd/bs/telemetry.go), `cmd/bs/telemetry.go:13-33`.
+.mem/telemetry/summary.md:43:Source: [default-query test](../../cmd/bs/logs_test.go), `cmd/bs/logs_test.go:545-570`.
+.mem/telemetry/summary.md:61:[Tests](../uptime/testing.md) clear inherited API credentials and SQL configuration before installing the Loopback-only network guard.
+.mem/telemetry/summary.md:64:Sources: [test safety](../../cmd/bs/safety_test.go), `cmd/bs/safety_test.go:1-25,50-137`, [REST routing](../../cmd/bs/main_test.go), `cmd/bs/main_test.go:26-35,298-340`, and [SQL routing](../../cmd/bs/logs_test.go), `cmd/bs/logs_test.go:62-104`.
+.mem/telemetry/summary.md:66:Related: [system summary](../summary.md), [memory map](../mem-map.md), and [terminology](../terminology.md).
+.mem/telemetry/sources.md:5:[runWithEndpoints](../../cmd/bs/main.go) routes `bs sources list` and `bs sources get <id>` to the Telemetry REST input. `runWithAPI` preserves the Uptime injection interface and supplies the fixed production Telemetry REST host, `https://telemetry.betterstack.com`. Only tests inject another REST endpoint. No user setting overrides it. The SQL endpoint input serves the separate [logs search route](logs.md), not source requests.
+.mem/telemetry/sources.md:12:[Source handlers](../../cmd/bs/sources.go) read only `BETTERSTACK_TELEMETRY_API_TOKEN` through `telemetryTokenEnvVar`. They read it to redact local argument diagnostics, but validate arguments before reporting an unset or empty token. Invalid arguments and missing credentials exit 1 without HTTP access. No Uptime or legacy token fallback exists.
+.mem/telemetry/sources.md:30:Both handlers reuse the [Request executor](../uptime/requests.md), `doMonitorsRequest`. It sends exactly one bearer-authenticated GET with a timeout and disables redirects. It passes complete 2xx bodies unchanged to stdout and other HTTP bodies unchanged to stderr. It does not decode, format, redact, add a newline, retry, or follow pagination links. Transport, timeout, and body-read failures use token-redacted local diagnostics.
+.mem/telemetry/sources.md:32:Source response `token` fields remain unchanged on both output channels. The CLI does not assign a meaning or permission to that field. [Help](../../cmd/bs/help.go) warns on both commands: “The output includes each source's `token` field. Treat it as a secret credential. Keep it private and do not paste it into shared logs or tickets.”
+.mem/telemetry/sources.md:48:[Source tests](../../cmd/bs/sources_test.go) and [routing tests](../../cmd/bs/main_test.go) use dummy tokens and loopback servers. The [test harness](../../cmd/bs/safety_test.go) clears inherited Telemetry, Uptime, and legacy API tokens plus SQL configuration and blocks non-loopback HTTP access. Tests cover separate endpoints, auth, validation, raw bodies, redirects, local failures, help, and secret warnings.
+.mem/telemetry/sources.md:50:Related: [memory map](../mem-map.md), [terminology](../terminology.md), and [Uptime testing](../uptime/testing.md).
+.mem/summary.md:3:`bs` is a read-only Better Stack Uptime and Telemetry CLI implemented with the Go standard library in [cmd/bs](../cmd/bs/main.go). `runWithAPI` preserves the Uptime injection interface and delegates to `runWithEndpoints`. The latter checks exact-match help before routing monitors list/get, incidents list/get/timeline, [sources list/get](telemetry/sources.md), and [logs search](telemetry/logs.md). Help requires no credentials or requests. Uptime commands use `BETTERSTACK_UPTIME_API_TOKEN`. Source commands use only `BETTERSTACK_TELEMETRY_API_TOKEN` and the fixed Telemetry REST host. The seven Uptime/source handlers share the Request executor (`doMonitorsRequest`), which sends one bearer-authenticated GET with a 30-second default timeout, disables redirects, and passes bodies unchanged to stdout for 2xx or stderr otherwise. `logsSearch` validates flags through the Log search query builder and passes hot or optional cold SQL, separate typed parameters, and the parsed timeout to the SQL request executor. SQL requires separate URL, username, and password configuration and sends one timed Basic-authenticated POST without redirects or retries. `redactSecrets` applies only to non-2xx SQL bodies. Source help warns that output contains a secret credential. Logs help explains the full table identifier, option-shaped query data, and missing-hot-table `--cold` guidance. Tests inject guarded loopback servers or in-memory transports and clear inherited API credentials and SQL configuration. The [memory map](mem-map.md) indexes [Uptime](uptime/summary.md), [Telemetry](telemetry/summary.md), [terminology](terminology.md), and [practices](practices.md).
+.mem/practices.md:5:The command package uses the Go standard library without third-party dependencies. [go.mod](../go.mod) declares the module and Go version. `main` supplies the production endpoint, client, and output writers to the Command routing boundary (`runWithAPI`). `runWithAPI` delegates to the Endpoint injection seam (`runWithEndpoints`), passing the Uptime base URL, the fixed Telemetry REST host, and an empty SQL URL. The seam accepts separate test inputs for all three service destinations and checks exact help before routing. Uptime and Telemetry REST routes use their separate endpoints. `logs search` validates flags through `buildLogsSearchQuery` and passes SQL, typed parameters, and parsed timeout to `doLogsSQLRequest` through the SQL input. SQL alone reads a user-configurable URL from its required environment configuration. Tests supply guarded loopback endpoints through either interface. Uptime and REST hosts remain fixed.
+.mem/practices.md:7:Handlers keep argument parsing and query translation separate from HTTP execution. `url.Values` encodes query parameters, and `url.PathEscape` escapes target path segments. The seven Uptime/source command handlers share the [GET request contract](uptime/requests.md). `logsSearch` uses the [SQL request executor](telemetry/logs.md) with separate Basic auth and redaction only for non-2xx SQL bodies. API validation handles opaque Uptime filter values except locally validated booleans, metadata grammar, and positive timeout durations. [Sources](telemetry/sources.md) also validate digit-only pagination and the per-page maximum of 50.
+.mem/practices.md:20:Tests use dummy tokens and loopback `httptest` servers. `TestMain` clears inherited API credentials and SQL configuration, then installs the network guard. A custom transport can bypass that guard. [Testing](uptime/testing.md) documents the Command routing boundary, the loopback-only network guard, and the guard's limits.
+.mem/practices.md:26:Related: [memory map](mem-map.md), [terminology](terminology.md), and [commands](uptime/commands.md).
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: ~/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master
+stdout:
+```text
+PASS: /home/jaron/dev/betterstack-cli/master: 98 Markdown files, 0 findings
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: python3 /tmp/factory-007/memory-check.py
+stdout:
+```text
+.mem/mem-map.md: one map link, exists, <=250 lines
+.mem/practices.md: one map link, exists, <=250 lines
+.mem/summary.md: one map link, exists, <=250 lines
+.mem/telemetry/logs.md: one map link, exists, <=250 lines
+.mem/telemetry/sources.md: one map link, exists, <=250 lines
+.mem/telemetry/summary.md: one map link, exists, <=250 lines
+.mem/terminology.md: one map link, exists, <=250 lines
+.mem/uptime/commands.md: one map link, exists, <=250 lines
+.mem/uptime/incidents.md: one map link, exists, <=250 lines
+.mem/uptime/requests.md: one map link, exists, <=250 lines
+.mem/uptime/summary.md: one map link, exists, <=250 lines
+.mem/uptime/testing.md: one map link, exists, <=250 lines
+PASS: all 12 in-scope memory files have exactly one map link, including the map and Telemetry summary.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --check
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Restart validation: python3 /tmp/factory-007/restart.py A2 exited 0. HEAD f630e460e51ac5764fc11606121f8b70e95798fe. Identity, artifacts, task states, prior committed work, next safe action Implement A2, and baseline fingerprint agree.
+Files changed: .mem/mem-map.md. The map description now explicitly excludes .mem/tmp/ session scratch, per .agents/skills/mem/SKILL.md:20,41. All 12 memory destinations appear exactly once and resolve. No functions changed.
+Ladder rung 1: no missing or duplicate links remain after A1, so no extra links or memory files were added. Existing related links are preserved. No dependency, runtime decision, symptom patch, or provenance rationale was added.
+make docs-check is unavailable because no Makefile exists. docs-lint replaces it. Go checks belong to V1, which remains unchecked.
+- HEAD commit SHA: `e1c5887bef3890a21d109d89e29a31853f48a332`
+- Relevant work: `committed` — stash ref `none` (tracked files only; never applied)
+- `git status --porcelain` (before checkpoint/checkbox writes):
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Untracked file Git objects (stored with hash-object -w, never applied):
+
+```text
+e69de29bb2d1d6434b8b29ae775ad8c2e48c5391  ".agents/scripts/.gitkeep"
+2268d6d1b4dd6b23950ea8bcbce44e2cc4fd02a5  ".agents/scripts/telemetry-live-probe.sh"
+c3626f955decd6b7ffa341c26703f857462954b5  ".agents/skills/changelog/SKILL.md"
+656c156bf90f78f9ac3a85412fe9e91145a5bebb  ".agents/skills/mem/SKILL.md"
+44304443f37776ec688c34be9840378e243c6f2f  ".agents/skills/pr/SKILL.md"
+f788b79f289c9adfcdbb156d309261b925c403ba  ".agents/skills/provenance-log/SKILL.md"
+704342b5c4c16287177f2da9f4b656aa526fba5b  ".agents/skills/release/SKILL.md"
+e5ecdd11f8df24415ebff5fdf63f6113213bf7ec  ".wayfinder/MAP.md"
+d2521bd5eae2907dbcfadafe090456e6781b6e41  ".wayfinder/README.md"
+54113199fec1e082615bbf1bf5691e42201085b9  ".wayfinder/assets/01-api-contract-research.md"
+623ab01ed0b0385ce5fedd654d847a02d9c52fdb  ".wayfinder/assets/02-incident-url-identity-research.md"
+c4c4fe4107105fd614a8f3a94b46812cb06b3960  ".wayfinder/assets/06-go-toolchain-research.md"
+c6158f0916332d3e3a80e61a67a8ecc2de8a5b32  ".wayfinder/telemetry/MAP.md"
+f4e847e79b9fb7619c846148a592d14b88a367c7  ".wayfinder/telemetry/assets/03-sources-api-contract-research.md"
+247ee7bc692682bc7b1a32fb05f315fa938f36f6  ".wayfinder/telemetry/assets/04-sql-api-contract-research.md"
+0a18fb73e0093239f584809f479b542e99fc7f76  ".wayfinder/telemetry/assets/05-live-verification-results.md"
+5ebc264f975b3e46e337f17435443bc29535825e  ".wayfinder/telemetry/assets/06-cold-storage-timeout-research.md"
+2b71e98af8af64a9cd36bd3d5bd5e6e9b5cf818b  ".wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md"
+b7482d50e399cdae487b573ae35176f069362341  ".wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md"
+572c8f131bb6a497254d5a63b1bd30f2ce28502f  ".wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md"
+77b5c75dbaac7620d469a638c8d77335c6624e04  ".wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md"
+1323bb7b057a980e8b536c7162cccd9b7b26cc71  ".wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md"
+66a7fd3e74798761babbcd7fbec61d0aac59b704  ".wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md"
+cde68ecfe35ee426d1bcc07e817d52eced3d06b1  ".wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md"
+e180004c8a35821bec3e2cb2feab300f3046f71e  ".wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md"
+bf05f4602afcf7692f7dd66ed6af5a85be9566f1  ".wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md"
+9d010dd4260be2a86b212eeb6d11637bc1b22dbb  ".wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md"
+9677e361c7ff035c55b374943bad13b068a39a16  ".wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md"
+13a7970f556e13dad98340b3b700fd98da438aaa  ".wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md"
+5ad4771181950a65021b600d0765b6f79ad59dd5  ".wayfinder/tickets/02-incident-url-identity-resolution.md"
+53f3d379ecaf4eefb35f44de0596dcd8db5c76c1  ".wayfinder/tickets/03-command-naming-and-argument-conventions.md"
+1a67e294757e2a2558ec29f2247cc4fe6d1cb1b6  ".wayfinder/tickets/04-pagination-and-json-envelope.md"
+0a2031f1210b6008a0da9a8f7d217ecf1233f4bf  ".wayfinder/tickets/05-errors-timeouts-retries-token-safety.md"
+dc414d2e4181c232972f98528077e0e0650c47ec  ".wayfinder/tickets/06-installation-distribution-acceptance.md"
+aca24cb6a5e5e366b6216d692a002839547a1ef3  "AGENTS.md"
+d25d1c789e303a87fed9534f135c441b5cf4c9f5  "docs/plans/008_telemetry-logs-search_milestones.md"
+a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
+```
+
+- Next action: Implement B1
 
 ## Restart validation of milestone 006
 
