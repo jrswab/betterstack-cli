@@ -1,7 +1,8 @@
 # Terminology
 
-- **Uptime CLI** - the read-only `bs` command package for Better Stack monitors and incidents. Avoid: Telemetry CLI.
-- **Uptime surface (anchor surface `uptime`)** - the production boundaries shared by the five Uptime CLI commands for monitors and incidents. Avoid: Telemetry surface.
+- **bs** - the read-only Better Stack Uptime and Telemetry CLI in `cmd/bs`. Avoid: Uptime-only CLI.
+- **Uptime CLI** - the five Uptime commands in `bs`: `monitors list`, `monitors get`, `incidents list`, `incidents get`, and `incidents timeline`. Avoid: whole `bs` command package.
+- **Uptime surface (anchor surface `uptime`)** - the domain surface of the five Uptime CLI commands for monitors and incidents. The `uptime:router` anchors on `runWithAPI` and `runWithEndpoints` route all eight `bs` commands. The `uptime:request-executor` anchor on `doMonitorsRequest` also serves `sourcesList` and `sourcesGet`. Avoid: Uptime-only shared boundaries.
 - **Command routing boundary (anchor role `router`)** - `runWithAPI` preserves the Uptime injection interface and delegates help and handler selection to `runWithEndpoints`. Avoid: configurable endpoint.
 - **Endpoint injection seam** - `runWithEndpoints`, which accepts distinct Uptime base URL, Telemetry REST base URL, and Telemetry SQL URL test inputs. Exact help returns before all active routes. `logs search` uses the SQL input through its query builder and SQL request executor. Avoid: runtime endpoint override.
 - **Command handler (anchor role `command-handler`)** - `monitorsList`, `monitorsGet`, `incidentsList`, `incidentsGet`, `incidentsTimeline`, `sourcesList`, `sourcesGet`, or `logsSearch`, which validates arguments before its request executor. Avoid: request executor.
@@ -13,7 +14,7 @@
 - **Metadata pair** - a repeatable incident-list `--metadata key=value` filter with a nonempty, case-sensitive key. Avoid: raw query flag.
 - **Uptime token** - the value of `BETTERSTACK_UPTIME_API_TOKEN`, used in the bearer header and local diagnostic redaction. Avoid: legacy token fallback.
 - **Source ID** - one nonempty opaque Telemetry source target escaped as a single REST path segment, without URL interpretation or numeric restrictions. Avoid: source URL, numeric-only source ID.
-- **Telemetry API token** - the value of `BETTERSTACK_TELEMETRY_API_TOKEN`, used only by source REST commands for bearer authentication and local diagnostic redaction. The value also participates in non-2xx SQL response redaction, but never SQL authentication. Avoid: Uptime fallback, source response token.
+- **Telemetry API token** - the value of `BETTERSTACK_TELEMETRY_API_TOKEN`. It authenticates source commands, and log search uses it only to redact SQL error output. Avoid: SQL credential, Uptime fallback, source response token.
 - **Telemetry secret redaction** - `redactSecrets`, a direct helper for non-empty Telemetry API token, SQL username, SQL password, and derived Basic-auth encoding. It applies only to non-2xx SQL response bodies. Avoid: response redaction.
 - **Raw response body** - upstream bytes passed through without JSON decoding, formatting, redaction, or an added newline. Avoid: normalized JSON.
 - **Log search arguments** - the locally validated builder input from `parseLogsSearchArgs`, used by the `logs search` command handler. Avoid: raw SQL input.
