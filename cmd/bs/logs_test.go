@@ -1,6 +1,7 @@
 package main
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -31,6 +32,9 @@ func TestParseLogsSearchArgsTable(t *testing.T) {
 func TestParseLogsSearchArgsSyntax(t *testing.T) {
 	for _, flag := range []string{"--table", "--since", "--from", "--to", "--query", "--order", "--limit", "--timeout"} {
 		for _, tail := range [][]string{{flag}, {flag + "=x"}, {flag, "--cold"}} {
+			if flag == "--query" && len(tail) == 2 {
+				continue
+			}
 			args := tail
 			if flag != "--table" {
 				args = append([]string{"--table", "t1_fake"}, tail...)
@@ -80,6 +84,80 @@ func TestParseLogsSearchArgsColdAndQuery(t *testing.T) {
 		parsed, err := parseLogsSearchArgs([]string{"--query", query, "--table", "t1_fake"})
 		if err != nil || parsed.cold || parsed.query == nil || *parsed.query != query {
 			t.Fatalf("query = %v, cold = %t, error = %v", parsed.query, parsed.cold, err)
+		}
+	}
+}
+
+// TestBuildLogsSearchQueryHot verifies the complete default and explicit hot query.
+func TestBuildLogsSearchQueryHot(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		args []string
+		want string
+	}{
+		{"default", nil, "SELECT dt, raw FROM remote(t1_fake_logs) WHERE dt >= fromUnixTimestamp64Milli({from:Int64}, 'UTC') AND dt < fromUnixTimestamp64Milli({to:Int64}, 'UTC') ORDER BY dt DESC LIMIT 100 SETTINGS max_execution_time = 30 FORMAT JSONEachRow"},
+		{"explicit", []string{"--order", "asc", "--limit", "1000", "--timeout", "2s"}, "SELECT dt, raw FROM remote(t1_fake_logs) WHERE dt >= fromUnixTimestamp64Milli({from:Int64}, 'UTC') AND dt < fromUnixTimestamp64Milli({to:Int64}, 'UTC') ORDER BY dt ASC LIMIT 1000 SETTINGS max_execution_time = 2 FORMAT JSONEachRow"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			sql, params, err := buildLogsSearchQuery(append([]string{"--table", "t1_fake"}, tc.args...), time.Unix(3600, 0))
+			if err != nil || sql != tc.want {
+				t.Fatalf("SQL = %q, error = %v", sql, err)
+			}
+			if !reflect.DeepEqual(map[string][]string(params), map[string][]string{"param_from": {"0"}, "param_to": {"3600000"}}) {
+				t.Fatalf("params = %v", params)
+			}
+		})
+	}
+}
+
+// TestBuildLogsSearchQueryText verifies that search text stays in a typed parameter.
+func TestBuildLogsSearchQueryText(t *testing.T) {
+	for _, text := range []string{"", "MiXeD fake", "fake 'quotes' \"double\"", `fake\path`, "fake %_.*", "fake'); DROP TABLE fake; --", "--fake", "faké 世界"} {
+		t.Run(text, func(t *testing.T) {
+			sql, params, err := buildLogsSearchQuery([]string{"--table", "t1_fake", "--query", text}, time.Unix(3600, 0))
+			if err != nil || !strings.Contains(sql, "AND positionCaseInsensitiveUTF8(raw, {query:String}) > 0") {
+				t.Fatalf("SQL = %q, error = %v", sql, err)
+			}
+			value, present := params["param_query"]
+			if !present || !reflect.DeepEqual(value, []string{text}) || len(params) != 3 {
+				t.Fatalf("params = %v", params)
+			}
+			if text != "" && strings.Contains(sql, text) {
+				t.Fatalf("SQL contains query text: %q", sql)
+			}
+		})
+	}
+}
+
+// TestBuildLogsSearchQueryRejectsControls verifies control text never produces a query.
+func TestBuildLogsSearchQueryRejectsControls(t *testing.T) {
+	for _, text := range []string{"fake\x00text", "fake\ntext", "fake\rtext", "fake\ttext", "fake\x1btext", "fake\x7ftext", "fake\u0085text"} {
+		sql, params, err := buildLogsSearchQuery([]string{"--table", "t1_fake", "--query", text}, time.Unix(3600, 0))
+		if err == nil || !strings.Contains(err.Error(), "--query") || sql != "" || params != nil {
+			t.Fatalf("SQL = %q, params = %v, error = %v", sql, params, err)
+		}
+	}
+}
+
+// TestBuildLogsSearchQueryTimeout verifies integer ceiling without duration overflow.
+func TestBuildLogsSearchQueryTimeout(t *testing.T) {
+	for _, tc := range []struct {
+		value string
+		want  string
+	}{{"1ns", "1"}, {"250ms", "1"}, {"1s", "1"}, {"5s", "5"}, {"5.01s", "6"}, {"2562047h47m16.854775807s", "9223372037"}} {
+		sql, _, err := buildLogsSearchQuery([]string{"--table", "t1_fake", "--timeout", tc.value}, time.Unix(3600, 0))
+		if err != nil || !strings.Contains(sql, "SETTINGS max_execution_time = "+tc.want+" FORMAT JSONEachRow") {
+			t.Fatalf("timeout %s: SQL = %q, error = %v", tc.value, sql, err)
+		}
+	}
+}
+
+// TestBuildLogsSearchQueryRejectsArguments verifies parsing failure returns no SQL or parameters.
+func TestBuildLogsSearchQueryRejectsArguments(t *testing.T) {
+	for _, args := range [][]string{nil, {"--table", "t1_fake); DROP"}, {"--table", "t1_fake", "--limit", "0"}, {"--table", "t1_fake", "--order", "ASC"}, {"--table", "t1_fake", "--timeout", "0s"}, {"--table", "t1_fake", "--since", "7d"}} {
+		sql, params, err := buildLogsSearchQuery(args, time.Unix(3600, 0))
+		if err == nil || sql != "" || params != nil {
+			t.Fatalf("args = %q, SQL = %q, params = %v, error = %v", args, sql, params, err)
 		}
 	}
 }

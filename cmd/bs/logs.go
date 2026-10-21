@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 )
 
 var logsTablePattern = regexp.MustCompile(`^t[0-9]+_[a-z0-9_]+$`)
@@ -21,6 +23,28 @@ type logsSearchArgs struct {
 	values  map[string]string
 }
 
+func buildLogsSearchQuery(args []string, now time.Time) (string, url.Values, error) {
+	parsed, err := parseLogsSearchArgs(args)
+	if err != nil {
+		return "", nil, err
+	}
+	params := url.Values{
+		"param_from": {strconv.FormatInt(now.Add(-parsed.since).UnixMilli(), 10)},
+		"param_to":   {strconv.FormatInt(now.UnixMilli(), 10)},
+	}
+	predicate := "dt >= fromUnixTimestamp64Milli({from:Int64}, 'UTC') AND dt < fromUnixTimestamp64Milli({to:Int64}, 'UTC')"
+	if parsed.query != nil {
+		predicate += " AND positionCaseInsensitiveUTF8(raw, {query:String}) > 0"
+		params.Set("param_query", *parsed.query)
+	}
+	seconds := parsed.timeout / time.Second
+	if parsed.timeout%time.Second != 0 {
+		seconds++
+	}
+	sql := fmt.Sprintf("SELECT dt, raw FROM remote(%s_logs) WHERE %s ORDER BY dt %s LIMIT %d SETTINGS max_execution_time = %d FORMAT JSONEachRow", parsed.table, predicate, strings.ToUpper(parsed.order), parsed.limit, seconds)
+	return sql, params, nil
+}
+
 func parseLogsSearchArgs(args []string) (logsSearchArgs, error) {
 	parsed := logsSearchArgs{values: make(map[string]string), order: "desc", limit: 100, since: time.Hour, timeout: defaultTimeout}
 	for i := 0; i < len(args); i++ {
@@ -32,7 +56,7 @@ func parseLogsSearchArgs(args []string) (logsSearchArgs, error) {
 			if _, exists := parsed.values[flag]; exists {
 				return logsSearchArgs{}, fmt.Errorf("duplicate %s", flag)
 			}
-			if i+1 >= len(args) || strings.HasPrefix(args[i+1], "--") {
+			if i+1 >= len(args) || (flag != "--query" && strings.HasPrefix(args[i+1], "--")) {
 				return logsSearchArgs{}, fmt.Errorf("%s needs a value", flag)
 			}
 			i++
@@ -49,6 +73,9 @@ func parseLogsSearchArgs(args []string) (logsSearchArgs, error) {
 		return logsSearchArgs{}, fmt.Errorf("invalid or missing --table value %q", parsed.table)
 	}
 	if value, present := parsed.values["--query"]; present {
+		if strings.ContainsFunc(value, unicode.IsControl) {
+			return logsSearchArgs{}, fmt.Errorf("invalid --query value: control characters are not allowed")
+		}
 		parsed.query = &value
 	}
 	if value, present := parsed.values["--order"]; present {

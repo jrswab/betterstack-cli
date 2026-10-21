@@ -17,6 +17,7 @@
 - **Telemetry secret redaction** - `redactSecrets`, a direct helper for non-empty Telemetry API token, SQL username, SQL password, and derived Basic-auth encoding. No response path calls it. Avoid: response redaction.
 - **Raw response body** - upstream bytes passed through without JSON decoding, formatting, redaction, or an added newline. Avoid: normalized JSON.
 - **Log search arguments** - the locally validated builder input from `parseLogsSearchArgs`, without a command route or request. Avoid: raw SQL input.
+- **Log search query builder** - `buildLogsSearchQuery`, which validates search arguments and returns SQL and separate typed parameters without requests. Avoid: SQL executor.
 - **Full table identifier** - the required log-search `--table` value matching `^t[0-9]+_[a-z0-9_]+$`. Avoid: Source ID, SQL fragment.
 - **Loopback-only network guard** - the test transport and dial checks that admit literal loopback IPs and reject other hosts without DNS lookup. Avoid: localhost allowlist.
 
