@@ -112,7 +112,7 @@ func TestBuildLogsSearchQueryHot(t *testing.T) {
 
 // TestBuildLogsSearchQueryText verifies that search text stays in a typed parameter.
 func TestBuildLogsSearchQueryText(t *testing.T) {
-	for _, text := range []string{"", "MiXeD fake", "fake 'quotes' \"double\"", `fake\path`, "fake %_.*", "fake'); DROP TABLE fake; --", "--fake", "faké 世界"} {
+	for _, text := range []string{"", "  fake  ", "MiXeD fake", "fake 'quotes' \"double\"", `fake\path`, "fake %_.*", "fake'); DROP TABLE fake; --", "--fake", "faké 世界"} {
 		t.Run(text, func(t *testing.T) {
 			sql, params, err := buildLogsSearchQuery([]string{"--table", "t1_fake", "--query", text}, time.Unix(3600, 0))
 			if err != nil || !strings.Contains(sql, "AND positionCaseInsensitiveUTF8(raw, {query:String}) > 0") {
@@ -199,11 +199,14 @@ func TestBuildLogsSearchQueryTimeBounds(t *testing.T) {
 
 // TestBuildLogsSearchQueryRejectsTimeBounds verifies invalid and mutually exclusive time flags.
 func TestBuildLogsSearchQueryRejectsTimeBounds(t *testing.T) {
+	sql, params, err := buildLogsSearchQuery([]string{"--table", "t1_fake", "--to", "1970-01-01T01:59:00Z"}, time.Unix(7200, 123456789))
+	if err == nil || err.Error() != "--to requires --from" || sql != "" || params != nil {
+		t.Fatalf("SQL = %q, params = %v, error = %v, want --to requires --from", sql, params, err)
+	}
 	for _, tc := range []struct {
 		args []string
 		flag string
 	}{
-		{[]string{"--to", "1970-01-01T00:00:02Z"}, "--to"},
 		{[]string{"--from", ""}, "--from"},
 		{[]string{"--from", "1970-01-01"}, "--from"},
 		{[]string{"--from", "fake'); DROP TABLE fake; --"}, "--from"},
