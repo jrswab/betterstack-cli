@@ -8,10 +8,59 @@ Usage:
 Resources:
   incidents   List and inspect incidents
   monitors    List and inspect monitors
+  logs        Search Telemetry logs
   sources     List and inspect Telemetry sources
 
 Run 'bs <resource> --help' for a resource's commands.
 Run 'bs <resource> <action> --help' for a command's usage and flags.
+`
+
+const logsHelp = `bs logs - commands
+
+Usage:
+  bs logs <command> [flags]
+
+Commands:
+  search  Search Telemetry logs
+
+Run 'bs logs <command> --help' for a command's usage and flags.
+`
+
+const logsSearchHelp = `bs logs search - search Telemetry logs
+
+Usage:
+  bs logs search --table <table_name> [flags]
+
+Arguments:
+  none - this command takes no positional target or raw SQL.
+
+Flags:
+  --table <table_name>  Required full table identifier: t<team_id>_<table_name>.
+                        It must match ^t[0-9]+_[a-z0-9_]+$. 'bs sources get <id>' shows both parts.
+                        A source ID or an unprefixed table_name is not a full table identifier.
+  --since <duration>   Relative time window, a positive Go duration. Default 1h.
+                        --since cannot combine with --from or --to.
+  --from <time>        Inclusive lower bound in RFC3339Nano. It must be before --to.
+  --to <time>          Exclusive upper bound in RFC3339Nano. Default now.
+                        --to requires --from. Without explicit bounds, the window ends now.
+  --query <text>       Match a case-insensitive substring of raw. Default: no text filter.
+                        It consumes the next argument as text, even option-shaped text.
+                        --query --cold searches for --cold without enabling cold storage.
+                        Use --cold --query --cold to enable cold storage and search that text.
+  --order <asc|desc>   Timestamp order. Default desc.
+  --limit <integer>    Return 1 through 1000 rows. Default 100.
+  --timeout <duration> Total request timeout, a positive Go duration. Default 30 seconds (30s).
+  --cold               Include cold storage with hot storage. Default: hot storage only.
+
+Use space-separated values. Value-bearing flags reject duplicates. --cold may repeat.
+
+HTTP 500 CLUSTER_DOESNT_EXIST means the source has no hot table. Try rerunning with --cold.
+
+Examples:
+  bs logs search --table t1_example
+  bs logs search --table t1_example --since 30m --query error --limit 50
+  bs logs search --table t1_example --from 2026-01-01T00:00:00Z --to 2026-01-02T00:00:00Z --order asc
+  bs logs search --table t1_example --cold --query --cold --timeout 60s
 `
 
 const sourcesHelp = `bs sources - commands

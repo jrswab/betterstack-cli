@@ -33,18 +33,18 @@
 - Lane: `full` — D1 assigns the full lane to every milestone because work affects external API contracts, security, or repository-wide records.
 - Current phase: `execute`
 - State: `execution in progress`; V1 and independent review remain pending.
-- Current task: A2
+- Current task: B1
 - Task states — checklist checkboxes render from this list:
 - A1 Replace the SQL side channel with a working logs search route: `checked`
 - A2 Prove local validation and established usage diagnostics: `checked`
-- B1 Add root, logs resource, and logs search command help: `unchecked`
+- B1 Add root, logs resource, and logs search command help: `checked`
 - B2 Add logs usage diagnostics and preserve source help regression: `unchecked`
 - C1 Document the active command in README and changelog: `unchecked`
 - C2 Update current routing memory and anchor index: `unchecked`
 - V1 Run the 006 verification and Factory completion gate: `unchecked`
 - Milestone checkbox: `unchecked`
-- Next safe action: Implement B1 exact logs help
-- Last completed phase/task/gate and timestamp: A2 focused verification PASS, 2026-10-21T16:24:58.749324+00:00
+- Next safe action: Implement B2 source-warning regression and verify usage coverage
+- Last completed phase/task/gate and timestamp: B1 focused verification PASS, 2026-10-21T16:26:39.193529+00:00
 
 ## Restart validation and setup evidence
 
@@ -307,6 +307,103 @@ a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
 ```
 
 - Next action: Implement B1 exact logs help
+
+### B1 focused verification PASS
+
+- Gate: B1 focused verification PASS
+- Commands/results:
+- Files/symbols: `cmd/bs/help.go:rootHelp,logsHelp,logsSearchHelp` documents all nine flags, defaults, time bounds, full table grammar and source context, query option-shaped values, missing-hot-table guidance, and examples. `cmd/bs/main.go:helpFor` adds exact logs resource/command vectors before routing.
+- Tests: `cmd/bs/main_test.go:TestRunWithEndpointsLogsHelp` checks all three levels with absent and fake credentials through an in-memory transport. `TestLogsHelpRequiresExactVector` checks extra/misplaced help and short help with zero requests. Existing help and query-route regressions pass.
+- Red command: `go test -count=1 -run '^(TestRunWithEndpointsLogsHelp|TestLogsHelpRequiresExactVector)$' ./cmd/bs`. Exit 1 before implementation:
+
+```text
+--- FAIL: TestRunWithEndpointsLogsHelp (0.00s)
+    --- FAIL: TestRunWithEndpointsLogsHelp/configured=false (0.00s)
+        --- FAIL: TestRunWithEndpointsLogsHelp/configured=false/--help (0.00s)
+            main_test.go:174: help missing "\n  logs "
+        --- FAIL: TestRunWithEndpointsLogsHelp/configured=false/logs_--help (0.00s)
+            main_test.go:170: code=1, stderr="bs: unknown option \"--help\"; run 'bs logs --help' for usage.\n", requests=0
+        --- FAIL: TestRunWithEndpointsLogsHelp/configured=false/logs_search_--help (0.00s)
+            main_test.go:170: code=1, stderr="bs: unknown option \"--help\"; run 'bs logs search --help' for usage.\n", requests=0
+    --- FAIL: TestRunWithEndpointsLogsHelp/configured=true (0.00s)
+        --- FAIL: TestRunWithEndpointsLogsHelp/configured=true/--help (0.00s)
+            main_test.go:174: help missing "\n  logs "
+        --- FAIL: TestRunWithEndpointsLogsHelp/configured=true/logs_--help (0.00s)
+            main_test.go:170: code=1, stderr="bs: unknown option \"--help\"; run 'bs logs --help' for usage.\n", requests=0
+        --- FAIL: TestRunWithEndpointsLogsHelp/configured=true/logs_search_--help (0.00s)
+            main_test.go:170: code=1, stderr="bs: unknown option \"--help\"; run 'bs logs search --help' for usage.\n", requests=0
+FAIL
+FAIL	github.com/jrswab/betterstack-cli/cmd/bs	0.005s
+FAIL
+```
+- The first green run caught only assertion capitalization (`inclusive`/`exclusive` versus help's `Inclusive`/`Exclusive`). The assertions now match the existing sentence style. No behavior changed to satisfy this test correction.
+- Green command: `go test -count=1 -run '^(TestRunWithEndpointsLogsHelp|TestLogsHelpRequiresExactVector|TestRootHelp|TestResourceHelp|TestCommandHelp|TestRunWithEndpointsSourcesHelp.*|TestRunWithEndpointsLogsInvalidUsage|TestLogsSearch.*)$' ./cmd/bs`. Exit 0:
+
+```text
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	0.010s
+```
+- `go vet ./cmd/bs`, `test -z "$(gofmt -l cmd/bs/*.go)"`, and `git diff --check` exited 0 without output. `gofmt -w` formatted the touched Go files.
+- Behavior-affecting artifact conflict: B1's checklist sentence spells the error `CLUSTER_DOES_NOT_EXIST`. Spec R3, the checklist boundary probe, and ticket 10 use `CLUSTER_DOESNT_EXIST`. The implementation and tests follow the authoritative spec.
+- Tier: standard. Independent review remains pending with the orchestrator. No subagent tool exists.
+- A2 commit: `63d8029`. Relevant A2 work is committed. Required records remain assigned to C1/C2.
+- HEAD commit SHA: `63d8029fb749f68ff47f28c208d0393f1f646d48`
+- Relevant work: `uncommitted` — stash ref `ba8871bbed5ccbfde2581653780d8ba5d183ecd0` (tracked files only; never applied)
+- `git status --porcelain` (before checkpoint/checkbox writes):
+
+```text
+ M cmd/bs/help.go
+ M cmd/bs/main.go
+ M cmd/bs/main_test.go
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Untracked file Git objects (stored with hash-object -w, never applied):
+
+```text
+e69de29bb2d1d6434b8b29ae775ad8c2e48c5391  ".agents/scripts/.gitkeep"
+2268d6d1b4dd6b23950ea8bcbce44e2cc4fd02a5  ".agents/scripts/telemetry-live-probe.sh"
+c3626f955decd6b7ffa341c26703f857462954b5  ".agents/skills/changelog/SKILL.md"
+656c156bf90f78f9ac3a85412fe9e91145a5bebb  ".agents/skills/mem/SKILL.md"
+44304443f37776ec688c34be9840378e243c6f2f  ".agents/skills/pr/SKILL.md"
+f788b79f289c9adfcdbb156d309261b925c403ba  ".agents/skills/provenance-log/SKILL.md"
+704342b5c4c16287177f2da9f4b656aa526fba5b  ".agents/skills/release/SKILL.md"
+e5ecdd11f8df24415ebff5fdf63f6113213bf7ec  ".wayfinder/MAP.md"
+d2521bd5eae2907dbcfadafe090456e6781b6e41  ".wayfinder/README.md"
+54113199fec1e082615bbf1bf5691e42201085b9  ".wayfinder/assets/01-api-contract-research.md"
+623ab01ed0b0385ce5fedd654d847a02d9c52fdb  ".wayfinder/assets/02-incident-url-identity-research.md"
+c4c4fe4107105fd614a8f3a94b46812cb06b3960  ".wayfinder/assets/06-go-toolchain-research.md"
+c6158f0916332d3e3a80e61a67a8ecc2de8a5b32  ".wayfinder/telemetry/MAP.md"
+f4e847e79b9fb7619c846148a592d14b88a367c7  ".wayfinder/telemetry/assets/03-sources-api-contract-research.md"
+247ee7bc692682bc7b1a32fb05f315fa938f36f6  ".wayfinder/telemetry/assets/04-sql-api-contract-research.md"
+0a18fb73e0093239f584809f479b542e99fc7f76  ".wayfinder/telemetry/assets/05-live-verification-results.md"
+5ebc264f975b3e46e337f17435443bc29535825e  ".wayfinder/telemetry/assets/06-cold-storage-timeout-research.md"
+2b71e98af8af64a9cd36bd3d5bd5e6e9b5cf818b  ".wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md"
+b7482d50e399cdae487b573ae35176f069362341  ".wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md"
+572c8f131bb6a497254d5a63b1bd30f2ce28502f  ".wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md"
+77b5c75dbaac7620d469a638c8d77335c6624e04  ".wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md"
+1323bb7b057a980e8b536c7162cccd9b7b26cc71  ".wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md"
+66a7fd3e74798761babbcd7fbec61d0aac59b704  ".wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md"
+cde68ecfe35ee426d1bcc07e817d52eced3d06b1  ".wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md"
+e180004c8a35821bec3e2cb2feab300f3046f71e  ".wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md"
+bf05f4602afcf7692f7dd66ed6af5a85be9566f1  ".wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md"
+9d010dd4260be2a86b212eeb6d11637bc1b22dbb  ".wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md"
+9677e361c7ff035c55b374943bad13b068a39a16  ".wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md"
+13a7970f556e13dad98340b3b700fd98da438aaa  ".wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md"
+5ad4771181950a65021b600d0765b6f79ad59dd5  ".wayfinder/tickets/02-incident-url-identity-resolution.md"
+53f3d379ecaf4eefb35f44de0596dcd8db5c76c1  ".wayfinder/tickets/03-command-naming-and-argument-conventions.md"
+1a67e294757e2a2558ec29f2247cc4fe6d1cb1b6  ".wayfinder/tickets/04-pagination-and-json-envelope.md"
+0a2031f1210b6008a0da9a8f7d217ecf1233f4bf  ".wayfinder/tickets/05-errors-timeouts-retries-token-safety.md"
+dc414d2e4181c232972f98528077e0e0650c47ec  ".wayfinder/tickets/06-installation-distribution-acceptance.md"
+aca24cb6a5e5e366b6216d692a002839547a1ef3  "AGENTS.md"
+c2aa8050a6c704164fa53e3baa765b75dd09cd49  "docs/plans/008_telemetry-logs-search_milestones.md"
+a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
+```
+
+- Next action: Implement B2 source-warning regression and verify usage coverage
 
 ## Limitations and blockers
 

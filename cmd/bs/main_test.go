@@ -132,6 +132,75 @@ func TestRunWithEndpointsSourcesHelp(t *testing.T) {
 	}
 }
 
+// TestRunWithEndpointsLogsHelp verifies all help levels without credentials or HTTP access.
+func TestRunWithEndpointsLogsHelp(t *testing.T) {
+	cases := []struct {
+		args  []string
+		wants []string
+	}{
+		{[]string{"--help"}, []string{"\n  logs ", "incidents", "monitors", "sources"}},
+		{[]string{"logs", "--help"}, []string{"bs logs", "Commands:", "search"}},
+		{[]string{"logs", "search", "--help"}, []string{
+			"bs logs search --table <table_name> [flags]", "Arguments:", "Flags:", "Examples:",
+			"--table <table_name>", "t<team_id>_<table_name>", "^t[0-9]+_[a-z0-9_]+$", "bs sources get", "both parts",
+			"--since <duration>", "positive Go duration", "Default 1h", "--since cannot combine with --from or --to",
+			"--from <time>", "--to <time>", "RFC3339Nano", "Inclusive", "Exclusive", "--to requires --from", "before --to", "Default now",
+			"--query <text>", "case-insensitive substring", "raw", "no text filter", "next argument as text", "option-shaped", "--query --cold", "--cold --query --cold",
+			"--order <asc|desc>", "Default desc", "--limit <integer>", "1 through 1000", "Default 100",
+			"--timeout <duration>", "Default 30 seconds (30s)", "--cold", "hot storage", "cold storage",
+			"space-separated values", "Value-bearing flags reject duplicates", "--cold may repeat",
+			"HTTP 500", "CLUSTER_DOESNT_EXIST", "no hot table", "rerunning with --cold",
+		}},
+	}
+	for _, configured := range []bool{false, true} {
+		t.Run("configured="+strconv.FormatBool(configured), func(t *testing.T) {
+			if configured {
+				setFakeSQLConfig(t)
+			} else {
+				for _, name := range []string{tokenEnvVar, telemetryTokenEnvVar, telemetrySQLURLEnvVar, telemetrySQLUsernameEnvVar, telemetrySQLPasswordEnvVar} {
+					t.Setenv(name, "")
+				}
+			}
+			for _, tc := range cases {
+				t.Run(strings.Join(tc.args, " "), func(t *testing.T) {
+					transport := &recordingRoundTripper{}
+					var out, err bytes.Buffer
+					code := runWithEndpoints(tc.args, &out, &err, "http://127.0.0.1/uptime", "http://127.0.0.1/rest", "http://127.0.0.1/sql", &http.Client{Transport: transport})
+					if code != 0 || err.Len() != 0 || len(transport.requests) != 0 {
+						t.Fatalf("code=%d, stderr=%q, requests=%d", code, err.String(), len(transport.requests))
+					}
+					for _, want := range tc.wants {
+						if !strings.Contains(out.String(), want) {
+							t.Errorf("help missing %q", want)
+						}
+					}
+				})
+			}
+		})
+	}
+}
+
+// TestLogsHelpRequiresExactVector verifies extra tokens never become help or requests.
+func TestLogsHelpRequiresExactVector(t *testing.T) {
+	setFakeSQLConfig(t)
+	for _, args := range [][]string{
+		{"--help", "logs"}, {"logs", "--help", "extra"}, {"logs", "search", "--help", "extra"},
+		{"logs", "search", "--table", "t1_fake", "--help"}, {"logs", "search", "-h"},
+	} {
+		t.Run(strings.Join(args, " "), func(t *testing.T) {
+			if _, ok := helpFor(args); ok {
+				t.Fatal("extra or misplaced token became help")
+			}
+			transport := &recordingRoundTripper{}
+			var out, err bytes.Buffer
+			code := runWithEndpoints(args, &out, &err, "http://127.0.0.1/uptime", "http://127.0.0.1/rest", "http://127.0.0.1/sql", &http.Client{Transport: transport})
+			if code != 1 || out.Len() != 0 || !strings.Contains(err.String(), "--help") || len(transport.requests) != 0 {
+				t.Fatalf("code=%d, stdout=%q, stderr=%q, requests=%d", code, out.String(), err.String(), len(transport.requests))
+			}
+		})
+	}
+}
+
 // TestRunWithEndpointsLogsInvalidUsage verifies diagnostics precede SQL configuration and requests.
 func TestRunWithEndpointsLogsInvalidUsage(t *testing.T) {
 	cases := []struct {

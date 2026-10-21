@@ -73,6 +73,10 @@ func helpFor(args []string) (string, bool) {
 	switch {
 	case len(args) == 1 && args[0] == "--help":
 		return rootHelp, true
+	case len(args) == 2 && args[0] == "logs" && args[1] == "--help":
+		return logsHelp, true
+	case len(args) == 3 && args[0] == "logs" && args[1] == "search" && args[2] == "--help":
+		return logsSearchHelp, true
 	case len(args) == 2 && args[0] == "sources" && args[1] == "--help":
 		return sourcesHelp, true
 	case len(args) == 3 && args[0] == "sources" && args[1] == "list" && args[2] == "--help":
