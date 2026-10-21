@@ -33,13 +33,13 @@ The checkpoint owns task state. Milestone 004 remains unchecked until a later im
 ## State
 
 - Lane: `full` — D1 requires the full lane for every milestone because the work affects external API contracts, security, or repository-wide records. S3 safely interpolates a validated SQL identifier and binds query/time values.
-- Current phase: Phase 3 (execution) — the orchestrator authorized tasks A1 through E1 after Phases 1 and 2 passed at `79e2931`.
-- Current task: E1.
-- Next action: implement E1.
+- Current phase: Phase 3 (execution) — authorized tasks A1 through E1 passed. This invocation stops before V1.
+- Current task: none authorized. V1 remains not started under separate authorization.
+- Next action: handoff for separately authorized V1 review and completion gate.
 - Phase states: setup/restart validation `passed`; Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 `in progress`.
-- Task states: A1 `passed`; A2 `passed`; B1 `passed`; C1 `passed`; D1 `passed`; E1 `not started`; V1 `not started`.
+- Task states: A1 `passed`; A2 `passed`; B1 `passed`; C1 `passed`; D1 `passed`; E1 `passed`; V1 `not started`.
 - Milestone checkbox: `unchecked`.
-- Last completed phase and gate: Phase 2 artifact criterion passed on 2026-10-26. No implementation, review, or completion gate ran.
+- Last completed task and gate: E1 records and required pre-handoff checks passed. The separate review and completion gates remain pending under excluded V1.
 
 ## Restart validation and setup evidence
 
@@ -143,9 +143,9 @@ Boundary probes and outputs are in the implementation checklist. The current par
 
 ## Limitations and blockers
 
-- Limitations: `make help` is unavailable because no Makefile target exists. V1 review and completion gates remain outside this invocation.
-- Blockers: none at restart.
-- Next action: implement E1.
+- Limitations: `make help`, `make fragments-check`, and `make docs-check` are unavailable because no Makefile target exists. Direct record checks passed. V1 review and completion gates remain outside this invocation.
+- Blockers: none. The authorized task scope is complete. The orchestrator must authorize V1 before review and milestone completion.
+- Next action: handoff for separately authorized V1 review and completion gate.
 
 ## Task A1 evidence
 
@@ -269,3 +269,61 @@ Boundary probes and outputs are in the implementation checklist. The current par
 ?? verify-incident-id.sh
 ```
 - Task D1 focused checks passed. The checkpoint renders its task checkbox after this record.
+
+## Task E1 evidence
+
+- Tier: mechanical records. Test-first behavior work is not applicable. Direct record validation replaces the unavailable documentation and fragment targets.
+- Files: finalized `changelog.d/008-telemetry-logs-search-004.md`, `.mem/telemetry/logs.md`, `.mem/mem-map.md`, `.mem/summary.md`, and `.mem/terminology.md`. No code symbol changed in E1.
+- Record checks: `python3 /tmp/factory-004/records-check.py` exited 0. It reported line counts 54, 21, 3, and 24 for logs, map, summary, and terminology. Relative links exist. The builder example, Mermaid flow, memory index, summary, and changelog shape passed. Builder-only imports/tests and allowed comments passed. All 13 existing anchors remain indexed in unchanged `TAGS.md`.
+- `make fragments-check` and `make docs-check` each exited 2 with `No rule to make target`. No configured Markdown formatter/linter exists.
+- Tests: no new tests in this records task. The required full test suite ran once and passed. Final verification output follows.
+- Required verification used the caller-supplied local toolchain environment. No toolchain workaround is recorded in `.mem/` or other shared records.
+- Dependencies and assumptions: none. The approved raw-argument builder signature uses the representation flexibility stated in the checklist.
+- Skips: no README change because this milestone has no new command, environment variable, endpoint, or setup (ladder rung 1 and R9). No TAGS edit because helpers receive no anchors. No LOG/log.d entry because the spec already records the implementation rationale (ladder rung 1). No new dependency because the Go standard library covers validation, time, parameters, and formatting (ladder rung 2).
+- Deliberate scope limit: V1, the separate review gate, Factory completion gate, and milestone checkbox render are not authorized. The milestone remains unchecked. No review or completion result is claimed.
+- Scope deviations and symptom patches: none. SQL execution, routing, help, response handling, credential access, pushes, and deploys remain absent.
+
+### Required pre-handoff verification output
+
+```text
+$ GOFLAGS=-o=/dev/null go build ./...
+exit 0, no output
+$ go vet ./...
+exit 0, no output
+$ go test -count=1 ./...
+ok  	github.com/jrswab/betterstack-cli/cmd/bs	2.177s
+exit 0
+$ gofmt -l cmd/bs/*.go
+exit 0, no paths
+$ git diff --check 79e2931..HEAD
+exit 0, no output
+$ git diff --check
+exit 0, no output
+$ test ! -e ./bs
+exit 0, no repository-root binary
+$ find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum
+0eb137ab6c83c23488e7785e0c25a9bdb33ebb32c23fddb1e4d83a4f08ed3fe5  -
+exit 0, protected baseline unchanged
+$ python3 /tmp/factory-004/records-check.py
+.mem/telemetry/logs.md: 54 lines, relative links exist
+.mem/mem-map.md: 21 lines, relative links exist
+.mem/summary.md: 3 lines, relative links exist
+.mem/terminology.md: 24 lines, relative links exist
+Builder example, Mermaid flow, memory index, summary, and changelog shape: PASS
+Builder-only code and tests, allowed comments, unchanged routing/help/dependencies/anchors/README/rationale: PASS
+TAGS.md: all 13 existing boundary anchors indexed, no helper anchor added
+exit 0
+
+```
+
+- Validated HEAD: `5a42f6b24acdfa2beb94110364b85b9e00efee77`. Relevant task work is committed. No stash ref applies.
+- `git status --porcelain` at the task gate:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+- Task E1 focused checks passed. The checkpoint renders its task checkbox after this record.
