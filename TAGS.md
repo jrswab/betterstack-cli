@@ -9,6 +9,7 @@ Each row identifies one production boundary occurrence.
 | `telemetry:config` | [cmd/bs/main.go](cmd/bs/main.go) | `defaultTelemetryRESTBaseURL` | Telemetry configuration boundary |
 | `telemetry:config` | [cmd/bs/sources.go](cmd/bs/sources.go) | `telemetryTokenEnvVar` | Telemetry API credential name |
 | `telemetry:config` | [cmd/bs/logs.go](cmd/bs/logs.go) | `telemetrySQLURLEnvVar`, `telemetrySQLUsernameEnvVar`, `telemetrySQLPasswordEnvVar` | SQL configuration names |
+| `telemetry:command-handler` | [cmd/bs/logs.go](cmd/bs/logs.go) | `logsSearch` | Logs search command handler |
 | `telemetry:request-executor` | [cmd/bs/logs.go](cmd/bs/logs.go) | `doLogsSQLRequest` | SQL request executor |
 | `telemetry:command-handler` | [cmd/bs/sources.go](cmd/bs/sources.go) | `sourcesList` | Sources list command handler |
 | `telemetry:command-handler` | [cmd/bs/sources.go](cmd/bs/sources.go) | `sourcesGet` | Sources get command handler |

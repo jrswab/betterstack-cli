@@ -2,7 +2,7 @@
 
 ## Commands and endpoint
 
-[runWithEndpoints](../../cmd/bs/main.go) routes `bs sources list` and `bs sources get <id>` to the Telemetry REST input. `runWithAPI` preserves the Uptime injection interface and supplies the fixed production Telemetry REST host, `https://telemetry.betterstack.com`. Only tests inject another REST endpoint. No user setting overrides it. The SQL endpoint input supports [prepared SQL execution](logs.md) but has no CLI route.
+[runWithEndpoints](../../cmd/bs/main.go) routes `bs sources list` and `bs sources get <id>` to the Telemetry REST input. `runWithAPI` preserves the Uptime injection interface and supplies the fixed production Telemetry REST host, `https://telemetry.betterstack.com`. Only tests inject another REST endpoint. No user setting overrides it. The SQL endpoint input serves the separate [logs search route](logs.md), not source requests.
 
 | Command | Handler | GET path |
 |---|---|---|

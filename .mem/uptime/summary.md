@@ -1,6 +1,6 @@
 # Uptime summary
 
-The [command package](../../cmd/bs/main.go) implements five read-only Uptime commands. `main` supplies the fixed production base URL and an HTTP client. `runWithAPI` accepts those dependencies and the stdout/stderr writers so tests can use local servers. It delegates to `runWithEndpoints`, which accepts distinct Uptime, Telemetry REST, and SQL endpoint inputs. Uptime and [source REST handlers](../telemetry/sources.md) are active. The SQL input supports [prepared SQL execution](../telemetry/logs.md) without a CLI route. `helpFor` runs before command routing.
+The [command package](../../cmd/bs/main.go) implements five read-only Uptime commands. `main` supplies the fixed production base URL and an HTTP client. `runWithAPI` accepts those dependencies and the stdout/stderr writers so tests can use local servers. It delegates to `runWithEndpoints`, which accepts distinct Uptime, Telemetry REST, and SQL endpoint inputs. Uptime, [source REST handlers](../telemetry/sources.md), and [logs search](../telemetry/logs.md) are active. `helpFor` runs before every command route. Logs search validates builder output before the separate SQL executor reads configuration.
 
 ```mermaid
 flowchart TD
@@ -10,7 +10,19 @@ flowchart TD
     Help -->|yes| Text[Help text to stdout, exit 0]
     Help -->|no| Route{Known command?}
     Route -->|no| Usage[Usage error to stderr, exit 1]
-    Route -->|yes| Handler[One of five command handlers]
+    Route -->|Uptime| Handler[One of five Uptime command handlers]
+    Route -->|sources| Sources[Source parser and Telemetry token]
+    Sources --> REST[doMonitorsRequest with REST endpoint]
+    REST --> Body
+    Route -->|logs search| Logs[logsSearch and buildLogsSearchQuery]
+    Logs -->|invalid| SQLUsage[Command help hint, exit 1]
+    Logs -->|valid| SQLConfig[Validate SQL configuration]
+    SQLConfig -->|invalid| SQLLocal[Safe diagnostic, exit 1]
+    SQLConfig -->|valid| SQLPost[doLogsSQLRequest: timed Basic-auth POST]
+    SQLPost -->|2xx| Success
+    SQLPost -->|non-2xx| SQLRedact[redactSecrets on body only]
+    SQLRedact --> Failure
+    SQLPost -->|transport or read failure| SQLLocal
     Handler --> Validate[Parse arguments and resolve incident targets]
     Validate --> Credential[Check Uptime token and build endpoint]
     Credential --> Request[doMonitorsRequest]

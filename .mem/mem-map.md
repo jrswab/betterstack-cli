@@ -10,7 +10,7 @@
 ## Telemetry
 
 - [Sources](telemetry/sources.md) describes REST routing, credentials, pagination, opaque IDs, raw responses, and secret warnings.
-- [Log search](telemetry/logs.md) describes argument validation, typed SQL parameters, time bounds, the optional cold union, and the separate SQL HTTP executor.
+- [Log search](telemetry/logs.md) describes the active logs search route, exact help, argument validation, typed SQL parameters, time bounds, the optional cold union, and the separate SQL HTTP executor.
 
 ## Uptime
 
