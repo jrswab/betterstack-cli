@@ -34,10 +34,10 @@ The checkpoint owns task state. Milestone 004 remains unchecked until a later im
 
 - Lane: `full` — D1 requires the full lane for every milestone because the work affects external API contracts, security, or repository-wide records. S3 safely interpolates a validated SQL identifier and binds query/time values.
 - Current phase: Phase 3 (execution) — the orchestrator authorized tasks A1 through E1 after Phases 1 and 2 passed at `79e2931`.
-- Current task: C1.
-- Next action: implement C1.
+- Current task: D1.
+- Next action: implement D1.
 - Phase states: setup/restart validation `passed`; Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 `in progress`.
-- Task states: A1 `passed`; A2 `passed`; B1 `passed`; C1 `not started`; D1 `not started`; E1 `not started`; V1 `not started`.
+- Task states: A1 `passed`; A2 `passed`; B1 `passed`; C1 `passed`; D1 `not started`; E1 `not started`; V1 `not started`.
 - Milestone checkbox: `unchecked`.
 - Last completed phase and gate: Phase 2 artifact criterion passed on 2026-10-26. No implementation, review, or completion gate ran.
 
@@ -145,7 +145,7 @@ Boundary probes and outputs are in the implementation checklist. The current par
 
 - Limitations: `make help` is unavailable because no Makefile target exists. V1 review and completion gates remain outside this invocation.
 - Blockers: none at restart.
-- Next action: implement C1.
+- Next action: implement D1.
 
 ## Task A1 evidence
 
@@ -221,3 +221,27 @@ Boundary probes and outputs are in the implementation checklist. The current par
 ?? verify-incident-id.sh
 ```
 - Task B1 focused checks passed. The checkpoint renders its task checkbox after this record.
+
+## Task C1 evidence
+
+- Tier: design-bearing because time filters define the SQL search interval. D9 review remains pending under excluded V1.
+- Files and symbols: modified `cmd/bs/logs.go` (`buildLogsSearchQuery`), `cmd/bs/logs_test.go`, `.mem/telemetry/logs.md`, and `changelog.d/008-telemetry-logs-search-004.md`.
+- Test names: `TestBuildLogsSearchQueryTimeBounds` and `TestBuildLogsSearchQueryRejectsTimeBounds`.
+- Red command: `go test -run 'TestBuildLogsSearchQuery.*TimeBounds' ./cmd/bs` exited 1. Six explicit-time cases returned default parameters instead of their expected bounds, and `--to` alone incorrectly produced a query.
+- Green commands: the same time test exited 0 with `ok github.com/jrswab/betterstack-cli/cmd/bs 0.007s`. `go test -run 'TestBuildLogsSearchQuery|TestParseLogsSearchArgs' ./cmd/bs` exited 0 with `ok github.com/jrswab/betterstack-cli/cmd/bs 0.013s`.
+- `gofmt -w cmd/bs/logs.go cmd/bs/logs_test.go`, `GOFLAGS=-o=/dev/null go build ./cmd/bs`, `go vet ./cmd/bs`, `gofmt -l cmd/bs/logs.go cmd/bs/logs_test.go`, `git diff --check`, and `git diff --cached --check` exited 0 without output.
+- Decision: compare original times before millisecond conversion. D10 accepts positive durations down to a nanosecond, and R6 discards sub-millisecond precision. Requiring a nonempty millisecond interval would reject approved input. Tests cover this case, timezone offsets, pre-epoch conversion, equal/reversed bounds, and a fixed upper bound for `--from` alone.
+- Skips: no new abstraction for a single caller (ladder rung 1). Standard-library time parsing and formatting suffice (ladder rung 2). No helper anchors or inactive-command README changes.
+- Dependencies, scope deviations, and symptom patches: none.
+
+- Validated HEAD: `72ced8393ae84e63d5a89d2a69683c30d3db8904`. Relevant task work is committed. No stash ref applies.
+- `git status --porcelain` at the task gate:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+- Task C1 focused checks passed. The checkpoint renders its task checkbox after this record.
