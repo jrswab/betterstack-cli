@@ -33,11 +33,11 @@
 
 - Lane: `full` — D1 assigns the full lane because this milestone changes an external SQL HTTP contract and handles credentials.
 - Current phase: `Phase 3 execution`.
-- Current task: `Phase 3: implement C3`.
+- Current task: `Phase 3: implement D1`.
 - Task states: Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 tasks `not started`.
 - Milestone checkbox: `unchecked`.
 - Last completed phase and gate: Phase 2 planning review passed at `2026-10-21T10:56:19-04:00`.
-- Next action: `Phase 3: implement C3`.
+- Next action: `Phase 3: implement D1`.
 
 ## Restart validation
 
@@ -287,6 +287,35 @@ Write this checkpoint through a temporary file in the same directory, then atomi
  M cmd/bs/logs.go
  M cmd/bs/logs_test.go
  M cmd/bs/telemetry.go
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+## Phase 3 task C3
+
+- Files and symbols: `cmd/bs/logs.go:doLogsSQLRequest` nonpositive-timeout guard; `cmd/bs/logs_test.go:TestLogsSQLLocalFailures`; logs memory and task records.
+- C2 commit: `b30e592`.
+- Initial focused command: `go test ./cmd/bs -run '^TestLogsSQLLocalFailures$' -count=1`. The invocation timed out after 60s. The timeout handler waited for cancellation before draining the POST body. The test was corrected to drain its request body before observing cancellation. No unrelated process was stopped.
+- Corrected test-first command: `go test ./cmd/bs -run '^TestLogsSQLLocalFailures$' -count=1 -timeout=10s`. Exit 1 for the zero-timeout guard and an intended malformed URL that used valid `%fa` escaping. The malformed fixture now uses invalid `%zz`.
+- Passing command: the corrected focused command. Exit 0, `ok github.com/jrswab/betterstack-cli/cmd/bs 0.113s`.
+- Formatter/lint: `gofmt -w cmd/bs/logs.go cmd/bs/logs_test.go`, `go vet ./cmd/bs`, `git diff --check`. Exit 0, no findings.
+- Cases: 100ms timeout observed by the server request context, closed loopback server, incomplete 200/500 Content-Length bodies containing fake credentials, malformed escaped URL/port with fake credentials, and zero timeout. Every failure returns 1 with no stdout and exact fixed safe diagnostics. Transport/body failures have one guarded attempt, construction/timeout-validation failures have zero attempts. No partial body reaches either output channel.
+- Decision: complete-body buffering follows the existing executor contract and prevents partial success output on read failure. Generic diagnostics sacrifice underlying error detail to guarantee no secrets leak without broadening redaction beyond R6.
+- Risk tier: design-bearing. Independent review remains pending. No symptom patch or product deviation.
+
+- Task state: `C3` passed. The checklist renders this state.
+- Validated HEAD: `b30e592b74c9a7e4bf5156b12ba5920d4c74f3f8`.
+- Relevant work: uncommitted task changes at this gate, committed in the following explicit-path task commit.
+- Worktree stash ref: `6eba5f5be8feb19f7b5961911e7fe61bb9ccb0eb`.
+- `git status --porcelain` at the gate:
+
+```text
+ M .mem/telemetry/logs.md
+ M cmd/bs/logs.go
+ M cmd/bs/logs_test.go
 ?? .agents/
 ?? .wayfinder/
 ?? AGENTS.md

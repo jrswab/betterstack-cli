@@ -31,6 +31,10 @@ type logsSQLRequest struct {
 // doLogsSQLRequest sends SQL with separate Basic credentials and safe local diagnostics.
 // @anchor:telemetry:request-executor sql
 func doLogsSQLRequest(sql string, params url.Values, timeout time.Duration, stdout, stderr io.Writer, telemetrySQLURL string, client *http.Client) int {
+	if timeout <= 0 {
+		fmt.Fprintln(stderr, "bs: invalid SQL request timeout")
+		return 1
+	}
 	values := make([]string, 0, 3)
 	for _, name := range []string{telemetrySQLURLEnvVar, telemetrySQLUsernameEnvVar, telemetrySQLPasswordEnvVar} {
 		value := os.Getenv(name)

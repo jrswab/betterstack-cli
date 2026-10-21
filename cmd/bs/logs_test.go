@@ -99,6 +99,67 @@ func TestLogsSearchRouteRemainsUnavailable(t *testing.T) {
 	}
 }
 
+// TestLogsSQLLocalFailures verifies cancellation, transport errors, and incomplete bodies stay safe.
+func TestLogsSQLLocalFailures(t *testing.T) {
+	setFakeSQLConfig(t)
+	for _, kind := range []string{"timeout", "closed server", "truncated success", "truncated error", "invalid URL", "invalid port", "zero timeout"} {
+		t.Run(kind, func(t *testing.T) {
+			var requests atomic.Int32
+			cancelled := make(chan struct{})
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				if kind == "timeout" {
+					_, _ = io.Copy(io.Discard, r.Body)
+					<-r.Context().Done()
+					close(cancelled)
+					return
+				}
+				w.Header().Set("Content-Length", "1000")
+				if kind == "truncated error" {
+					w.WriteHeader(500)
+				}
+				_, _ = io.WriteString(w, "fake-sql-user fake-sql-password fake-telemetry-token")
+			}))
+			defer srv.Close()
+			endpoint, timeout := srv.URL, time.Second
+			want, attempts, served := "bs: could not read SQL response\n", 1, int32(1)
+			switch kind {
+			case "timeout":
+				timeout = 100 * time.Millisecond
+				want = "bs: SQL request failed\n"
+			case "closed server":
+				srv.Close()
+				want, served = "bs: SQL request failed\n", 0
+			case "invalid URL":
+				endpoint = "http://fake-sql-user:fake-sql-password@127.0.0.1/%zzfake-telemetry-token"
+				want, attempts, served = "bs: could not build SQL request\n", 0, 0
+			case "invalid port":
+				endpoint = "http://127.0.0.1:fake-sql-password"
+				want, attempts, served = "bs: could not build SQL request\n", 0, 0
+			case "zero timeout":
+				timeout = 0
+				want, attempts, served = "bs: invalid SQL request timeout\n", 0, 0
+			}
+			client := testHTTPClient()
+			guard := client.Transport.(*loopbackOnlyTransport)
+			probe := &sqlDeadlineTransport{base: guard.base, timeout: timeout}
+			guard.base = probe
+			var out, err bytes.Buffer
+			code := doLogsSQLRequest("SELECT 1", nil, timeout, &out, &err, endpoint, client)
+			if code != 1 || out.Len() != 0 || err.String() != want || requests.Load() != served || probe.calls != attempts {
+				t.Fatalf("code=%d, stdout=%q, stderr=%q, requests=%d, attempts=%d", code, out.String(), err.String(), requests.Load(), probe.calls)
+			}
+			if kind == "timeout" {
+				select {
+				case <-cancelled:
+				case <-time.After(time.Second):
+					t.Fatal("timeout did not cancel the server request context")
+				}
+			}
+		})
+	}
+}
+
 // TestLogsSQLErrorRedaction verifies only non-2xx SQL bodies lose credential literals.
 func TestLogsSQLErrorRedaction(t *testing.T) {
 	setFakeSQLConfig(t)
