@@ -225,6 +225,43 @@ func TestBuildLogsSearchQueryRejectsTimeBounds(t *testing.T) {
 	}
 }
 
+// TestBuildLogsSearchQueryCold verifies one cold union with shared filters and final clauses.
+func TestBuildLogsSearchQueryCold(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		flags []string
+	}{
+		{"once", []string{"--cold"}},
+		{"repeated", []string{"--cold", "--cold", "--cold"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			args := append([]string{"--table", "t1_fake", "--from", "1970-01-01T00:00:01Z", "--to", "1970-01-01T00:00:02Z", "--query", "fake cold", "--order", "asc", "--limit", "1", "--timeout", "500ms"}, tc.flags...)
+			sql, params, err := buildLogsSearchQuery(args, time.Unix(3600, 0))
+			want := "SELECT dt, raw FROM (SELECT dt, raw FROM remote(t1_fake_logs) UNION ALL SELECT dt, raw FROM s3Cluster(primary, t1_fake_s3) WHERE _row_type = 1) WHERE dt >= fromUnixTimestamp64Milli({from:Int64}, 'UTC') AND dt < fromUnixTimestamp64Milli({to:Int64}, 'UTC') AND positionCaseInsensitiveUTF8(raw, {query:String}) > 0 ORDER BY dt ASC LIMIT 1 SETTINGS max_execution_time = 1 FORMAT JSONEachRow"
+			if err != nil || sql != want {
+				t.Fatalf("SQL = %q, error = %v", sql, err)
+			}
+			if !reflect.DeepEqual(map[string][]string(params), map[string][]string{"param_from": {"1000"}, "param_to": {"2000"}, "param_query": {"fake cold"}}) {
+				t.Fatalf("params = %v", params)
+			}
+			for _, clause := range []string{"remote(", "s3Cluster(", "UNION ALL", "_row_type = 1", "dt >=", "dt <", "positionCaseInsensitiveUTF8", "ORDER BY", "LIMIT", "SETTINGS", "FORMAT"} {
+				if strings.Count(sql, clause) != 1 {
+					t.Fatalf("SQL has %d occurrences of %q", strings.Count(sql, clause), clause)
+				}
+			}
+		})
+	}
+}
+
+// TestBuildLogsSearchQueryColdDefaults verifies cold keeps hot defaults and omits text filtering.
+func TestBuildLogsSearchQueryColdDefaults(t *testing.T) {
+	sql, params, err := buildLogsSearchQuery([]string{"--table", "t1_fake", "--cold"}, time.Unix(3600, 0))
+	want := "SELECT dt, raw FROM (SELECT dt, raw FROM remote(t1_fake_logs) UNION ALL SELECT dt, raw FROM s3Cluster(primary, t1_fake_s3) WHERE _row_type = 1) WHERE dt >= fromUnixTimestamp64Milli({from:Int64}, 'UTC') AND dt < fromUnixTimestamp64Milli({to:Int64}, 'UTC') ORDER BY dt DESC LIMIT 100 SETTINGS max_execution_time = 30 FORMAT JSONEachRow"
+	if err != nil || sql != want || !reflect.DeepEqual(map[string][]string(params), map[string][]string{"param_from": {"0"}, "param_to": {"3600000"}}) {
+		t.Fatalf("SQL = %q, params = %v, error = %v", sql, params, err)
+	}
+}
+
 // TestParseLogsSearchArgsDefaults verifies the approved search defaults.
 func TestParseLogsSearchArgsDefaults(t *testing.T) {
 	parsed, err := parseLogsSearchArgs([]string{"--table", "t1_fake"})

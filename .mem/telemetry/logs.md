@@ -28,6 +28,10 @@ Relative windows subtract the positive duration from the same captured time used
 
 Time values use separate `param_from` and `param_to` decimal strings with `Int64` placeholders. The lower comparison is inclusive and the upper comparison is exclusive. Sub-millisecond precision is discarded. Distinct valid bounds can therefore bind the same millisecond, producing an empty interval. Positive sub-millisecond relative windows remain valid under the duration contract.
 
+## Cold query construction
+
+`--cold` selects an outer query over one hot branch and one `s3Cluster(primary, <table>_s3)` branch combined with `UNION ALL`. The cold branch filters `_row_type = 1`. The outer query applies the same time and optional text predicates to both branches, then one order, limit, timeout setting, and output format. Repeated switches do not add branches. Hot-only output remains the default. Cold uses the same 30-second default timeout.
+
 The parser has no command route or help entry. [Parser tests](../../cmd/bs/logs_test.go) use only fake strings.
 
 Related: [memory map](../mem-map.md), [terminology](../terminology.md), and [sources](sources.md).

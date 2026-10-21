@@ -65,7 +65,11 @@ func buildLogsSearchQuery(args []string, now time.Time) (string, url.Values, err
 	if parsed.timeout%time.Second != 0 {
 		seconds++
 	}
-	sql := fmt.Sprintf("SELECT dt, raw FROM remote(%s_logs) WHERE %s ORDER BY dt %s LIMIT %d SETTINGS max_execution_time = %d FORMAT JSONEachRow", parsed.table, predicate, strings.ToUpper(parsed.order), parsed.limit, seconds)
+	source := fmt.Sprintf("remote(%s_logs)", parsed.table)
+	if parsed.cold {
+		source = fmt.Sprintf("(SELECT dt, raw FROM %s UNION ALL SELECT dt, raw FROM s3Cluster(primary, %s_s3) WHERE _row_type = 1)", source, parsed.table)
+	}
+	sql := fmt.Sprintf("SELECT dt, raw FROM %s WHERE %s ORDER BY dt %s LIMIT %d SETTINGS max_execution_time = %d FORMAT JSONEachRow", source, predicate, strings.ToUpper(parsed.order), parsed.limit, seconds)
 	return sql, params, nil
 }
 
