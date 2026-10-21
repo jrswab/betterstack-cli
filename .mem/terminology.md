@@ -16,6 +16,8 @@
 - **Telemetry API token** - the value of `BETTERSTACK_TELEMETRY_API_TOKEN`, used only by source REST commands for bearer authentication and local diagnostic redaction. Avoid: Uptime fallback, source response token.
 - **Telemetry secret redaction** - `redactSecrets`, a direct helper for non-empty Telemetry API token, SQL username, SQL password, and derived Basic-auth encoding. No response path calls it. Avoid: response redaction.
 - **Raw response body** - upstream bytes passed through without JSON decoding, formatting, redaction, or an added newline. Avoid: normalized JSON.
+- **Log search arguments** - the locally validated builder input from `parseLogsSearchArgs`, without a command route or request. Avoid: raw SQL input.
+- **Full table identifier** - the required log-search `--table` value matching `^t[0-9]+_[a-z0-9_]+$`. Avoid: Source ID, SQL fragment.
 - **Loopback-only network guard** - the test transport and dial checks that admit literal loopback IPs and reject other hosts without DNS lookup. Avoid: localhost allowlist.
 
 Sources: [routing](../cmd/bs/main.go), [requests](../cmd/bs/monitors.go), [source handlers](../cmd/bs/sources.go), [secret redaction](../cmd/bs/telemetry.go), [incidents](../cmd/bs/incidents.go), and [test safety](../cmd/bs/safety_test.go). See the [memory map](mem-map.md).
