@@ -32,18 +32,18 @@
 
 - Lane: `full` — D1 assigns the full lane because milestone 007 affects repository-wide records.
 - Current phase: `execute`
-- Current task: A2
+- Current task: B1
 - Task states — checklist checkboxes render from this list:
 - A1 align current memory behavior: `checked`
 - A2 index memory records: `checked`
-- B1 reconcile production anchor index: `unchecked`
+- B1 reconcile production anchor index: `checked`
 - B2 document command and configuration contract: `unchecked`
 - C1 add repository-record changelog: `unchecked`
 - V1 verify records and Factory gate: `unchecked`
 - Milestone checkbox: `unchecked`
 - Next action: Phase 3: implement first task A1.
-- Next safe action: Implement B1
-- Last completed phase/task/gate and timestamp: A2 verification PASS, 2026-10-21T20:28:26.579836+00:00
+- Next safe action: Implement B2
+- Last completed phase/task/gate and timestamp: B1 verification PASS, 2026-10-21T20:29:01.180557+00:00
 
 ## Gate evidence
 
@@ -1549,6 +1549,162 @@ a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
 ```
 
 - Next action: Implement B1
+
+### B1 verification PASS
+
+- Gate: B1 verification PASS
+- Commands/results:
+B1 uses the mechanical tier. TDD and per-task review are skipped for records-only verification.
+
+Command: grep -rn '@anchor' --exclude-dir=.git --exclude-dir=docs --exclude-dir=.wayfinder --exclude-dir=.mem --exclude=TAGS.md --exclude=AGENTS.md .
+stdout:
+```text
+./cmd/bs/monitors.go:15:// @anchor:uptime:config
+./cmd/bs/monitors.go:29:// @anchor:uptime:command-handler
+./cmd/bs/monitors.go:55:// @anchor:uptime:command-handler
+./cmd/bs/monitors.go:81:// @anchor:uptime:request-executor
+./cmd/bs/incidents.go:50:// @anchor:uptime:command-handler
+./cmd/bs/incidents.go:82:// @anchor:uptime:command-handler
+./cmd/bs/incidents.go:332:// @anchor:uptime:command-handler
+./cmd/bs/sources.go:14:// @anchor:telemetry:config
+./cmd/bs/sources.go:18:// @anchor:telemetry:command-handler
+./cmd/bs/sources.go:38:// @anchor:telemetry:command-handler
+./cmd/bs/logs.go:18:// @anchor:telemetry:config sql
+./cmd/bs/logs.go:26:// @anchor:telemetry:command-handler
+./cmd/bs/logs.go:38:// @anchor:telemetry:request-executor sql
+./cmd/bs/main.go:13:// @anchor:telemetry:config
+./cmd/bs/main.go:29:// @anchor:uptime:router
+./cmd/bs/main.go:35:// @anchor:uptime:router endpoints
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: rg -n '^\| `[^`]+` \|' TAGS.md
+stdout:
+```text
+7:| `uptime:router` | [cmd/bs/main.go](cmd/bs/main.go) | `runWithAPI` | Compatible Uptime injection interface |
+8:| `uptime:router` | [cmd/bs/main.go](cmd/bs/main.go) | `runWithEndpoints` | Endpoint injection seam and Command routing boundary |
+9:| `telemetry:config` | [cmd/bs/main.go](cmd/bs/main.go) | `defaultTelemetryRESTBaseURL` | Telemetry configuration boundary |
+10:| `telemetry:config` | [cmd/bs/sources.go](cmd/bs/sources.go) | `telemetryTokenEnvVar` | Telemetry API credential name |
+11:| `telemetry:config` | [cmd/bs/logs.go](cmd/bs/logs.go) | `telemetrySQLURLEnvVar`, `telemetrySQLUsernameEnvVar`, `telemetrySQLPasswordEnvVar` | SQL configuration names |
+12:| `telemetry:command-handler` | [cmd/bs/logs.go](cmd/bs/logs.go) | `logsSearch` | Logs search command handler |
+13:| `telemetry:request-executor` | [cmd/bs/logs.go](cmd/bs/logs.go) | `doLogsSQLRequest` | SQL request executor |
+14:| `telemetry:command-handler` | [cmd/bs/sources.go](cmd/bs/sources.go) | `sourcesList` | Sources list command handler |
+15:| `telemetry:command-handler` | [cmd/bs/sources.go](cmd/bs/sources.go) | `sourcesGet` | Sources get command handler |
+16:| `uptime:config` | [cmd/bs/monitors.go](cmd/bs/monitors.go) | `defaultAPIBaseURL`, `defaultTimeout`, `tokenEnvVar` | Uptime configuration boundary |
+17:| `uptime:command-handler` | [cmd/bs/monitors.go](cmd/bs/monitors.go) | `monitorsList` | Monitors list command handler |
+18:| `uptime:command-handler` | [cmd/bs/monitors.go](cmd/bs/monitors.go) | `monitorsGet` | Monitors get command handler |
+19:| `uptime:request-executor` | [cmd/bs/monitors.go](cmd/bs/monitors.go) | `doMonitorsRequest` | Request executor |
+20:| `uptime:command-handler` | [cmd/bs/incidents.go](cmd/bs/incidents.go) | `incidentsList` | Incidents list command handler |
+21:| `uptime:command-handler` | [cmd/bs/incidents.go](cmd/bs/incidents.go) | `incidentsGet` | Incidents get command handler |
+22:| `uptime:command-handler` | [cmd/bs/incidents.go](cmd/bs/incidents.go) | `incidentsTimeline` | Incidents timeline command handler |
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: python3 /tmp/factory-007/anchor-check.py
+stdout:
+```text
+PASS: 16 production occurrences match 16 unique TAGS.md rows by anchor, source, and symbol. Each source exists.
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: ~/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master
+stdout:
+```text
+PASS: /home/jaron/dev/betterstack-cli/master: 98 Markdown files, 0 findings
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --check
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Restart validation: python3 /tmp/factory-007/restart.py B1 exited 0 at HEAD ad2b29021f02e29aaa030c6b474366a997c2a02c. Identity/artifacts/task states/next safe action Implement B1 and baseline fingerprint agree. Prior A2 work and checkpoint are committed.
+Files changed: none. No functions changed. TAGS.md already has one accurate row per occurrence.
+Manual boundary review PASS: main.go:13,29,35 matches the Telemetry config and two Uptime routing rows; sources.go:14,18,38 matches config/list/get; logs.go:18,26,38 matches SQL config/handler/executor; monitors.go:15,29,55,81 matches Uptime config/get/list/executor; incidents.go:50,82,332 matches get/timeline/list. Every indexed source/symbol/surface/role/boundary is correct. No anchors exist outside these 16 grep results.
+Ladder rung 1: skip TAGS.md edits because no missing or inaccurate occurrence exists. Reject a cosmetic edit that adds no value. Use the required task subject for an empty verification commit with explicit TAGS.md path, then a separate checkpoint commit.
+No new dependency, symptom patch, or provenance rationale exists. Go checks belong to V1 and are not executed here.
+- HEAD commit SHA: `c7dcb5f315112a9b48c772998471680f5d18638b`
+- Relevant work: `committed` — stash ref `none` (tracked files only; never applied)
+- `git status --porcelain` (before checkpoint/checkbox writes):
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Untracked file Git objects (stored with hash-object -w, never applied):
+
+```text
+e69de29bb2d1d6434b8b29ae775ad8c2e48c5391  ".agents/scripts/.gitkeep"
+2268d6d1b4dd6b23950ea8bcbce44e2cc4fd02a5  ".agents/scripts/telemetry-live-probe.sh"
+c3626f955decd6b7ffa341c26703f857462954b5  ".agents/skills/changelog/SKILL.md"
+656c156bf90f78f9ac3a85412fe9e91145a5bebb  ".agents/skills/mem/SKILL.md"
+44304443f37776ec688c34be9840378e243c6f2f  ".agents/skills/pr/SKILL.md"
+f788b79f289c9adfcdbb156d309261b925c403ba  ".agents/skills/provenance-log/SKILL.md"
+704342b5c4c16287177f2da9f4b656aa526fba5b  ".agents/skills/release/SKILL.md"
+e5ecdd11f8df24415ebff5fdf63f6113213bf7ec  ".wayfinder/MAP.md"
+d2521bd5eae2907dbcfadafe090456e6781b6e41  ".wayfinder/README.md"
+54113199fec1e082615bbf1bf5691e42201085b9  ".wayfinder/assets/01-api-contract-research.md"
+623ab01ed0b0385ce5fedd654d847a02d9c52fdb  ".wayfinder/assets/02-incident-url-identity-research.md"
+c4c4fe4107105fd614a8f3a94b46812cb06b3960  ".wayfinder/assets/06-go-toolchain-research.md"
+c6158f0916332d3e3a80e61a67a8ecc2de8a5b32  ".wayfinder/telemetry/MAP.md"
+f4e847e79b9fb7619c846148a592d14b88a367c7  ".wayfinder/telemetry/assets/03-sources-api-contract-research.md"
+247ee7bc692682bc7b1a32fb05f315fa938f36f6  ".wayfinder/telemetry/assets/04-sql-api-contract-research.md"
+0a18fb73e0093239f584809f479b542e99fc7f76  ".wayfinder/telemetry/assets/05-live-verification-results.md"
+5ebc264f975b3e46e337f17435443bc29535825e  ".wayfinder/telemetry/assets/06-cold-storage-timeout-research.md"
+2b71e98af8af64a9cd36bd3d5bd5e6e9b5cf818b  ".wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md"
+b7482d50e399cdae487b573ae35176f069362341  ".wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md"
+572c8f131bb6a497254d5a63b1bd30f2ce28502f  ".wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md"
+77b5c75dbaac7620d469a638c8d77335c6624e04  ".wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md"
+1323bb7b057a980e8b536c7162cccd9b7b26cc71  ".wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md"
+66a7fd3e74798761babbcd7fbec61d0aac59b704  ".wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md"
+cde68ecfe35ee426d1bcc07e817d52eced3d06b1  ".wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md"
+e180004c8a35821bec3e2cb2feab300f3046f71e  ".wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md"
+bf05f4602afcf7692f7dd66ed6af5a85be9566f1  ".wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md"
+9d010dd4260be2a86b212eeb6d11637bc1b22dbb  ".wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md"
+9677e361c7ff035c55b374943bad13b068a39a16  ".wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md"
+13a7970f556e13dad98340b3b700fd98da438aaa  ".wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md"
+5ad4771181950a65021b600d0765b6f79ad59dd5  ".wayfinder/tickets/02-incident-url-identity-resolution.md"
+53f3d379ecaf4eefb35f44de0596dcd8db5c76c1  ".wayfinder/tickets/03-command-naming-and-argument-conventions.md"
+1a67e294757e2a2558ec29f2247cc4fe6d1cb1b6  ".wayfinder/tickets/04-pagination-and-json-envelope.md"
+0a2031f1210b6008a0da9a8f7d217ecf1233f4bf  ".wayfinder/tickets/05-errors-timeouts-retries-token-safety.md"
+dc414d2e4181c232972f98528077e0e0650c47ec  ".wayfinder/tickets/06-installation-distribution-acceptance.md"
+aca24cb6a5e5e366b6216d692a002839547a1ef3  "AGENTS.md"
+d25d1c789e303a87fed9534f135c441b5cf4c9f5  "docs/plans/008_telemetry-logs-search_milestones.md"
+a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
+```
+
+- Next action: Implement B2
 
 ## Restart validation of milestone 006
 
