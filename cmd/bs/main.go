@@ -109,7 +109,7 @@ func usageError(args []string) string {
 	switch args[0] {
 	case "--help":
 		return fmt.Sprintf("bs: --help takes no further arguments; %s.\n", rootHint)
-	case "incidents", "monitors", "sources":
+	case "incidents", "monitors", "sources", "logs":
 		return resourceUsageError(args[0], args[1:])
 	default:
 		if strings.HasPrefix(args[0], "-") {
@@ -174,6 +174,8 @@ func knownAction(resource, action string) bool {
 	switch resource {
 	case "incidents":
 		return action == "list" || action == "get" || action == "timeline"
+	case "logs":
+		return action == "search"
 	case "monitors", "sources":
 		return action == "list" || action == "get"
 	default:

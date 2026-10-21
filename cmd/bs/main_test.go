@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -128,6 +129,49 @@ func TestRunWithEndpointsSourcesHelp(t *testing.T) {
 	}
 	if requests.Load() != 0 {
 		t.Fatalf("help requests = %d, want 0", requests.Load())
+	}
+}
+
+// TestRunWithEndpointsLogsInvalidUsage verifies diagnostics precede SQL configuration and requests.
+func TestRunWithEndpointsLogsInvalidUsage(t *testing.T) {
+	cases := []struct {
+		args []string
+		want string
+		hint string
+	}{
+		{nil, "no command given", "bs --help"},
+		{[]string{"logs"}, "missing action", "bs logs --help"},
+		{[]string{"logs", "delete"}, "unknown action", "bs logs --help"},
+		{[]string{"logs", "--unknown"}, "unknown option", "bs logs --help"},
+		{[]string{"logs", "search"}, "invalid or missing --table", "bs logs search --help"},
+		{[]string{"logs", "search", "--table", "fake"}, "invalid or missing --table", "bs logs search --help"},
+		{[]string{"logs", "search", "--table", "t1_fake", "--unknown"}, "unknown option", "bs logs search --help"},
+		{[]string{"logs", "search", "--table"}, "--table needs a value", "bs logs search --help"},
+		{[]string{"logs", "search", "--table=t1_fake"}, "unknown option", "bs logs search --help"},
+		{[]string{"logs", "search", "--table", "t1_fake", "--timeout", "0s"}, "invalid --timeout", "bs logs search --help"},
+		{[]string{"logs", "search", "--table", "t1_fake", "--to", "1970-01-01T01:00:00Z"}, "--to requires --from", "bs logs search --help"},
+		{[]string{"logs", "search", "--table", "t1_fake", "--query", "fake", "--query", "other"}, "duplicate --query", "bs logs search --help"},
+	}
+	for _, configured := range []bool{false, true} {
+		t.Run("configured="+strconv.FormatBool(configured), func(t *testing.T) {
+			if configured {
+				setFakeSQLConfig(t)
+			} else {
+				for _, name := range []string{telemetrySQLURLEnvVar, telemetrySQLUsernameEnvVar, telemetrySQLPasswordEnvVar} {
+					t.Setenv(name, "")
+				}
+			}
+			for _, tc := range cases {
+				t.Run(strings.Join(tc.args, " "), func(t *testing.T) {
+					transport := &recordingRoundTripper{}
+					var out, err bytes.Buffer
+					code := runWithEndpoints(tc.args, &out, &err, "http://127.0.0.1/uptime", "http://127.0.0.1/rest", "http://127.0.0.1/sql", &http.Client{Transport: transport})
+					if code != 1 || out.Len() != 0 || !strings.Contains(err.String(), tc.want) || !strings.Contains(err.String(), tc.hint) || strings.Contains(err.String(), "is not set") || len(transport.requests) != 0 {
+						t.Fatalf("code=%d, stdout=%q, stderr=%q, requests=%d", code, out.String(), err.String(), len(transport.requests))
+					}
+				})
+			}
+		})
 	}
 }
 
