@@ -16,7 +16,7 @@ This direct call returns `"[REDACTED] [REDACTED] [REDACTED] [REDACTED]"`:
 redactSecrets("token user pass dXNlcjpwYXNz", "token", "user", "pass")
 ```
 
-No current response path calls this helper. Uptime local diagnostics continue using `redactToken`, and upstream bodies remain raw. [telemetry_test.go](../../cmd/bs/telemetry_test.go) tests explicit dummy strings, overlap, repeated matches, case differences, empty credentials, and unrelated text.
+Only non-2xx [SQL response bodies](../telemetry/logs.md) call this helper. Uptime local diagnostics continue using `redactToken`, and upstream Uptime and source bodies remain raw. [telemetry_test.go](../../cmd/bs/telemetry_test.go) tests explicit dummy strings, overlap, repeated matches, case differences, empty credentials, and unrelated text.
 
 ## Request executor
 

@@ -1,6 +1,6 @@
 # Uptime summary
 
-The [command package](../../cmd/bs/main.go) implements five read-only Uptime commands. `main` supplies the fixed production base URL and an HTTP client. `runWithAPI` accepts those dependencies and the stdout/stderr writers so tests can use local servers. It delegates to `runWithEndpoints`, which accepts distinct Uptime, Telemetry REST, and SQL endpoint inputs. Uptime and [source REST handlers](../telemetry/sources.md) are active. The SQL input remains unused. `helpFor` runs before command routing.
+The [command package](../../cmd/bs/main.go) implements five read-only Uptime commands. `main` supplies the fixed production base URL and an HTTP client. `runWithAPI` accepts those dependencies and the stdout/stderr writers so tests can use local servers. It delegates to `runWithEndpoints`, which accepts distinct Uptime, Telemetry REST, and SQL endpoint inputs. Uptime and [source REST handlers](../telemetry/sources.md) are active. The SQL input supports [prepared SQL execution](../telemetry/logs.md) without a CLI route. `helpFor` runs before command routing.
 
 ```mermaid
 flowchart TD
