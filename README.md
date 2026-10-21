@@ -55,6 +55,9 @@ All three values are required. SQL credentials never fall back to Uptime or Tele
 
 The executor sends one `POST` with `Content-Type: plain/text` and a positive timeout, defaulting to 30 seconds. It follows no redirects and retries nothing. It writes 2xx bytes unchanged to stdout. Other SQL responses go to stderr after literal credential redaction, with exit status 1. Local failures use safe diagnostics. Uptime and source bodies remain unchanged.
 
+The `BETTERSTACK_TELEMETRY_API_TOKEN` authenticates source commands, and log search uses it only to redact SQL error output.
+See [source authentication](cmd/bs/sources.go) (`cmd/bs/sources.go:19-51`) and [SQL error redaction](cmd/bs/logs.go) (`cmd/bs/logs.go:92`).
+
 See [the SQL executor](cmd/bs/logs.go).
 
 ## Telemetry sources
