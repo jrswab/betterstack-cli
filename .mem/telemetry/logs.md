@@ -49,6 +49,10 @@ flowchart TD
     Build --> Result[SQL and separate typed parameters]
 ```
 
+## SQL URL parsing
+
+[parseTelemetrySQLURL](../../cmd/bs/logs.go) accepts a DNS host or bracketed IPv6 address, optionally with raw port `443`. Absolute `https://host[:port]` URLs allow an empty path or `/`. Explicit HTTPS ports range from 1 through 65535. Host-only forms receive HTTPS. Userinfo, queries, fragments, non-root paths, other schemes, malformed hosts, and unsupported raw ports fail with a fixed diagnostic that does not echo input. The parser sends no request.
+
 The builder has no command route, request, credential access, or help entry. [Parser and builder tests](../../cmd/bs/logs_test.go) use only fake strings and fixed times.
 
 Related: [memory map](../mem-map.md), [terminology](../terminology.md), and [sources](sources.md).

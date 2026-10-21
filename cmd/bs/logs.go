@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/netip"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -21,6 +22,56 @@ type logsSearchArgs struct {
 	since   time.Duration
 	timeout time.Duration
 	values  map[string]string
+}
+
+func parseTelemetrySQLURL(value string) (*url.URL, error) {
+	invalid := fmt.Errorf("invalid BETTERSTACK_TELEMETRY_SQL_URL")
+	absolute := strings.HasPrefix(value, "https://")
+	if !absolute {
+		if strings.ContainsAny(value, "/?#@") {
+			return nil, invalid
+		}
+		value = "https://" + value
+	}
+	endpoint, err := url.Parse(value)
+	if err != nil || endpoint.Scheme != "https" || endpoint.Opaque != "" || endpoint.Host == "" || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.ForceQuery || strings.Contains(value, "#") || (endpoint.EscapedPath() != "" && endpoint.EscapedPath() != "/") {
+		return nil, invalid
+	}
+	host := endpoint.Hostname()
+	if strings.HasPrefix(endpoint.Host, "[") {
+		ip, err := netip.ParseAddr(host)
+		if err != nil || !ip.Is6() || ip.Zone() != "" {
+			return nil, invalid
+		}
+	} else {
+		if len(host) == 0 || len(host) > 253 {
+			return nil, invalid
+		}
+		for _, label := range strings.Split(strings.TrimSuffix(host, "."), ".") {
+			if len(label) == 0 || len(label) > 63 || label[0] == '-' || label[len(label)-1] == '-' {
+				return nil, invalid
+			}
+			for _, c := range label {
+				if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '-') {
+					return nil, invalid
+				}
+			}
+		}
+	}
+	port := endpoint.Port()
+	if strings.HasSuffix(endpoint.Host, ":") {
+		return nil, invalid
+	}
+	if port != "" {
+		n, err := strconv.Atoi(port)
+		if err != nil || n < 1 || n > 65535 || (!absolute && port != "443") {
+			return nil, invalid
+		}
+	}
+	if !absolute && endpoint.Path != "" {
+		return nil, invalid
+	}
+	return endpoint, nil
 }
 
 func buildLogsSearchQuery(args []string, now time.Time) (string, url.Values, error) {

@@ -21,7 +21,7 @@
 - Baseline fingerprint command: `find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum`.
 - Required baseline fingerprint: `41306493735a9bfeeae10d179385968acfd8af3d46e7a2cd897893aba32209fe  -`.
 - Observed fingerprint at setup and after both planning lint runs: `41306493735a9bfeeae10d179385968acfd8af3d46e7a2cd897893aba32209fe  -`.
-- Authorization: write only the three milestone 005 planning files. No code, live API request, credential use, baseline path change, staging, commit, push, or deploy is authorized by this task.
+- Authorization: execute A1–E1 with local explicit-path commits on master. No independent review, V1, completion gate, command activation, push, deploy, live request, or baseline change in this assignment.
 
 ## Artifacts
 
@@ -32,12 +32,12 @@
 ## State
 
 - Lane: `full` — D1 assigns the full lane because this milestone changes an external SQL HTTP contract and handles credentials.
-- Current phase: `phases 1–2 passed`.
-- Current task: none in this planning-only authorization. Execution task A1 is the next checklist item.
+- Current phase: `Phase 3 execution`.
+- Current task: `Phase 3: implement A2`.
 - Task states: Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 tasks `not started`.
 - Milestone checkbox: `unchecked`.
 - Last completed phase and gate: Phase 2 planning review passed at `2026-10-21T10:56:19-04:00`.
-- Next action: `Phase 3: implement first task`.
+- Next action: `Phase 3: implement A2`.
 
 ## Restart validation
 
@@ -110,3 +110,34 @@
 ## Checkpoint updates
 
 Write this checkpoint through a temporary file in the same directory, then atomically rename it over the checkpoint. Update it on phase transitions and after task gates. Preserve the baseline fingerprint and protected paths. Do not stage the milestone source or use `git add -A`.
+
+## Phase 3 task A1
+
+- Files and symbols: `cmd/bs/logs.go:parseTelemetrySQLURL`, `cmd/bs/logs_test.go:TestParseTelemetrySQLURL`, `.mem/telemetry/logs.md`, and `changelog.d/008-telemetry-logs-search-005.md`.
+- Risk tier: design-bearing. Independent review is pending under handoff D9, outside this implementer assignment.
+- Test-first command: `go test ./cmd/bs -run '^TestParseTelemetrySQLURL$' -count=1`. Exit 1, undefined parser at test lines 25 and 43.
+- Passing focused command: the same command. Exit 0, `ok github.com/jrswab/betterstack-cli/cmd/bs 0.007s`.
+- Formatting and lint: `gofmt -w cmd/bs/logs.go cmd/bs/logs_test.go`, `go vet ./cmd/bs`, `gofmt -l cmd/bs/logs.go cmd/bs/logs_test.go`, and `git diff --check`. Exit 0, no findings.
+- Restart validation: HEAD `47a6666dddaffac43253df15aaac684c6ce3ec70`, branch `master`, exactly five baseline paths, and required fingerprint `41306493735a9bfeeae10d179385968acfd8af3d46e7a2cd897893aba32209fe`. Checkpoint next action matched `Phase 3: implement first task`.
+- Pre-flight: `PATH=$HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64/bin:$PATH GOTOOLCHAIN=local GOPROXY=off ~/.agents/scripts/go-toolchain-check /home/jaron/dev/betterstack-cli/master`. Exit 1. Release Go 1.26.0, repository Go 1.26.9, and read-only module load passed. `govulncheck ./...` exited 3 for `GO-2026-6809`, standard-library `crypto/x509@go1.26.9`, fixed in Go 1.26.10. This is the previously recorded execution limitation.
+- Assumption: DNS host labels use ASCII letters, digits, and hyphens. Bracketed valid IPv6 literals have no zone. No product deviation.
+- Ladder: standard-library `net/url` and `net/netip` cover parsing (rung 2). No dependency, no parser anchor for a helper, and no route/help addition (rung 1).
+- Repository commands: `make help` returned exit 2, `No rule to make target 'help'`. The repository has no Makefile. `LOG.md` and `log.d/.gitkeep` are empty. The pre-commit hook exits before triage because `.agents/scripts/script-triage.py` is absent.
+
+- Task state: `A1` passed. The checklist renders this state.
+- Validated HEAD: `47a6666dddaffac43253df15aaac684c6ce3ec70`.
+- Relevant work: uncommitted task changes at this gate, committed in the following explicit-path task commit.
+- Worktree stash ref: `3f71c4dee27d699a608c0c6efd6f1bf96cc8a599`.
+- `git status --porcelain` at the gate:
+
+```text
+ M .mem/telemetry/logs.md
+ M cmd/bs/logs.go
+ M cmd/bs/logs_test.go
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? changelog.d/008-telemetry-logs-search-005.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```

@@ -7,6 +7,47 @@ import (
 	"time"
 )
 
+// TestParseTelemetrySQLURL verifies approved HTTPS authorities and safe rejection.
+func TestParseTelemetrySQLURL(t *testing.T) {
+	for _, tc := range []struct{ input, want string }{
+		{"sql.example", "https://sql.example"},
+		{"sql.example:443", "https://sql.example:443"},
+		{"https://sql.example", "https://sql.example"},
+		{"https://sql.example/", "https://sql.example/"},
+		{"https://sql.example:8443/", "https://sql.example:8443/"},
+		{"127.0.0.1", "https://127.0.0.1"},
+		{"127.0.0.1:443", "https://127.0.0.1:443"},
+		{"[::1]", "https://[::1]"},
+		{"[::1]:443", "https://[::1]:443"},
+		{"https://[::1]:65535/", "https://[::1]:65535/"},
+	} {
+		t.Run(tc.input, func(t *testing.T) {
+			endpoint, err := parseTelemetrySQLURL(tc.input)
+			if err != nil || endpoint.String() != tc.want {
+				t.Fatalf("endpoint = %v, error = %v, want %s", endpoint, err, tc.want)
+			}
+		})
+	}
+	for _, input := range []string{
+		"", "http://sql.example", "ftp://sql.example", "//sql.example", "sql.example:8443",
+		"sql.example/", "sql.example/path", "https://sql.example/path", "https://sql.example/%2f",
+		"https://sql.example?", "https://sql.example?x=y", "https://sql.example#", "https://sql.example#frag",
+		"https://fake-user:fake-password@sql.example", "fake-user:fake-password@sql.example",
+		"https://", "https:///", "https://:443", "https://sql.example:", "https://sql.example:0",
+		"https://sql.example:65536", "https://sql.example:bad", "https://sql.example:-1",
+		"https://[bad]", "https://[::1", "::1", "https://::1", "https://sql..example",
+		"https://-bad.example", "https://bad_.example", "https://sql.example\\evil", "https://sql.example\n",
+		" sql.example", "sql.example ", "https://%73ql.example", strings.Repeat("x", 10000),
+	} {
+		t.Run(input, func(t *testing.T) {
+			endpoint, err := parseTelemetrySQLURL(input)
+			if err == nil || endpoint != nil || err.Error() != "invalid BETTERSTACK_TELEMETRY_SQL_URL" {
+				t.Fatalf("invalid URL did not return a safe diagnostic")
+			}
+		})
+	}
+}
+
 // TestParseLogsSearchArgsTable verifies the required full table identifier grammar.
 func TestParseLogsSearchArgsTable(t *testing.T) {
 	for _, table := range []string{"t1_a", "t123_fake_logs_01", "t0__", "t001_0"} {
