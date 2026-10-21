@@ -22,7 +22,7 @@ The checkpoint owns task state. Milestone 004 remains unchecked until a later im
 - Protected baseline paths: `.agents/`, `.wayfinder/`, `AGENTS.md`, `docs/plans/008_telemetry-logs-search_milestones.md`, and `verify-incident-id.sh`. Never stage, edit, or delete these paths.
 - Baseline fingerprint command: `find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum`.
 - Baseline fingerprint: `0eb137ab6c83c23488e7785e0c25a9bdb33ebb32c23fddb1e4d83a4f08ed3fe5  -`.
-- Authorization: local commits on `master` only. No push, live API request, real credential use, or code change is authorized. Stage the three 004 planning files explicitly.
+- Authorization: local commits on `master` for Phase 3 tasks A1, A2, B1, C1, D1, and E1. V1 is not authorized. No push, live API request, real credential use, deploy, or baseline path change is authorized. Stage only explicit task paths.
 
 ## Artifacts
 
@@ -33,9 +33,10 @@ The checkpoint owns task state. Milestone 004 remains unchecked until a later im
 ## State
 
 - Lane: `full` — D1 requires the full lane for every milestone because the work affects external API contracts, security, or repository-wide records. S3 safely interpolates a validated SQL identifier and binds query/time values.
-- Current phase: `execute` — Phases 1 and 2 passed. Execution was not requested in this Factory invocation.
-- Current task: none authorized in this invocation. The next safe action is to begin Phase 3 under a separate execution authorization.
-- Phase states: setup/restart validation `passed`; Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 `not started`.
+- Current phase: Phase 3 (execution) — the orchestrator authorized tasks A1 through E1 after Phases 1 and 2 passed at `79e2931`.
+- Current task: A1.
+- Next action: implement A1.
+- Phase states: setup/restart validation `passed`; Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 `in progress`.
 - Task states: A1 `not started`; A2 `not started`; B1 `not started`; C1 `not started`; D1 `not started`; E1 `not started`; V1 `not started`.
 - Milestone checkbox: `unchecked`.
 - Last completed phase and gate: Phase 2 artifact criterion passed on 2026-10-26. No implementation, review, or completion gate ran.
@@ -121,9 +122,27 @@ Boundary probes and outputs are in the implementation checklist. The current par
 - `git status --porcelain` at the phase boundary: the five baseline paths plus the three untracked 004 planning artifacts.
 - Relevant work: uncommitted planning artifacts. `git stash create` does not include untracked files, so no stash ref is claimed.
 
+## Phase 3 transition evidence
+
+- Authorization: the orchestrator explicitly authorized Phase 3 tasks A1, A2, B1, C1, D1, and E1. V1 remains excluded.
+- Command `git rev-parse HEAD` returned `79e29312340e4b38645014b8375a0b700e82f914`.
+- Command `git branch --show-current` returned `master`.
+- Command `git status --porcelain` returned:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Gate: restart validation and Phase 3 authorization passed. Relevant planning work is committed at the validated HEAD. No stash ref applies.
+- Checkpoint writer: copy to a temporary file, edit the temporary file, then atomically rename it over the checkpoint.
+- Transition commit: stage only this checkpoint and commit as `004: enter phase 3`.
+
 ## Limitations and blockers
 
-- Limitations: `make help` is unavailable because no Makefile target exists. No Go build or full test suite was run because this invocation covers specification and checklist phases only. No configured Markdown checker was found or run.
-- Blockers: none. Tickets and user decisions resolve all product behavior needed for S3 planning.
-- Review and implementation gates: not run. They belong to Phase 3, which this invocation did not authorize.
-- Next action: commit only the three 004 planning artifacts as `004: S3 spec, checklist, and checkpoint`, then stop before Phase 3.
+- Limitations: `make help` is unavailable because no Makefile target exists. V1 review and completion gates remain outside this invocation.
+- Blockers: none at restart.
+- Next action: implement A1.
