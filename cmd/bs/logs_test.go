@@ -23,6 +23,82 @@ func setFakeSQLConfig(t *testing.T) {
 	t.Setenv(tokenEnvVar, "fake-uptime-token")
 }
 
+// TestRunWithEndpointsRoutesSQL verifies the prepared SQL boundary without a command route.
+func TestRunWithEndpointsRoutesSQL(t *testing.T) {
+	setFakeSQLConfig(t)
+	var uptimeRequests, restRequests, sqlRequests atomic.Int32
+	uptime := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { uptimeRequests.Add(1) }))
+	defer uptime.Close()
+	rest := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { restRequests.Add(1) }))
+	defer rest.Close()
+	const wantSQL = "SELECT dt, raw FROM remote(t1_fake_logs) WHERE dt >= fromUnixTimestamp64Milli({from:Int64}, 'UTC') AND dt < fromUnixTimestamp64Milli({to:Int64}, 'UTC') AND positionCaseInsensitiveUTF8(raw, {query:String}) > 0 ORDER BY dt DESC LIMIT 100 SETTINGS max_execution_time = 2 FORMAT JSONEachRow"
+	sqlServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sqlRequests.Add(1)
+		body, err := io.ReadAll(r.Body)
+		if err != nil || string(body) != wantSQL || r.Method != http.MethodPost || r.Header.Get("Content-Type") != "plain/text" || r.URL.Path != "/" {
+			t.Errorf("request shape = %s %s, body=%q, error=%v", r.Method, r.URL, body, err)
+		}
+		if r.URL.RawQuery != "param_from=0&param_query=fake+%26+%27text%27&param_to=3600000" {
+			t.Errorf("query = %q", r.URL.RawQuery)
+		}
+		username, password, ok := r.BasicAuth()
+		if !ok || username != "fake-sql-user" || password != "fake-sql-password" {
+			t.Error("request did not use SQL Basic credentials")
+		}
+		_, _ = io.WriteString(w, "SQL body")
+	}))
+	defer sqlServer.Close()
+	args := []string{"--table", "t1_fake", "--query", "fake & 'text'", "--timeout", "1500ms"}
+	sql, params, err := buildLogsSearchQuery(args, time.Unix(3600, 0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	parsed, err := parseLogsSearchArgs(args)
+	if err != nil {
+		t.Fatal(err)
+	}
+	client := testHTTPClient()
+	guard := client.Transport.(*loopbackOnlyTransport)
+	probe := &sqlDeadlineTransport{base: guard.base, timeout: 1500 * time.Millisecond}
+	guard.base = probe
+	var out, diagnostic bytes.Buffer
+	code := runWithEndpoints(nil, &out, &diagnostic, uptime.URL, rest.URL, sqlServer.URL+"/", client, logsSQLRequest{sql: sql, params: params, timeout: parsed.timeout})
+	if code != 0 || out.String() != "SQL body" || diagnostic.Len() != 0 || !probe.valid || probe.calls != 1 || sqlRequests.Load() != 1 || uptimeRequests.Load() != 0 || restRequests.Load() != 0 {
+		t.Fatalf("code=%d, stdout=%q, stderr=%q, deadline=%t, attempts=%d, SQL=%d, Uptime=%d, REST=%d", code, out.String(), diagnostic.String(), probe.valid, probe.calls, sqlRequests.Load(), uptimeRequests.Load(), restRequests.Load())
+	}
+}
+
+type sqlDeadlineTransport struct {
+	base    http.RoundTripper
+	timeout time.Duration
+	valid   bool
+	calls   int
+}
+
+// RoundTrip observes the client deadline behind the loopback guard and delegates to its guarded transport.
+func (p *sqlDeadlineTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	p.calls++
+	deadline, ok := req.Context().Deadline()
+	remaining := time.Until(deadline)
+	p.valid = ok && remaining > p.timeout-time.Second && remaining <= p.timeout
+	return p.base.RoundTrip(req)
+}
+
+// TestLogsSearchRouteRemainsUnavailable verifies SQL preparation adds no CLI command or help.
+func TestLogsSearchRouteRemainsUnavailable(t *testing.T) {
+	setFakeSQLConfig(t)
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { requests.Add(1) }))
+	defer srv.Close()
+	for _, args := range [][]string{{"logs", "search", "--table", "t1_fake"}, {"logs", "--help"}, {"logs", "search", "--help"}} {
+		var out, err bytes.Buffer
+		code := runWithEndpoints(args, &out, &err, srv.URL, srv.URL, srv.URL, testHTTPClient())
+		if code != 1 || out.Len() != 0 || !strings.Contains(err.String(), "unknown resource") || requests.Load() != 0 {
+			t.Fatal("logs command or help became available")
+		}
+	}
+}
+
 // TestLogsSQLCredentials verifies required SQL variables, safe failures, and separate Basic auth.
 func TestLogsSQLCredentials(t *testing.T) {
 	var requests atomic.Int32

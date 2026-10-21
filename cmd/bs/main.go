@@ -31,11 +31,14 @@ func runWithAPI(args []string, stdout, stderr io.Writer, baseURL string, client 
 	return runWithEndpoints(args, stdout, stderr, baseURL, defaultTelemetryRESTBaseURL, "", client)
 }
 
-// runWithEndpoints accepts distinct test endpoints without adding production
-// host overrides. Uptime and Telemetry REST commands use separate inputs.
-// The SQL input remains unused until its command slice adds a request boundary.
+// runWithEndpoints accepts distinct test endpoints without adding command routes.
+// An optional prepared SQL request uses the SQL endpoint independently of argv.
 // @anchor:uptime:router endpoints
-func runWithEndpoints(args []string, stdout, stderr io.Writer, uptimeBaseURL, telemetryRESTBaseURL, telemetrySQLURL string, client *http.Client) int {
+func runWithEndpoints(args []string, stdout, stderr io.Writer, uptimeBaseURL, telemetryRESTBaseURL, telemetrySQLURL string, client *http.Client, sqlRequest ...logsSQLRequest) int {
+	if len(sqlRequest) == 1 && len(args) == 0 {
+		request := sqlRequest[0]
+		return doLogsSQLRequest(request.sql, request.params, request.timeout, stdout, stderr, telemetrySQLURL, client)
+	}
 	if help, ok := helpFor(args); ok {
 		fmt.Fprint(stdout, help)
 		return 0

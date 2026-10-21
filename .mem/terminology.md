@@ -3,7 +3,7 @@
 - **Uptime CLI** - the read-only `bs` command package for Better Stack monitors and incidents. Avoid: Telemetry CLI.
 - **Uptime surface (anchor surface `uptime`)** - the production boundaries shared by the five Uptime CLI commands for monitors and incidents. Avoid: Telemetry surface.
 - **Command routing boundary (anchor role `router`)** - `runWithAPI` preserves the Uptime injection interface and delegates help and handler selection to `runWithEndpoints`. Avoid: configurable endpoint.
-- **Endpoint injection seam** - `runWithEndpoints`, which accepts distinct Uptime base URL, Telemetry REST base URL, and Telemetry SQL URL test inputs. Uptime and Telemetry REST routes are active. The SQL input remains unused. Avoid: runtime endpoint override.
+- **Endpoint injection seam** - `runWithEndpoints`, which accepts distinct Uptime base URL, Telemetry REST base URL, and Telemetry SQL URL test inputs. Uptime and Telemetry REST routes are active. An optional prepared SQL request without argv uses the SQL input, without a logs command route. Avoid: runtime endpoint override.
 - **Command handler (anchor role `command-handler`)** - `monitorsList`, `monitorsGet`, `incidentsList`, `incidentsGet`, `incidentsTimeline`, `sourcesList`, or `sourcesGet`, which validates arguments and builds its service endpoint. Avoid: request executor.
 - **Request executor (anchor role `request-executor`)** - `doMonitorsRequest`, the shared bearer-authenticated GET and raw-response path for all seven handlers. Avoid: monitor-only client.
 - **Uptime configuration boundary (anchor role `config`)** - the const block in `cmd/bs/monitors.go` defining `defaultAPIBaseURL`, `defaultTimeout`, and `tokenEnvVar`. Avoid: runtime endpoint override.

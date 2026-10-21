@@ -57,6 +57,13 @@ flowchart TD
 
 [doLogsSQLRequest](../../cmd/bs/logs.go) requires nonempty `BETTERSTACK_TELEMETRY_SQL_URL`, `BETTERSTACK_TELEMETRY_SQL_USERNAME`, and `BETTERSTACK_TELEMETRY_SQL_PASSWORD`. It validates the configured URL before using an injected test endpoint. Only SQL username/password supply Basic authentication. Neither API token substitutes for SQL credentials. Missing values name the variable without echoing input.
 
+An optional prepared input to `runWithEndpoints` uses the separate SQL endpoint without command dispatch:
+
+```go
+code := runWithEndpoints(nil, stdout, stderr, uptimeURL, restURL, sqlURL, client,
+    logsSQLRequest{sql: sql, params: params, timeout: 30 * time.Second})
+```
+
 The executor sends one timed POST with SQL in the body, encoded parameters in the URL, and `Content-Type: plain/text`. It copies the supplied client before disabling redirects. Complete 2xx bodies reach stdout unchanged. Other bodies currently reach stderr unchanged with exit 1. Transport and body-read failures use fixed diagnostics and no success output. Tests clear inherited SQL configuration and use guarded loopback clients.
 
 The builder has no command route, request, credential access, or help entry. [Parser and builder tests](../../cmd/bs/logs_test.go) use only fake strings and fixed times.

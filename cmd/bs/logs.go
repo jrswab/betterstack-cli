@@ -22,6 +22,12 @@ const (
 	telemetrySQLPasswordEnvVar = "BETTERSTACK_TELEMETRY_SQL_PASSWORD"
 )
 
+type logsSQLRequest struct {
+	sql     string
+	params  url.Values
+	timeout time.Duration
+}
+
 // doLogsSQLRequest sends SQL with separate Basic credentials and safe local diagnostics.
 // @anchor:telemetry:request-executor sql
 func doLogsSQLRequest(sql string, params url.Values, timeout time.Duration, stdout, stderr io.Writer, telemetrySQLURL string, client *http.Client) int {

@@ -33,11 +33,11 @@
 
 - Lane: `full` — D1 assigns the full lane because this milestone changes an external SQL HTTP contract and handles credentials.
 - Current phase: `Phase 3 execution`.
-- Current task: `Phase 3: implement B1`.
+- Current task: `Phase 3: implement B2`.
 - Task states: Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 tasks `not started`.
 - Milestone checkbox: `unchecked`.
 - Last completed phase and gate: Phase 2 planning review passed at `2026-10-21T10:56:19-04:00`.
-- Next action: `Phase 3: implement B1`.
+- Next action: `Phase 3: implement B2`.
 
 ## Restart validation
 
@@ -171,6 +171,41 @@ Write this checkpoint through a temporary file in the same directory, then atomi
  M cmd/bs/logs.go
  M cmd/bs/logs_test.go
  M cmd/bs/safety_test.go
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+## Phase 3 task B1
+
+- Files and symbols: `cmd/bs/main.go:runWithEndpoints` optional prepared SQL input; `cmd/bs/logs.go:logsSQLRequest`; `cmd/bs/logs_test.go:TestRunWithEndpointsRoutesSQL,sqlDeadlineTransport.RoundTrip,TestLogsSearchRouteRemainsUnavailable`; checklist caller audit and current memory.
+- A2 commit: `bcb94c4`.
+- Test-first: `go test ./cmd/bs -run '^(TestRunWithEndpointsRoutesSQL|TestLogsSearchRouteRemainsUnavailable)$' -count=1`. Exit 1, undefined `logsSQLRequest` and too many arguments for `runWithEndpoints`.
+- Focused checks: `go test ./cmd/bs -run '^(TestRunWithEndpoints.*|TestRunWithAPI.*|TestLogsSearchRouteRemainsUnavailable)$' -count=1`. Exit 0, `ok github.com/jrswab/betterstack-cli/cmd/bs 0.014s`.
+- Formatting/lint: `gofmt -w cmd/bs/logs.go cmd/bs/logs_test.go cmd/bs/main.go`, `go vet ./cmd/bs`, `git diff --check`. Exit 0, no findings.
+- Caller audit ran before signature modification: `rg -n 'runWithEndpoints|buildLogsSearchQuery|redactSecrets' cmd/bs --glob '*.go' > /tmp/factory-005/B1-callers.txt`. Exit 0. Existing production caller is `runWithAPI`; test callers are in `main_test.go`, `sources_test.go`, and the new SQL tests in `logs_test.go`. No function-valued `runWithEndpoints` caller exists.
+- Decision: optional prepared SQL input preserves existing call expressions and the exact `runWithAPI` signature. It requires empty argv and does not recognize `logs search`. This accepts a small extension of the test seam instead of prematurely activating a command or adding a global test hook.
+- Deadline proof runs behind `loopbackOnlyTransport`, delegating to its guarded transport. Server contexts do not transmit client deadlines over HTTP, so the request-boundary probe checks the client deadline directly.
+- D5 evidence: three separate servers, one SQL POST through `telemetrySQLURL`, zero Uptime/REST requests, exact SQL and encoded parameters, `plain/text`, Basic auth, and 1500ms deadline.
+- Risk tier: design-bearing. Independent review remains pending under D9. No dependency or product deviation.
+
+- Task state: `B1` passed. The checklist renders this state.
+- Validated HEAD: `bcb94c45d2129cfc2254dc2b57c649db83b8718b`.
+- Relevant work: uncommitted task changes at this gate, committed in the following explicit-path task commit.
+- Worktree stash ref: `3094c6871ccd1235ae836547857d27700e94c274`.
+- `git status --porcelain` at the gate:
+
+```text
+ M .mem/practices.md
+ M .mem/summary.md
+ M .mem/telemetry/logs.md
+ M .mem/terminology.md
+ M cmd/bs/logs.go
+ M cmd/bs/logs_test.go
+ M cmd/bs/main.go
+ M docs/plans/008_telemetry-logs-search_005_implement.md
 ?? .agents/
 ?? .wayfinder/
 ?? AGENTS.md
