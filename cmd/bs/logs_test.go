@@ -23,6 +23,43 @@ func setFakeSQLConfig(t *testing.T) {
 	t.Setenv(tokenEnvVar, "fake-uptime-token")
 }
 
+// TestLogsSQLUsesConfiguredEndpoint verifies the configured HTTPS destination without network access.
+func TestLogsSQLUsesConfiguredEndpoint(t *testing.T) {
+	setFakeSQLConfig(t)
+	sql, params, err := buildLogsSearchQuery([]string{"--table", "t1_fake", "--query", "fake & 'text'"}, time.Unix(3600, 0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct{ endpoint, host, path string }{
+		{"regional.sql.example", "regional.sql.example", ""},
+		{"regional.sql.example:443", "regional.sql.example:443", ""},
+		{"https://regional.sql.example", "regional.sql.example", ""},
+		{"https://regional.sql.example:8443/", "regional.sql.example:8443", "/"},
+	} {
+		t.Run(tc.endpoint, func(t *testing.T) {
+			t.Setenv(telemetrySQLURLEnvVar, tc.endpoint)
+			transport := &recordingRoundTripper{}
+			client := &http.Client{Transport: transport}
+			var out, diagnostic bytes.Buffer
+			code := doLogsSQLRequest(sql, params, time.Second, &out, &diagnostic, "", client)
+			if code != 0 || out.String() != "recorded response" || diagnostic.Len() != 0 || len(transport.requests) != 1 {
+				t.Fatalf("code=%d, stdout=%q, stderr=%q, requests=%d", code, out.String(), diagnostic.String(), len(transport.requests))
+			}
+			req := transport.requests[0]
+			if req.URL.Scheme != "https" || req.URL.Host != tc.host || req.URL.Path != tc.path || req.URL.RawQuery != params.Encode() {
+				t.Fatalf("request URL = %s, want https://%s%s?%s", req.URL, tc.host, tc.path, params.Encode())
+			}
+			for name, values := range req.Header {
+				for _, value := range values {
+					if strings.Contains(value, os.Getenv(telemetryTokenEnvVar)) {
+						t.Errorf("request header %s contains the fake Telemetry API token", name)
+					}
+				}
+			}
+		})
+	}
+}
+
 // TestRunWithEndpointsRoutesSQL verifies the prepared SQL boundary without a command route.
 func TestRunWithEndpointsRoutesSQL(t *testing.T) {
 	setFakeSQLConfig(t)
@@ -80,7 +117,7 @@ func (p *sqlDeadlineTransport) RoundTrip(req *http.Request) (*http.Response, err
 	p.calls++
 	deadline, ok := req.Context().Deadline()
 	remaining := time.Until(deadline)
-	p.valid = ok && remaining > p.timeout-time.Second && remaining <= p.timeout
+	p.valid = ok && remaining > p.timeout-100*time.Millisecond && remaining <= p.timeout
 	return p.base.RoundTrip(req)
 }
 
