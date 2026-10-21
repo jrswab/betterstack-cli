@@ -10,6 +10,10 @@ This parser example preserves an empty query and enables cold storage:
 parsed, err := parseLogsSearchArgs([]string{"--table", "t1_fake", "--query", "", "--cold"})
 ```
 
+## Defaults and bounded values
+
+Order defaults to `desc` and accepts only `asc` or `desc`. Limit defaults to 100 and accepts ASCII decimal integers from 1 through 1000, including leading zeros. The parser reuses the source pagination digit check without changing source behavior. The relative window defaults to one hour. `--since` and `--timeout` require positive Go durations. The timeout defaults to the existing 30 seconds. Day suffixes, malformed durations, zero, and negatives fail locally.
+
 The parser has no command route or help entry. [Parser tests](../../cmd/bs/logs_test.go) use only fake strings.
 
 Related: [memory map](../mem-map.md), [terminology](../terminology.md), and [sources](sources.md).

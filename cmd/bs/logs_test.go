@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 	"testing"
+	"time"
 )
 
 // TestParseLogsSearchArgsTable verifies the required full table identifier grammar.
@@ -79,6 +80,68 @@ func TestParseLogsSearchArgsColdAndQuery(t *testing.T) {
 		parsed, err := parseLogsSearchArgs([]string{"--query", query, "--table", "t1_fake"})
 		if err != nil || parsed.cold || parsed.query == nil || *parsed.query != query {
 			t.Fatalf("query = %v, cold = %t, error = %v", parsed.query, parsed.cold, err)
+		}
+	}
+}
+
+// TestParseLogsSearchArgsDefaults verifies the approved search defaults.
+func TestParseLogsSearchArgsDefaults(t *testing.T) {
+	parsed, err := parseLogsSearchArgs([]string{"--table", "t1_fake"})
+	if err != nil || parsed.order != "desc" || parsed.limit != 100 || parsed.since != time.Hour || parsed.timeout != 30*time.Second {
+		t.Fatalf("parsed = %+v, error = %v", parsed, err)
+	}
+}
+
+// TestParseLogsSearchArgsValues verifies allowed order, limit, and duration values.
+func TestParseLogsSearchArgsValues(t *testing.T) {
+	for _, order := range []string{"asc", "desc"} {
+		parsed, err := parseLogsSearchArgs([]string{"--table", "t1_fake", "--order", order})
+		if err != nil || parsed.order != order {
+			t.Fatalf("order = %q, error = %v", parsed.order, err)
+		}
+	}
+	for _, tc := range []struct {
+		value string
+		want  int
+	}{{"1", 1}, {"1000", 1000}, {"00100", 100}} {
+		parsed, err := parseLogsSearchArgs([]string{"--table", "t1_fake", "--limit", tc.value})
+		if err != nil || parsed.limit != tc.want {
+			t.Fatalf("limit = %d, error = %v", parsed.limit, err)
+		}
+	}
+	for _, flag := range []string{"--since", "--timeout"} {
+		for _, tc := range []struct {
+			value string
+			want  time.Duration
+		}{{"1ns", time.Nanosecond}, {"30m", 30 * time.Minute}, {"1h", time.Hour}, {"2h45m", 165 * time.Minute}, {"168h", 168 * time.Hour}} {
+			parsed, err := parseLogsSearchArgs([]string{"--table", "t1_fake", flag, tc.value})
+			got := parsed.since
+			if flag == "--timeout" {
+				got = parsed.timeout
+			}
+			if err != nil || got != tc.want {
+				t.Fatalf("%s = %s, error = %v", flag, got, err)
+			}
+		}
+	}
+}
+
+// TestParseLogsSearchArgsRejectsValues verifies strict enums, decimal limits, and positive durations.
+func TestParseLogsSearchArgsRejectsValues(t *testing.T) {
+	values := map[string][]string{
+		"--order":   {"", "ASC", "Desc", "newest", " asc"},
+		"--limit":   {"", "0", "000", "-1", "+1", "1001", "1.5", "1e2", "one", " 1", "1 ", "١", "99999999999999999999999999999999"},
+		"--since":   {"", "7d", "bad", "0", "0s", "-1h", "1", "1e3s", "999999999999999999h"},
+		"--timeout": {"", "7d", "bad", "0s", "-1s", "999999999999999999h"},
+	}
+	for flag, inputs := range values {
+		for _, value := range inputs {
+			t.Run(flag+"/"+value, func(t *testing.T) {
+				_, err := parseLogsSearchArgs([]string{"--table", "t1_fake", flag, value})
+				if err == nil || !strings.Contains(err.Error(), flag) {
+					t.Fatalf("error = %v, want %s diagnostic", err, flag)
+				}
+			})
 		}
 	}
 }

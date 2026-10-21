@@ -3,20 +3,26 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 )
 
 var logsTablePattern = regexp.MustCompile(`^t[0-9]+_[a-z0-9_]+$`)
 
 type logsSearchArgs struct {
-	table  string
-	cold   bool
-	query  *string
-	values map[string]string
+	table   string
+	cold    bool
+	query   *string
+	order   string
+	limit   int
+	since   time.Duration
+	timeout time.Duration
+	values  map[string]string
 }
 
 func parseLogsSearchArgs(args []string) (logsSearchArgs, error) {
-	parsed := logsSearchArgs{values: make(map[string]string)}
+	parsed := logsSearchArgs{values: make(map[string]string), order: "desc", limit: 100, since: time.Hour, timeout: defaultTimeout}
 	for i := 0; i < len(args); i++ {
 		flag := args[i]
 		switch flag {
@@ -44,6 +50,35 @@ func parseLogsSearchArgs(args []string) (logsSearchArgs, error) {
 	}
 	if value, present := parsed.values["--query"]; present {
 		parsed.query = &value
+	}
+	if value, present := parsed.values["--order"]; present {
+		if value != "asc" && value != "desc" {
+			return logsSearchArgs{}, fmt.Errorf("invalid --order value %q", value)
+		}
+		parsed.order = value
+	}
+	if value, present := parsed.values["--limit"]; present {
+		if !validSourcePagination(value, false) {
+			return logsSearchArgs{}, fmt.Errorf("invalid --limit value %q", value)
+		}
+		limit, err := strconv.Atoi(strings.TrimLeft(value, "0"))
+		if err != nil || limit > 1000 {
+			return logsSearchArgs{}, fmt.Errorf("invalid --limit value %q", value)
+		}
+		parsed.limit = limit
+	}
+	for _, flag := range []string{"--since", "--timeout"} {
+		if value, present := parsed.values[flag]; present {
+			duration, err := time.ParseDuration(value)
+			if err != nil || duration <= 0 {
+				return logsSearchArgs{}, fmt.Errorf("invalid %s value %q", flag, value)
+			}
+			if flag == "--since" {
+				parsed.since = duration
+			} else {
+				parsed.timeout = duration
+			}
+		}
 	}
 	return parsed, nil
 }
