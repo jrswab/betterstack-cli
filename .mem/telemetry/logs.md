@@ -66,6 +66,17 @@ code := runWithEndpoints(nil, stdout, stderr, uptimeURL, restURL, sqlURL, client
 
 The executor sends one timed POST with SQL in the body, encoded parameters in the URL, and `Content-Type: plain/text`. It copies the supplied client before disabling redirects. Complete 2xx bodies reach stdout unchanged. Other bodies pass through `redactSecrets` using the Telemetry API token and both SQL credentials, then reach stderr with exit 1. Only non-2xx SQL bodies use redaction. Submitted SQL and unrelated bytes stay intact. Success, Uptime, and source bodies stay raw. Transport and body-read failures use fixed diagnostics and no success output. Nonpositive request timeouts fail before a request. The request context cancels on timeout. The executor reads the complete body before selecting an output channel, so incomplete success or error bodies produce only a local diagnostic. Tests clear inherited SQL configuration and use guarded loopback clients.
 
-The builder has no command route, request, credential access, or help entry. [Parser and builder tests](../../cmd/bs/logs_test.go) use only fake strings and fixed times.
+```mermaid
+flowchart TD
+    Prepared[Prepared SQL and parameters] --> Config[Validate SQL configuration]
+    Config -->|valid| Post[One timed Basic-auth POST]
+    Config -->|invalid| Local[Safe diagnostic, exit 1]
+    Post -->|transport or read failure| Local
+    Post -->|2xx| Raw[Unchanged stdout, exit 0]
+    Post -->|non-2xx| Redact[redactSecrets on body only]
+    Redact --> Error[stderr, exit 1]
+```
+
+The builder has no command route, request, credential access, or help entry. [Parser, builder, and executor tests](../../cmd/bs/logs_test.go) use fake strings, fixed builder times, and guarded loopback servers.
 
 Related: [memory map](../mem-map.md), [terminology](../terminology.md), and [sources](sources.md).

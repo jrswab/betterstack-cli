@@ -14,6 +14,8 @@ The SQL executor uses these separate environment variables. The command route is
 
 All three values are required. SQL credentials never fall back to Uptime or Telemetry API tokens. Only the SQL host is configurable. Absolute HTTPS URLs allow an empty path or `/`, but no userinfo, query, or fragment.
 
+The executor sends one `POST` with `Content-Type: plain/text` and a positive timeout, defaulting to 30 seconds. It follows no redirects and retries nothing. It writes 2xx bytes unchanged to stdout. Other SQL responses go to stderr after literal credential redaction, with exit status 1. Local failures use safe diagnostics. Uptime and source bodies remain unchanged.
+
 See [the SQL executor](cmd/bs/logs.go).
 
 ## Telemetry sources

@@ -33,11 +33,11 @@
 
 - Lane: `full` — D1 assigns the full lane because this milestone changes an external SQL HTTP contract and handles credentials.
 - Current phase: `Phase 3 execution`.
-- Current task: `Phase 3: implement D1`.
+- Current task: `Phase 3: implement E1`.
 - Task states: Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 tasks `not started`.
 - Milestone checkbox: `unchecked`.
 - Last completed phase and gate: Phase 2 planning review passed at `2026-10-21T10:56:19-04:00`.
-- Next action: `Phase 3: implement D1`.
+- Next action: `Phase 3: implement E1`.
 
 ## Restart validation
 
@@ -316,6 +316,41 @@ Write this checkpoint through a temporary file in the same directory, then atomi
  M .mem/telemetry/logs.md
  M cmd/bs/logs.go
  M cmd/bs/logs_test.go
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+## Phase 3 task D1
+
+- Files: `README.md`, `.mem/mem-map.md`, `.mem/practices.md`, `.mem/summary.md`, `.mem/telemetry/logs.md`, `.mem/telemetry/sources.md`, `.mem/terminology.md`, and task records. `TAGS.md` and `changelog.d/008-telemetry-logs-search-005.md` were already updated in runtime task commits and passed direct validation.
+- C3 commit: `893d103`.
+- Skills: repository-local changelog and mem skills were read before implementation and applied incrementally before runtime commits. D1 completes current-state wording, execution diagram/example, environment roles, and secret-redaction boundaries.
+- `make fragments-check`: exit 2, `No rule to make target 'fragments-check'`.
+- `make docs-check`: exit 2, `No rule to make target 'docs-check'`.
+- `python3 /tmp/factory-005/check-records.py`: exit 0. PASS for memory links and limits, complete memory-map coverage, README SQL environment variables, fragment shape/backticked paths, exact anchor occurrence counts and source paths, no logs dispatch/help, and execution example/flow diagram.
+- `~/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master`: exit 0, `PASS: /home/jaron/dev/betterstack-cli/master: 90 Markdown files, 0 findings`.
+- `git diff --check`: exit 0, no findings. `wc -l` reported summary 3, practices 26, terminology 26, map 21, logs 82, sources 50. Every memory file is at most 250 lines.
+- Decision: README documents configuration and executor behavior but no command example or command help. Source memory links to SQL execution and preserves its raw-response distinction.
+- Skip: no new memory topic because the existing logs topic holds builder and executor within 82 lines (ladder rung 1). No LOG entry because the authoritative spec already captures the decisions (rung 1). No Makefile or dependency was added (rung 1).
+- Risk tier: mechanical records. TDD is not applicable to prose. Direct checks and documentation lint passed. Independent review remains pending.
+
+- Task state: `D1` passed. The checklist renders this state.
+- Validated HEAD: `893d103b0c096d0421a37e8aa6813b3db7a7bcab`.
+- Relevant work: uncommitted task changes at this gate, committed in the following explicit-path task commit.
+- Worktree stash ref: `78ea45721f11dee8bc587fa5b1b39f2da400bccf`.
+- `git status --porcelain` at the gate:
+
+```text
+ M .mem/mem-map.md
+ M .mem/practices.md
+ M .mem/summary.md
+ M .mem/telemetry/logs.md
+ M .mem/telemetry/sources.md
+ M .mem/terminology.md
+ M README.md
 ?? .agents/
 ?? .wayfinder/
 ?? AGENTS.md

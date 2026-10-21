@@ -2,7 +2,7 @@
 
 ## Commands and endpoint
 
-[runWithEndpoints](../../cmd/bs/main.go) routes `bs sources list` and `bs sources get <id>` to the Telemetry REST input. `runWithAPI` preserves the Uptime injection interface and supplies the fixed production Telemetry REST host, `https://telemetry.betterstack.com`. Only tests inject another REST endpoint. No user setting overrides it. The SQL endpoint input has no active route.
+[runWithEndpoints](../../cmd/bs/main.go) routes `bs sources list` and `bs sources get <id>` to the Telemetry REST input. `runWithAPI` preserves the Uptime injection interface and supplies the fixed production Telemetry REST host, `https://telemetry.betterstack.com`. Only tests inject another REST endpoint. No user setting overrides it. The SQL endpoint input supports [prepared SQL execution](logs.md) but has no CLI route.
 
 | Command | Handler | GET path |
 |---|---|---|
@@ -45,6 +45,6 @@ flowchart TD
     Token -->|missing| Error
 ```
 
-[Source tests](../../cmd/bs/sources_test.go) and [routing tests](../../cmd/bs/main_test.go) use dummy tokens and loopback servers. The [test harness](../../cmd/bs/safety_test.go) clears inherited Telemetry, Uptime, and legacy API tokens and blocks non-loopback HTTP access. Tests cover separate endpoints, auth, validation, raw bodies, redirects, local failures, help, and secret warnings.
+[Source tests](../../cmd/bs/sources_test.go) and [routing tests](../../cmd/bs/main_test.go) use dummy tokens and loopback servers. The [test harness](../../cmd/bs/safety_test.go) clears inherited Telemetry, Uptime, and legacy API tokens plus SQL configuration and blocks non-loopback HTTP access. Tests cover separate endpoints, auth, validation, raw bodies, redirects, local failures, help, and secret warnings.
 
 Related: [memory map](../mem-map.md), [terminology](../terminology.md), and [Uptime testing](../uptime/testing.md).
