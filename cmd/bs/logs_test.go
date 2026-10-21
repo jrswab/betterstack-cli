@@ -99,6 +99,64 @@ func TestLogsSearchRouteRemainsUnavailable(t *testing.T) {
 	}
 }
 
+// TestLogsSQLErrorRedaction verifies only non-2xx SQL bodies lose credential literals.
+func TestLogsSQLErrorRedaction(t *testing.T) {
+	setFakeSQLConfig(t)
+	const body = "unrelated\x00 SELECT dt, raw FROM remote(t1_fake_logs)\nfake-telemetry-token fake-sql-user fake-sql-password Basic ZmFrZS1zcWwtdXNlcjpmYWtlLXNxbC1wYXNzd29yZA==\n"
+	const want = "unrelated\x00 SELECT dt, raw FROM remote(t1_fake_logs)\n[REDACTED] [REDACTED] [REDACTED] Basic [REDACTED]\n"
+	for _, status := range []int{300, 302, 304, 400, 401, 429, 500, 503, 599} {
+		t.Run(strconv.Itoa(status), func(t *testing.T) {
+			var requests atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests.Add(1)
+				w.WriteHeader(status)
+				_, _ = io.WriteString(w, body)
+			}))
+			defer srv.Close()
+			var out, err bytes.Buffer
+			code := doLogsSQLRequest("SELECT dt, raw FROM remote(t1_fake_logs)", nil, time.Second, &out, &err, srv.URL, testHTTPClient())
+			expected := want
+			if status == 304 {
+				expected = ""
+			}
+			if code != 1 || out.Len() != 0 || err.String() != expected || requests.Load() != 1 {
+				t.Fatalf("code=%d, stdout=%q, stderr=%q, requests=%d", code, out.String(), err.String(), requests.Load())
+			}
+		})
+	}
+}
+
+// TestSQLRedactionLeavesOtherResponsesRaw verifies Uptime and source bodies retain SQL and API secrets.
+func TestSQLRedactionLeavesOtherResponsesRaw(t *testing.T) {
+	setFakeSQLConfig(t)
+	const body = "fake-uptime-token fake-telemetry-token fake-sql-user fake-sql-password\n"
+	for _, status := range []int{200, 400} {
+		for _, args := range [][]string{{"monitors", "list"}, {"sources", "list"}} {
+			t.Run(strconv.Itoa(status)+"/"+args[0], func(t *testing.T) {
+				var requests atomic.Int32
+				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					requests.Add(1)
+					w.WriteHeader(status)
+					_, _ = io.WriteString(w, body)
+				}))
+				defer srv.Close()
+				var out, err bytes.Buffer
+				code := runWithEndpoints(args, &out, &err, srv.URL, srv.URL, srv.URL, testHTTPClient())
+				if status == 200 {
+					if code != 0 || out.String() != body || err.Len() != 0 {
+						t.Fatal("non-SQL success body changed")
+					}
+				} else if code != 1 || out.Len() != 0 || err.String() != body {
+					t.Fatal("non-SQL error body changed")
+				}
+				if requests.Load() != 1 {
+					t.Fatal("unexpected request count")
+				}
+			})
+		}
+	}
+}
+
 // TestLogsSQLSuccessBytes verifies all success status branches preserve complete raw bodies.
 func TestLogsSQLSuccessBytes(t *testing.T) {
 	setFakeSQLConfig(t)

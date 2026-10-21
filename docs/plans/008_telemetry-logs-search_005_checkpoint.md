@@ -33,11 +33,11 @@
 
 - Lane: `full` — D1 assigns the full lane because this milestone changes an external SQL HTTP contract and handles credentials.
 - Current phase: `Phase 3 execution`.
-- Current task: `Phase 3: implement C2`.
+- Current task: `Phase 3: implement C3`.
 - Task states: Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 tasks `not started`.
 - Milestone checkbox: `unchecked`.
 - Last completed phase and gate: Phase 2 planning review passed at `2026-10-21T10:56:19-04:00`.
-- Next action: `Phase 3: implement C2`.
+- Next action: `Phase 3: implement C3`.
 
 ## Restart validation
 
@@ -255,6 +255,38 @@ Write this checkpoint through a temporary file in the same directory, then atomi
 
 ```text
  M cmd/bs/logs_test.go
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+## Phase 3 task C2
+
+- Files and symbols: `cmd/bs/logs.go:doLogsSQLRequest` non-2xx branch; `cmd/bs/telemetry.go:redactSecrets` doc comment; `cmd/bs/logs_test.go:TestLogsSQLErrorRedaction,TestSQLRedactionLeavesOtherResponsesRaw`; logs memory, summary, terminology, and fragment.
+- C1 commit: `8cbe040`.
+- Test-first: `go test ./cmd/bs -run '^TestLogsSQLErrorRedaction$' -count=1`. Exit 1. 300, 302, 400, 401, 429, 500, 503, and 599 printed fake credential literals instead of expected markers. 304 has no HTTP body and correctly returns empty stderr.
+- Focused checks: `go test ./cmd/bs -run '^(TestLogsSQLErrorRedaction|TestSQLRedactionLeavesOtherResponsesRaw|TestLogsSQLSuccessBytes|TestRedactSecrets.*)$' -count=1`. Exit 0, `ok github.com/jrswab/betterstack-cli/cmd/bs 0.034s`.
+- Formatter/lint: `gofmt -w cmd/bs/logs.go cmd/bs/logs_test.go cmd/bs/telemetry.go`, `go vet ./cmd/bs`, `git diff --check`. Exit 0, no findings.
+- Caller completeness: `rg -n 'redactSecrets\(' cmd/bs --glob '*.go'`. Exit 0. The only production invocation is `cmd/bs/logs.go:82`, after the 2xx early return. Other occurrences are helper definition and existing helper tests.
+- D6 evidence: exact unrelated text, NUL, SQL, and newlines survive. Telemetry token, SQL username/password, and Basic encoding become markers only on SQL errors. SQL success and source/Uptime 200/400 bodies retain secrets.
+- Decision: reuse existing literal redaction in one line (ladder rungs 2 and 5). No masking of submitted SQL, wrappers, or changes to overlapping-secret behavior. Risk tier: design-bearing. Independent review remains pending.
+
+- Task state: `C2` passed. The checklist renders this state.
+- Validated HEAD: `8cbe0402a1b437857072544e125c5e7925ecd7e7`.
+- Relevant work: uncommitted task changes at this gate, committed in the following explicit-path task commit.
+- Worktree stash ref: `1a97f0523e3e327772dc476f2c153650eb2e9c99`.
+- `git status --porcelain` at the gate:
+
+```text
+ M .mem/summary.md
+ M .mem/telemetry/logs.md
+ M .mem/terminology.md
+ M changelog.d/008-telemetry-logs-search-005.md
+ M cmd/bs/logs.go
+ M cmd/bs/logs_test.go
+ M cmd/bs/telemetry.go
 ?? .agents/
 ?? .wayfinder/
 ?? AGENTS.md

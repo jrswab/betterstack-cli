@@ -9,7 +9,7 @@ import (
 // redactSecrets replaces non-empty Telemetry credentials and derived Basic
 // authentication with [REDACTED]. Longer literal matches take priority,
 // matching is case-sensitive, and replacement text is not scanned again.
-// No current response path calls this helper.
+// Only non-2xx SQL response bodies use this helper.
 func redactSecrets(text, telemetryToken, sqlUsername, sqlPassword string) string {
 	secrets := []string{telemetryToken, sqlUsername, sqlPassword}
 	if sqlUsername != "" || sqlPassword != "" {

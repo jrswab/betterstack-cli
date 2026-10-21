@@ -64,7 +64,7 @@ code := runWithEndpoints(nil, stdout, stderr, uptimeURL, restURL, sqlURL, client
     logsSQLRequest{sql: sql, params: params, timeout: 30 * time.Second})
 ```
 
-The executor sends one timed POST with SQL in the body, encoded parameters in the URL, and `Content-Type: plain/text`. It copies the supplied client before disabling redirects. Complete 2xx bodies reach stdout unchanged. Other bodies currently reach stderr unchanged with exit 1. Transport and body-read failures use fixed diagnostics and no success output. Tests clear inherited SQL configuration and use guarded loopback clients.
+The executor sends one timed POST with SQL in the body, encoded parameters in the URL, and `Content-Type: plain/text`. It copies the supplied client before disabling redirects. Complete 2xx bodies reach stdout unchanged. Other bodies pass through `redactSecrets` using the Telemetry API token and both SQL credentials, then reach stderr with exit 1. Only non-2xx SQL bodies use redaction. Submitted SQL and unrelated bytes stay intact. Success, Uptime, and source bodies stay raw. Transport and body-read failures use fixed diagnostics and no success output. Tests clear inherited SQL configuration and use guarded loopback clients.
 
 The builder has no command route, request, credential access, or help entry. [Parser and builder tests](../../cmd/bs/logs_test.go) use only fake strings and fixed times.
 

@@ -14,7 +14,7 @@
 - **Uptime token** - the value of `BETTERSTACK_UPTIME_API_TOKEN`, used in the bearer header and local diagnostic redaction. Avoid: legacy token fallback.
 - **Source ID** - one nonempty opaque Telemetry source target escaped as a single REST path segment, without URL interpretation or numeric restrictions. Avoid: source URL, numeric-only source ID.
 - **Telemetry API token** - the value of `BETTERSTACK_TELEMETRY_API_TOKEN`, used only by source REST commands for bearer authentication and local diagnostic redaction. Avoid: Uptime fallback, source response token.
-- **Telemetry secret redaction** - `redactSecrets`, a direct helper for non-empty Telemetry API token, SQL username, SQL password, and derived Basic-auth encoding. No response path calls it. Avoid: response redaction.
+- **Telemetry secret redaction** - `redactSecrets`, a direct helper for non-empty Telemetry API token, SQL username, SQL password, and derived Basic-auth encoding. It applies only to non-2xx SQL response bodies. Avoid: response redaction.
 - **Raw response body** - upstream bytes passed through without JSON decoding, formatting, redaction, or an added newline. Avoid: normalized JSON.
 - **Log search arguments** - the locally validated builder input from `parseLogsSearchArgs`, without a command route or request. Avoid: raw SQL input.
 - **SQL request executor (anchor surface `telemetry`, role `request-executor`)** - `doLogsSQLRequest`, the separate Basic-authenticated SQL POST boundary. Avoid: Request executor, source request path.

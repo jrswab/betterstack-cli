@@ -79,7 +79,7 @@ func doLogsSQLRequest(sql string, params url.Values, timeout time.Duration, stdo
 		_, _ = stdout.Write(body)
 		return 0
 	}
-	_, _ = stderr.Write(body)
+	_, _ = io.WriteString(stderr, redactSecrets(string(body), os.Getenv(telemetryTokenEnvVar), values[1], values[2]))
 	return 1
 }
 
