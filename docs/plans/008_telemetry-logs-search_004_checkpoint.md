@@ -34,10 +34,10 @@ The checkpoint owns task state. Milestone 004 remains unchecked until a later im
 
 - Lane: `full` — D1 requires the full lane for every milestone because the work affects external API contracts, security, or repository-wide records. S3 safely interpolates a validated SQL identifier and binds query/time values.
 - Current phase: Phase 3 (execution) — the orchestrator authorized tasks A1 through E1 after Phases 1 and 2 passed at `79e2931`.
-- Current task: B1.
-- Next action: implement B1.
+- Current task: C1.
+- Next action: implement C1.
 - Phase states: setup/restart validation `passed`; Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 `in progress`.
-- Task states: A1 `passed`; A2 `passed`; B1 `not started`; C1 `not started`; D1 `not started`; E1 `not started`; V1 `not started`.
+- Task states: A1 `passed`; A2 `passed`; B1 `passed`; C1 `not started`; D1 `not started`; E1 `not started`; V1 `not started`.
 - Milestone checkbox: `unchecked`.
 - Last completed phase and gate: Phase 2 artifact criterion passed on 2026-10-26. No implementation, review, or completion gate ran.
 
@@ -145,7 +145,7 @@ Boundary probes and outputs are in the implementation checklist. The current par
 
 - Limitations: `make help` is unavailable because no Makefile target exists. V1 review and completion gates remain outside this invocation.
 - Blockers: none at restart.
-- Next action: implement B1.
+- Next action: implement C1.
 
 ## Task A1 evidence
 
@@ -195,3 +195,29 @@ Boundary probes and outputs are in the implementation checklist. The current par
 ?? verify-incident-id.sh
 ```
 - Task A2 focused checks passed. The checkpoint renders its task checkbox after this record.
+
+## Task B1 evidence
+
+- Tier: design-bearing because the builder defines the SQL parameter contract. D9 review remains pending under excluded V1.
+- Files and symbols: added `buildLogsSearchQuery` and modified `parseLogsSearchArgs` in `cmd/bs/logs.go`. Extended `cmd/bs/logs_test.go`, `.mem/telemetry/logs.md`, `.mem/terminology.md`, and `changelog.d/008-telemetry-logs-search-004.md`.
+- Test names: `TestBuildLogsSearchQueryHot`, `TestBuildLogsSearchQueryText`, `TestBuildLogsSearchQueryRejectsControls`, `TestBuildLogsSearchQueryTimeout`, `TestBuildLogsSearchQueryRejectsArguments`.
+- Red command: `go test -run 'TestBuildLogsSearchQuery' ./cmd/bs` exited 1 with `undefined: buildLogsSearchQuery` and `FAIL ... [build failed]`.
+- Green command: `go test -run 'TestBuildLogsSearchQuery|TestParseLogsSearchArgs' ./cmd/bs` exited 0 and printed `ok github.com/jrswab/betterstack-cli/cmd/bs 0.011s`.
+- `gofmt -w cmd/bs/logs.go cmd/bs/logs_test.go`, `GOFLAGS=-o=/dev/null go build ./cmd/bs`, `go vet ./cmd/bs`, `gofmt -l cmd/bs/logs.go cmd/bs/logs_test.go`, `git diff --check`, and `git diff --cached --check` exited 0 without output.
+- Decisions: the builder accepts raw arguments so every caller receives validated interpolation and local failure. It returns `url.Values` for the later executor instead of inventing another parameter type (ladder rung 2). Timeout ceiling uses quotient/remainder rather than adding a second to the duration, which could overflow.
+- The initial relative time calculation precedes C1 because R2 requires a time predicate even in the hot query. C1 will extend and test the full explicit-time contract.
+- Query text beginning with `--` is valid parameter data under R4, not an option. The A1 lookahead applies only to non-query values. The corresponding syntax assertion was updated. No observable behavior beyond the spec is added.
+- Skips: no helper anchor/TAGS change and no inactive-command README documentation (ladder rung 1).
+- Dependencies, scope deviations, and symptom patches: none.
+
+- Validated HEAD: `619c458adb3814f8ee641e138530ae4b79ce6c0c`. Relevant task work is committed. No stash ref applies.
+- `git status --porcelain` at the task gate:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+- Task B1 focused checks passed. The checkpoint renders its task checkbox after this record.
