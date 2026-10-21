@@ -33,11 +33,11 @@
 
 - Lane: `full` — D1 assigns the full lane because this milestone changes an external SQL HTTP contract and handles credentials.
 - Current phase: `Phase 3 execution`.
-- Current task: `Phase 3: implement E1`.
-- Task states: Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 tasks `not started`.
+- Current task: `Independent review gate: dispatch separate review subagent, then V1/Factory completion only when authorized`.
+- Task states: Phase 1 and Phase 2 passed. Phase 3 tasks A1, A2, B1, B2, C1, C2, C3, D1, and E1 passed. Independent review and Factory completion remain pending.
 - Milestone checkbox: `unchecked`.
-- Last completed phase and gate: Phase 2 planning review passed at `2026-10-21T10:56:19-04:00`.
-- Next action: `Phase 3: implement E1`.
+- Last completed phase and gate: E1 execution verification passed. The milestone remains unchecked.
+- Next action: `Independent review gate: dispatch separate review subagent, then V1/Factory completion only when authorized`.
 
 ## Restart validation
 
@@ -351,6 +351,68 @@ Write this checkpoint through a temporary file in the same directory, then atomi
  M .mem/telemetry/sources.md
  M .mem/terminology.md
  M README.md
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+## Phase 3 task E1
+
+- D1 commit: `65192fb`.
+- Files changed by E1: checkpoint and checklist only. Source and records were committed and unchanged during verification.
+- All checks use `export PATH=$HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64/bin:$PATH GOTOOLCHAIN=local GOPROXY=off`. This local environment is not recorded in shared memory.
+- `GOFLAGS=-o=/dev/null go build ./...`: exit 0, no output.
+- `go vet ./...`: exit 0, no output.
+- `go test -count=1 ./...`: exit 0, `ok github.com/jrswab/betterstack-cli/cmd/bs 3.085s`.
+- `gofmt -l cmd/bs/*.go`: exit 0, no output.
+- `git diff --check 47a6666..HEAD`: exit 0, no output.
+- `test ! -e ./bs`: exit 0.
+- Baseline fingerprint command from Identity: `41306493735a9bfeeae10d179385968acfd8af3d46e7a2cd897893aba32209fe  -`, exact match.
+- Focused SQL checks: `go test ./cmd/bs -run '^(TestParseTelemetrySQLURL|TestLogsSQL.*|TestRunWithEndpointsRoutesSQL|TestLogsSearchRouteRemainsUnavailable|TestSQLRedactionLeavesOtherResponsesRaw)$' -count=1`: exit 0, `ok github.com/jrswab/betterstack-cli/cmd/bs 0.163s`.
+- `python3 /tmp/factory-005/check-records.py`: exit 0. Seven PASS lines cover links/limits, map coverage, environment variables, fragment format, anchors, no route/help, and execution example/diagram.
+- `~/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master`: exit 0, `PASS: /home/jaron/dev/betterstack-cli/master: 90 Markdown files, 0 findings`.
+- `git diff 47a6666..HEAD -- cmd/bs/help.go go.mod go.sum`: no output. No help or dependency/module change.
+- Diff inspection: only assigned Go/parser/executor/test surfaces and required records changed. Safety-harness additions clear newly consumed SQL values. No baseline path changed, no binary, no new dependency, no live request, no real credentials, no push, and no deploy.
+- Limits: pre-flight `govulncheck` finding `GO-2026-6809` remains as recorded in A1. The repository has no Makefile, so `make help`, `make docs-check`, and `make fragments-check` remain unavailable. Direct checks passed. No separate formatter/linter configuration exists beyond gofmt and go vet.
+- Independent review: not run by this implementer. D9 assigns it to a separate review subagent. V1 and Factory completion were not assigned and were not run. The milestone source remains unchecked and unchanged.
+- Spec deviations: none. Technical seam decision: `runWithEndpoints` has an optional prepared SQL input requiring empty argv, without changing `runWithAPI` or activating a logs route. Tests prove the requested SQL endpoint reaches the POST.
+- Risk tier: mechanical verification. TDD does not apply to checkpoint/checklist recording.
+
+### R1–R8 requirement evidence
+
+| Requirement | Passing evidence |
+|---|---|
+| R1 approved SQL URL forms | `TestParseTelemetrySQLURL`, `TestLogsSQLCredentials/invalid_configured_URL`, fixed diagnostics, no request on invalid config. |
+| R2 separate credentials | `TestLogsSQLCredentials` covers unset/empty variables, dummy API tokens, and successful Basic auth. The isolated safety-harness test strips SQL sentinels. |
+| R3 one bounded POST | `TestRunWithEndpointsRoutesSQL` asserts literal SQL/body/query/content type/Basic auth, a 1500ms client deadline, and one SQL-only request through distinct endpoints. |
+| R4 no redirects/retries | `TestLogsSQLNoRedirectsOrRetries` covers 301/302/303/307/308, 500/503, and broken connections, with one guarded attempt and zero redirect-target requests. |
+| R5 unchanged 2xx bytes | `TestLogsSQLSuccessBytes` covers 200/201/202/204/205/206/299, empty and raw binary/text bodies, fake secrets, exact stdout, no stderr, and no embedded-error detection. |
+| R6 non-2xx-only redaction | `TestLogsSQLErrorRedaction`, `TestSQLRedactionLeavesOtherResponsesRaw`, and `TestLogsSQLSuccessBytes` prove markers only on SQL errors, unmasked SQL/unrelated bytes, and raw Uptime/source/success data. The sole production redaction call follows the 2xx return. |
+| R7 safe failures | `TestLogsSQLLocalFailures` proves cancellation, closed listener, truncated success/error bodies, malformed injected URLs/ports, and nonpositive timeout with exact safe diagnostics, empty stdout, and no retry. |
+| R8 milestone separation | `TestLogsSearchRouteRemainsUnavailable`, unchanged help file, and existing route/help tests in the full suite. `runWithAPI` retains its exact function type. |
+
+### Execution commits through D1
+
+```text
+65192fb 005: D1 complete SQL executor records
+893d103 005: C3 handle SQL local failures safely
+b30e592 005: C2 redact only SQL error bodies
+8cbe040 005: C1 prove unchanged SQL success bytes
+301fb84 005: B2 prove no redirects or retries
+41d04eb 005: B1 prove prepared SQL endpoint routing
+bcb94c4 005: A2 require separate SQL credentials
+471e5d1 005: A1 validate SQL URL forms
+```
+
+- Task state: `E1` passed. The checklist renders this state.
+- Validated HEAD: `65192fbd12347b023d5423f93ad4c54d1522f344`.
+- Relevant runtime work: committed. Only checkpoint/checklist recording follows this gate. Source verification remains valid while the verified source and records stay unchanged.
+- Worktree stash ref: `none`.
+- `git status --porcelain` at the gate:
+
+```text
 ?? .agents/
 ?? .wayfinder/
 ?? AGENTS.md
