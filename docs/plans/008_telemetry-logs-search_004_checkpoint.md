@@ -34,10 +34,10 @@ The checkpoint owns task state. Milestone 004 remains unchecked until a later im
 
 - Lane: `full` — D1 requires the full lane for every milestone because the work affects external API contracts, security, or repository-wide records. S3 safely interpolates a validated SQL identifier and binds query/time values.
 - Current phase: Phase 3 (execution) — the orchestrator authorized tasks A1 through E1 after Phases 1 and 2 passed at `79e2931`.
-- Current task: A2.
-- Next action: implement A2.
+- Current task: B1.
+- Next action: implement B1.
 - Phase states: setup/restart validation `passed`; Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 `in progress`.
-- Task states: A1 `passed`; A2 `not started`; B1 `not started`; C1 `not started`; D1 `not started`; E1 `not started`; V1 `not started`.
+- Task states: A1 `passed`; A2 `passed`; B1 `not started`; C1 `not started`; D1 `not started`; E1 `not started`; V1 `not started`.
 - Milestone checkbox: `unchecked`.
 - Last completed phase and gate: Phase 2 artifact criterion passed on 2026-10-26. No implementation, review, or completion gate ran.
 
@@ -145,7 +145,7 @@ Boundary probes and outputs are in the implementation checklist. The current par
 
 - Limitations: `make help` is unavailable because no Makefile target exists. V1 review and completion gates remain outside this invocation.
 - Blockers: none at restart.
-- Next action: implement A2.
+- Next action: implement B1.
 
 ## Task A1 evidence
 
@@ -171,3 +171,27 @@ Boundary probes and outputs are in the implementation checklist. The current par
 ?? verify-incident-id.sh
 ```
 - Task A1 focused checks passed. The checkpoint renders its task checkbox after this record.
+
+## Task A2 evidence
+
+- Tier: standard. D9 assigns separate milestone review to excluded V1. No independent review ran.
+- Files and symbols: modified `cmd/bs/logs.go` (`logsSearchArgs`, `parseLogsSearchArgs`), `cmd/bs/logs_test.go`, `.mem/telemetry/logs.md`, and `changelog.d/008-telemetry-logs-search-004.md`.
+- Test names: added `TestParseLogsSearchArgsDefaults`, `TestParseLogsSearchArgsValues`, and `TestParseLogsSearchArgsRejectsValues`. A1 duplicate tests cover all four bounded flags before their repeated values are checked.
+- Red command: `go test -run 'TestParseLogsSearchArgs' ./cmd/bs` exited 1 with undefined order/limit/since/timeout fields and `FAIL ... [build failed]`.
+- Green command: the same focused test exited 0 and printed `ok github.com/jrswab/betterstack-cli/cmd/bs 0.008s`.
+- `gofmt -w cmd/bs/logs.go cmd/bs/logs_test.go`, `GOFLAGS=-o=/dev/null go build ./cmd/bs`, `go vet ./cmd/bs`, `gofmt -l cmd/bs/logs.go cmd/bs/logs_test.go`, `git diff --check`, and `git diff --cached --check` exited 0 without output.
+- Decision: reuse `validSourcePagination(value, false)` for positive ASCII digits, then parse the bounded limit after dropping leading zeros. This avoids new digit-validation code and preserves existing source behavior (ladder rung 2).
+- Skips: no helper anchor or TAGS change because no production boundary changed. README stays unchanged under R9. These scope exclusions use ladder rung 1.
+- Dependencies, scope deviations, and symptom patches: none.
+
+- Validated HEAD: `d9e5906e2cead8c78529b6ebfaca43b31ce4c058`. Relevant task work is committed. No stash ref applies.
+- `git status --porcelain` at the task gate:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+- Task A2 focused checks passed. The checkpoint renders its task checkbox after this record.
