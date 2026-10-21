@@ -9,6 +9,7 @@
 
 ## Telemetry
 
+- [Telemetry summary](telemetry/summary.md) describes active routes, separate REST and SQL contracts, help, and test safety.
 - [Sources](telemetry/sources.md) describes REST routing, credentials, pagination, opaque IDs, raw responses, and secret warnings.
 - [Log search](telemetry/logs.md) describes the active logs search route, exact help, argument validation, typed SQL parameters, time bounds, the optional cold union, and the separate SQL HTTP executor.
 
