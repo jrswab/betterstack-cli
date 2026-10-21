@@ -32,12 +32,12 @@
 ## State
 
 - Lane: `full` — D1 assigns the full lane because this milestone changes an external SQL HTTP contract and handles credentials.
-- Current phase: `Phase 3 — review gate 1 fixes complete, re-run pending`.
-- Current task: `review gate 1 re-run`.
-- Task states: Phase 1 and Phase 2 passed. Phase 3 tasks A1, A2, B1, B2, C1, C2, C3, D1, and E1 passed. Review gate 1 failed at `321630c`. F1–F4 fixes are committed. Review gate 1 re-run and Factory completion remain pending.
+- Current phase: `Phase 3 — review gate 1 re-run failed, F7 fix committed`.
+- Current task: `review gate 1 re-run 2`.
+- Task states: Phase 1 and Phase 2 passed. Phase 3 tasks A1, A2, B1, B2, C1, C2, C3, D1, and E1 passed. Review gate 1 re-run failed at `92df9c0`. F1–F4 are closed. The F7 fix is committed. Review gate 1 re-run 2 and Factory completion remain pending.
 - Milestone checkbox: `unchecked`.
-- Last completed execution gate: E1 verification passed. Review gate 1 failed, and its fixes passed local verification. The milestone remains unchecked.
-- Next action: `review gate 1 re-run`.
+- Last completed execution gate: E1 verification passed. Review gate 1 re-run failed with blocking F7. The F7 fix passed local verification. The milestone remains unchecked.
+- Next action: `review gate 1 re-run 2`.
 
 ## Restart validation
 
@@ -529,6 +529,75 @@ bcb94c4 005: A2 require separate SQL credentials
 - No push, external network, baseline change, repository binary, dependency, route activation, or help change occurred.
 - The checkpoint update uses a same-directory temporary file and `os.replace` for an atomic rename.
 - `git status --porcelain` after the fix commit:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+## Review gate 1 re-run
+
+- Result: **FAIL** at `92df9c015436c689bba681688e4073218f1df5f0` (`92df9c0`).
+- Findings F1–F4 are closed. New finding F7 is blocking. Findings F5 and F6 remain unchanged and non-blocking.
+- Fix commit: `bf28f1ee5f3597df9b7c82026ca221d2de6889cc` — `005: fix review finding F7`.
+- This record follows the supplied independent review result. The fixer did not conduct another independent review or mark the gate PASS.
+- Next action: `review gate 1 re-run 2`. V1, Factory completion, and milestone 006 remain pending. Milestone 005 remains unchecked.
+- Authorization covers local explicit-path commits on `master` for memory and this checkpoint only. No push, external network, or protected baseline change is authorized.
+
+### Re-run evidence and disposition
+
+| Finding | Disposition | Evidence |
+|---|---|---|
+| F1 — configured SQL endpoint | Closed | Mutations m26 (host replacement) and m27 (HTTP scheme) are killed. Configured-endpoint assertions reject both mutations. |
+| F2 — SQL request deadline | Closed | Mutations m15 (`time.Second`) and m20 (`timeout/2`) are killed. Deadline verification stays stable at `-count=50`, with `-race`, with `GOMAXPROCS=1`, and under eight parallel stress processes. |
+| F3 — credential and SQL memory | Closed | `.mem/uptime/testing.md` matches all six cleared variables, all six sentinels, and prepared SQL execution. |
+| F4 — Telemetry API token header leakage | Closed | Mutation m24 (an `X-Token` header containing the Telemetry API token) is killed. The test checks every request header value. |
+| F7 — unused SQL input claim | Blocking at the reviewed HEAD, fix committed | `.mem/uptime/summary.md:3` now describes prepared SQL execution without a CLI route. The sweep also corrects stale redaction wording in `.mem/uptime/requests.md:19`. |
+
+- Supplied review evidence: all five mutations m26, m27, m15, m20, and m24 are killed. Deadline checks pass at `-count=50`, with `-race`, with `GOMAXPROCS=1`, and under eight parallel stress processes.
+- Existing re-run logs: `/tmp/review-005-rerun/control-full.log` reports `ok github.com/jrswab/betterstack-cli/cmd/bs 2.123s`.
+- `/tmp/review-005-rerun/{m26,m27,m15,m20,m24}-full.log` records assertion failures for each mutation. Their corresponding `.diff` files describe each isolated mutation.
+- `/tmp/review-005-rerun/stress-exits` contains eight zero exit codes. All eight `stress-*.log` files report `PASS`.
+- The fixer inspected existing mutation and stress logs but did not repeat the mutation, race, or stress runs. The supplied review result remains FAIL until the next independent review.
+
+### Memory sweep and corrections
+
+- The fixer read all 11 files under `.mem/` and compared milestone 005 claims with current `cmd/bs/` code and tests.
+- The sweep covered `runWithEndpoints`, SQL endpoints and configuration, `redactSecrets`, credential-removal sentinels, the log search builder/executor, and README/TAGS references.
+- `.mem/uptime/summary.md:3` before: `The SQL input remains unused.`
+- `.mem/uptime/summary.md:3` after: `The SQL input supports [prepared SQL execution](../telemetry/logs.md) without a CLI route.`
+- `.mem/uptime/requests.md:19` before: ``No current response path calls this helper. Uptime local diagnostics continue using `redactToken`, and upstream bodies remain raw.``
+- `.mem/uptime/requests.md:19` after: ``Only non-2xx [SQL response bodies](../telemetry/logs.md) call this helper. Uptime local diagnostics continue using `redactToken`, and upstream Uptime and source bodies remain raw.``
+- Source evidence: `cmd/bs/main.go:37–40` forwards the optional prepared SQL request and SQL endpoint to `doLogsSQLRequest`. `cmd/bs/logs.go:83–87` preserves 2xx bytes and calls `redactSecrets` only after the success return.
+- Both new relative links resolve to `.mem/telemetry/logs.md`. No other milestone 005 claim in `.mem/` needs correction. README and TAGS still match the code.
+- No Go function, code, anchor, environment name, command route, or help text changed. The root cause is stale current-state memory, not a runtime defect.
+- Assumption: code defines current behavior. The supplied review result defines gate status. Historical spec and handoff wording remains historical context.
+- Decision: update the two stale sentences and qualify raw bodies as Uptime/source bodies. This preserves the helper documentation and avoids duplicate executor documentation.
+- Skips: code changes, F5/F6 changes, new memory topics, changelog/LOG changes, README/TAGS changes, and repeated independent review are unnecessary or outside scope (ladder rung 1).
+- Dependencies: none. The checkpoint uses standard-library `tempfile` and `os.replace` for a same-directory temporary file and atomic rename (ladder rung 2).
+- Symptom patches: none. Both corrections remove stale claims at their source.
+
+### F7 fix verification
+
+- Go checks use the approved local environment: `PATH=$HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64/bin:$PATH GOTOOLCHAIN=local GOPROXY=off`. This environment is not recorded in `.mem/`.
+- `go test -count=1 ./...`: exit 0, `ok github.com/jrswab/betterstack-cli/cmd/bs 2.619s`.
+- `git diff --check`: exit 0, no output.
+- `git diff --check 92df9c0..HEAD`: exit 0, no output after the fix commit.
+- `git diff --exit-code 92df9c0..HEAD -- cmd/`: exit 0, no output after the fix commit. All Go files remain unchanged.
+- `grep -rn "remains unused" .mem/`: exit 1, no output, as required for no matches.
+- `python3 /tmp/factory-005/check-records.py`: exit 0. All seven checks pass, including memory links, the 250-line limit, memory-map coverage, README configuration, and exact TAGS anchor indexing.
+- `/home/jaron/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master`: exit 0, 90 Markdown files, zero findings.
+- All 11 memory files remain within 250 lines. Touched files have 36 lines (`summary.md`) and 49 lines (`requests.md`).
+- `realpath .mem/uptime/../telemetry/logs.md`: exit 0, `/home/jaron/dev/betterstack-cli/master/.mem/telemetry/logs.md`.
+- `make help` and `make docs-check`: exit 2, no corresponding targets. The repository has no Makefile. Existing direct checks pass.
+- `.agents/scripts/script-triage.py` is absent. The normal pre-commit hook exits without triage.
+- Baseline fingerprint before editing and after the fix commit: `41306493735a9bfeeae10d179385968acfd8af3d46e7a2cd897893aba32209fe  -`, unchanged.
+- The prior Go vulnerability-scan limitation remains open. This task does not repeat that scan.
+- The checkpoint update uses a same-directory temporary file, flush/fsync, and `os.replace` for an atomic rename.
+- `git status --porcelain` after the fix commit contains only the five protected baseline paths:
 
 ```text
 ?? .agents/
