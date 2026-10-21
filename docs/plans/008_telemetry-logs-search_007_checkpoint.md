@@ -32,9 +32,9 @@
 
 - Lane: `full` — D1 assigns the full lane because milestone 007 affects repository-wide records.
 - Current phase: `execute`
-- Current task: Phase 3 entry: implement first task A1
+- Current task: A1
 - Task states — checklist checkboxes render from this list:
-- A1 align current memory behavior: `unchecked`
+- A1 align current memory behavior: `checked`
 - A2 index memory records: `unchecked`
 - B1 reconcile production anchor index: `unchecked`
 - B2 document command and configuration contract: `unchecked`
@@ -42,8 +42,8 @@
 - V1 verify records and Factory gate: `unchecked`
 - Milestone checkbox: `unchecked`
 - Next action: Phase 3: implement first task A1.
-- Next safe action: Phase 3: implement first task A1
-- Last completed phase/task/gate and timestamp: Phase 2 checklist planning review re-run 3 PASS (I18, I19 applied), 2026-10-21T20:21:46.349360+00:00
+- Next safe action: Implement A2
+- Last completed phase/task/gate and timestamp: A1 verification PASS, 2026-10-21T20:27:20.678568+00:00
 
 ## Gate evidence
 
@@ -952,6 +952,392 @@ a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
 ```
 
 - Next action: Phase 3: implement first task A1
+
+### A1 verification PASS
+
+- Gate: A1 verification PASS
+- Commands/results:
+A1 uses the mechanical tier. TDD and per-task review are skipped because this task changes records only.
+The Factory review gate follows A1–C1. Go verification belongs to V1 and is not executed here.
+
+Command: python3 /tmp/factory-007/restart.py A1
+stdout:
+```text
+PASS: restart A1, HEAD a450f7ab92b2c21dbff6132c3657d5a003ab2242, identity/artifacts/task states/next safe action match.
+Protected baseline fingerprint: a6747200c523c45aab759ca7b3e673f90828c888c3c8dbd0e1028bc4f14659a3  -
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: rg -n 'runWithAPI|runWithEndpoints|helpFor|usageError|resourceUsageError|knownAction|monitorsGet|monitorsList|doMonitorsRequest|incidentsGet|incidentsTimeline|incidentsList|sourcesList|sourcesGet|logsSearch|doLogsSQLRequest|parseTelemetrySQLURL|buildLogsSearchQuery' cmd/bs --glob '*.go'
+stdout:
+```text
+cmd/bs/main.go:17:	os.Exit(runWithAPI(os.Args[1:], os.Stdout, os.Stderr, defaultAPIBaseURL, newHTTPClient()))
+cmd/bs/main.go:23:	return runWithAPI(args, stdout, stderr, defaultAPIBaseURL, newHTTPClient())
+cmd/bs/main.go:26:// runWithAPI preserves the Uptime injection interface for production and tests.
+cmd/bs/main.go:30:func runWithAPI(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
+cmd/bs/main.go:31:	return runWithEndpoints(args, stdout, stderr, baseURL, defaultTelemetryRESTBaseURL, "", client)
+cmd/bs/main.go:34:// runWithEndpoints checks exact help before dispatching commands to distinct endpoints.
+cmd/bs/main.go:36:func runWithEndpoints(args []string, stdout, stderr io.Writer, uptimeBaseURL, telemetryRESTBaseURL, telemetrySQLURL string, client *http.Client) int {
+cmd/bs/main.go:37:	if help, ok := helpFor(args); ok {
+cmd/bs/main.go:42:		return monitorsList(args[2:], stdout, stderr, uptimeBaseURL, client)
+cmd/bs/main.go:45:		return monitorsGet(args[2:], stdout, stderr, uptimeBaseURL, client)
+cmd/bs/main.go:48:		return incidentsGet(args[2:], stdout, stderr, uptimeBaseURL, client)
+cmd/bs/main.go:51:		return incidentsTimeline(args[2:], stdout, stderr, uptimeBaseURL, client)
+cmd/bs/main.go:54:		return incidentsList(args[2:], stdout, stderr, uptimeBaseURL, client)
+cmd/bs/main.go:57:		return sourcesList(args[2:], stdout, stderr, telemetryRESTBaseURL, client)
+cmd/bs/main.go:60:		return sourcesGet(args[2:], stdout, stderr, telemetryRESTBaseURL, client)
+cmd/bs/main.go:63:		return logsSearch(args[2:], stdout, stderr, telemetrySQLURL, client)
+cmd/bs/main.go:65:	fmt.Fprint(stderr, usageError(args))
+cmd/bs/main.go:69:// helpFor returns the help text for exactly the recognized help argument
+cmd/bs/main.go:72:func helpFor(args []string) (string, bool) {
+cmd/bs/main.go:79:		return logsSearchHelp, true
+cmd/bs/main.go:83:		return sourcesListHelp, true
+cmd/bs/main.go:85:		return sourcesGetHelp, true
+cmd/bs/main.go:91:		return incidentsListHelp, true
+cmd/bs/main.go:93:		return incidentsGetHelp, true
+cmd/bs/main.go:95:		return incidentsTimelineHelp, true
+cmd/bs/main.go:97:		return monitorsListHelp, true
+cmd/bs/main.go:99:		return monitorsGetHelp, true
+cmd/bs/main.go:104:// usageError builds the single readable error for an invalid argument vector.
+cmd/bs/main.go:106:func usageError(args []string) string {
+cmd/bs/main.go:117:		return resourceUsageError(args[0], args[1:])
+cmd/bs/main.go:126:// resourceUsageError handles the invalid vectors whose first token is a known
+cmd/bs/main.go:128:func resourceUsageError(resource string, rest []string) string {
+cmd/bs/main.go:136:	if !knownAction(resource, action) {
+cmd/bs/main.go:177:func knownAction(resource, action string) bool {
+cmd/bs/logs.go:25:// logsSearch validates search flags and sends the built query to the SQL request executor.
+cmd/bs/logs.go:27:func logsSearch(args []string, stdout, stderr io.Writer, telemetrySQLURL string, client *http.Client) int {
+cmd/bs/logs.go:28:	sql, params, err := buildLogsSearchQuery(args, time.Now())
+cmd/bs/logs.go:34:	return doLogsSQLRequest(sql, params, parsed.timeout, stdout, stderr, telemetrySQLURL, client)
+cmd/bs/logs.go:37:// doLogsSQLRequest sends SQL with separate Basic credentials and safe local diagnostics.
+cmd/bs/logs.go:39:func doLogsSQLRequest(sql string, params url.Values, timeout time.Duration, stdout, stderr io.Writer, telemetrySQLURL string, client *http.Client) int {
+cmd/bs/logs.go:53:	endpoint, err := parseTelemetrySQLURL(values[0])
+cmd/bs/logs.go:98:type logsSearchArgs struct {
+cmd/bs/logs.go:109:func parseTelemetrySQLURL(value string) (*url.URL, error) {
+cmd/bs/logs.go:159:func buildLogsSearchQuery(args []string, now time.Time) (string, url.Values, error) {
+cmd/bs/logs.go:209:func parseLogsSearchArgs(args []string) (logsSearchArgs, error) {
+cmd/bs/logs.go:210:	parsed := logsSearchArgs{values: make(map[string]string), order: "desc", limit: 100, since: time.Hour, timeout: defaultTimeout}
+cmd/bs/logs.go:218:				return logsSearchArgs{}, fmt.Errorf("duplicate %s", flag)
+cmd/bs/logs.go:221:				return logsSearchArgs{}, fmt.Errorf("%s needs a value", flag)
+cmd/bs/logs.go:227:				return logsSearchArgs{}, fmt.Errorf("unknown option %q", flag)
+cmd/bs/logs.go:229:			return logsSearchArgs{}, fmt.Errorf("unexpected argument %q", flag)
+cmd/bs/logs.go:234:		return logsSearchArgs{}, fmt.Errorf("invalid or missing --table value %q", parsed.table)
+cmd/bs/logs.go:238:			return logsSearchArgs{}, fmt.Errorf("invalid --query value: control characters are not allowed")
+cmd/bs/logs.go:244:			return logsSearchArgs{}, fmt.Errorf("invalid --order value %q", value)
+cmd/bs/logs.go:250:			return logsSearchArgs{}, fmt.Errorf("invalid --limit value %q", value)
+cmd/bs/logs.go:254:			return logsSearchArgs{}, fmt.Errorf("invalid --limit value %q", value)
+cmd/bs/logs.go:262:				return logsSearchArgs{}, fmt.Errorf("invalid %s value %q", flag, value)
+cmd/bs/help.go:29:const logsSearchHelp = `bs logs search - search Telemetry logs
+cmd/bs/help.go:80:const sourcesListHelp = `bs sources list - list Telemetry sources
+cmd/bs/help.go:100:const sourcesGetHelp = `bs sources get - get one Telemetry source
+cmd/bs/help.go:144:const incidentsListHelp = `bs incidents list - list incidents
+cmd/bs/help.go:172:const incidentsGetHelp = `bs incidents get - get one incident
+cmd/bs/help.go:189:const incidentsTimelineHelp = `bs incidents timeline - get one incident's timeline
+cmd/bs/help.go:206:const monitorsListHelp = `bs monitors list - list monitors
+cmd/bs/help.go:227:const monitorsGetHelp = `bs monitors get - get one monitor
+cmd/bs/sources_test.go:51:				code := runWithEndpoints(args, &out, &err, target.URL+"/uptime", srv.URL, target.URL+"/sql", testHTTPClient())
+cmd/bs/sources_test.go:87:				code := runWithEndpoints(args, &out, &err, srv.URL, srv.URL, srv.URL, testHTTPClient())
+cmd/bs/sources_test.go:189:			code, out, err := invokeSources(sourcesList, srv.URL+"/", tc.args...)
+cmd/bs/sources_test.go:206:				code, out, err := invokeSources(sourcesList, srv.URL, args...)
+cmd/bs/sources_test.go:288:			code, out, err := invokeSources(sourcesGet, srv.URL+"/", "--timeout", "1s", tc.id, "--timeout", "2s")
+cmd/bs/sources_test.go:305:				code, out, err := invokeSources(sourcesGet, srv.URL, args...)
+cmd/bs/sources_test.go:331:		code, out, err := invokeSources(sourcesGet, srv.URL, "opaque")
+cmd/bs/sources_test.go:355:		code, out, err := invokeSources(sourcesList, srv.URL)
+cmd/bs/incidents_test.go:168:	code = incidentsGet(args, &out, &err, baseURL, client)
+cmd/bs/incidents_test.go:604:// requests through the shared resourceUsageError branch.
+cmd/bs/incidents_test.go:642:// unchanged incidentsGetHelp text exits 0 with empty stderr and no request.
+cmd/bs/incidents_test.go:657:	if stdout != incidentsGetHelp {
+cmd/bs/incidents_test.go:658:		t.Errorf("stdout = %q, want incidentsGetHelp", stdout)
+cmd/bs/incidents_test.go:912:	code = incidentsTimeline(args, &out, &err, baseURL, client)
+cmd/bs/incidents_test.go:1396:// unchanged incidentsTimelineHelp text exits 0 with empty stderr and no
+cmd/bs/incidents_test.go:1412:	if stdout != incidentsTimelineHelp {
+cmd/bs/incidents_test.go:1413:		t.Errorf("stdout = %q, want incidentsTimelineHelp", stdout)
+cmd/bs/incidents_test.go:1671:		want incidentsListArgs
+cmd/bs/incidents_test.go:1673:		{"no flags", nil, incidentsListArgs{timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1674:		{"page alone", []string{"--page", "2"}, incidentsListArgs{pages: []string{"2"}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1675:		{"per-page alone", []string{"--per-page", "50"}, incidentsListArgs{perPages: []string{"50"}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1676:		{"from alone", []string{"--from", "2024-01-01"}, incidentsListArgs{froms: []string{"2024-01-01"}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1677:		{"to alone", []string{"--to", "2024-02-01"}, incidentsListArgs{tos: []string{"2024-02-01"}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1678:		{"monitor-id alone", []string{"--monitor-id", "123"}, incidentsListArgs{monitorIDs: []string{"123"}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1679:		{"heartbeat-id alone", []string{"--heartbeat-id", "456"}, incidentsListArgs{heartbeatIDs: []string{"456"}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1680:		{"team-name alone", []string{"--team-name", "Acme"}, incidentsListArgs{teamNames: []string{"Acme"}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1681:		{"team-name empty value", []string{"--team-name", ""}, incidentsListArgs{teamNames: []string{""}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1682:		{"resolved space true", []string{"--resolved", "true"}, incidentsListArgs{resolveds: []string{"true"}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1683:		{"resolved space false", []string{"--resolved", "false"}, incidentsListArgs{resolveds: []string{"false"}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1684:		{"resolved equals true", []string{"--resolved=true"}, incidentsListArgs{resolveds: []string{"true"}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1685:		{"resolved equals false", []string{"--resolved=false"}, incidentsListArgs{resolveds: []string{"false"}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1686:		{"acknowledged space true", []string{"--acknowledged", "true"}, incidentsListArgs{acknowledgeds: []string{"true"}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1687:		{"acknowledged equals false", []string{"--acknowledged=false"}, incidentsListArgs{acknowledgeds: []string{"false"}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1688:		{"metadata simple", []string{"--metadata", "Origin=Linear"}, incidentsListArgs{metadatas: []metadataPair{{key: "Origin", value: "Linear"}}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1689:		{"metadata empty value", []string{"--metadata", "Empty="}, incidentsListArgs{metadatas: []metadataPair{{key: "Empty", value: ""}}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1690:		{"metadata value keeps later equals", []string{"--metadata", "Eq=a=b=c"}, incidentsListArgs{metadatas: []metadataPair{{key: "Eq", value: "a=b=c"}}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1691:		{"timeout override", []string{"--timeout", "45s"}, incidentsListArgs{timeout: 45 * time.Second}},
+cmd/bs/incidents_test.go:1695:			incidentsListArgs{
+cmd/bs/incidents_test.go:1705:		{"repeated page preserves order", []string{"--page", "1", "--page", "2"}, incidentsListArgs{pages: []string{"1", "2"}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1706:		{"repeated resolved preserves order", []string{"--resolved", "true", "--resolved=false"}, incidentsListArgs{resolveds: []string{"true", "false"}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1707:		{"different metadata keys", []string{"--metadata", "Origin=Linear", "--metadata", "Service=api"}, incidentsListArgs{metadatas: []metadataPair{{key: "Origin", value: "Linear"}, {key: "Service", value: "api"}}, timeout: defaultTimeout}},
+cmd/bs/incidents_test.go:1803:	code = incidentsList(args, &out, &err, baseURL, client)
+cmd/bs/incidents_test.go:2499:// unchanged incidentsListHelp text exits 0 with empty stderr and no request.
+cmd/bs/incidents_test.go:2514:	if stdout != incidentsListHelp {
+cmd/bs/incidents_test.go:2515:		t.Errorf("stdout = %q, want incidentsListHelp", stdout)
+cmd/bs/sources.go:17:// sourcesList sends one Telemetry source-list GET through the shared request path.
+cmd/bs/sources.go:19:func sourcesList(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
+cmd/bs/sources.go:34:	return doMonitorsRequest(endpoint, token, parsed.timeout, stdout, stderr, client)
+cmd/bs/sources.go:37:// sourcesGet sends one Telemetry source GET with an opaque escaped target.
+cmd/bs/sources.go:39:func sourcesGet(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
+cmd/bs/sources.go:51:	return doMonitorsRequest(endpoint, token, timeout, stdout, stderr, client)
+cmd/bs/sources.go:86:type sourcesListArgs struct {
+cmd/bs/sources.go:92:func parseSourcesListArgs(args []string) (sourcesListArgs, error) {
+cmd/bs/sources.go:93:	parsed := sourcesListArgs{timeout: defaultTimeout}
+cmd/bs/sources.go:99:				return sourcesListArgs{}, fmt.Errorf("%s needs a value", flag)
+cmd/bs/sources.go:106:					return sourcesListArgs{}, fmt.Errorf("invalid --timeout value %q", value)
+cmd/bs/sources.go:112:				return sourcesListArgs{}, fmt.Errorf("invalid %s value %q", flag, value)
+cmd/bs/sources.go:121:				return sourcesListArgs{}, fmt.Errorf("unknown option %q", flag)
+cmd/bs/sources.go:123:			return sourcesListArgs{}, fmt.Errorf("unexpected argument %q", flag)
+cmd/bs/sources.go:142:func (a sourcesListArgs) query() url.Values {
+cmd/bs/monitors_test.go:25:	code = runWithAPI(args, &out, &err, baseURL, client)
+cmd/bs/monitors_test.go:574:		want := monitorsListArgs{timeout: defaultTimeout}
+cmd/bs/monitors_test.go:584:			want monitorsListArgs
+cmd/bs/monitors_test.go:586:			{"page", []string{"--page", "2"}, monitorsListArgs{pages: []string{"2"}, timeout: defaultTimeout}},
+cmd/bs/monitors_test.go:587:			{"per-page", []string{"--per-page", "50"}, monitorsListArgs{perPages: []string{"50"}, timeout: defaultTimeout}},
+cmd/bs/monitors_test.go:588:			{"url", []string{"--url", "https://example.com/x"}, monitorsListArgs{urls: []string{"https://example.com/x"}, timeout: defaultTimeout}},
+cmd/bs/monitors_test.go:589:			{"pronounceable-name", []string{"--pronounceable-name", "Example Monitor"}, monitorsListArgs{pronounceableNames: []string{"Example Monitor"}, timeout: defaultTimeout}},
+cmd/bs/monitors_test.go:590:			{"team-name", []string{"--team-name", "Acme"}, monitorsListArgs{teamNames: []string{"Acme"}, timeout: defaultTimeout}},
+cmd/bs/monitors_test.go:591:			{"timeout", []string{"--timeout", "5s"}, monitorsListArgs{timeout: 5 * time.Second}},
+cmd/bs/monitors_test.go:619:		want := monitorsListArgs{
+cmd/bs/monitors_test.go:637:		want := monitorsListArgs{
+cmd/bs/monitors_test.go:652:		want := monitorsListArgs{urls: []string{""}, timeout: defaultTimeout}
+cmd/bs/monitors_test.go:687:// invokeMonitorsList calls monitorsList directly through the same writer
+cmd/bs/monitors_test.go:692:	code = monitorsList(args, &out, &err, baseURL, client)
+cmd/bs/monitors_test.go:1020:// TestMonitorsListRouting covers B2 (spec R1.1, R8.1): `runWithAPI` routes the
+cmd/bs/monitors_test.go:1284:// monitorsListHelp text exits 0 with empty stderr and zero requests.
+cmd/bs/monitors_test.go:1302:	if stdout != monitorsListHelp {
+cmd/bs/monitors_test.go:1303:		t.Errorf("stdout = %q, want monitorsListHelp", stdout)
+cmd/bs/main_test.go:56:			code := runWithAPI(tc.args, &out, &err, uptimeBaseURL, client)
+cmd/bs/main_test.go:74:	var route func([]string, io.Writer, io.Writer, string, *http.Client) int = runWithAPI
+cmd/bs/main_test.go:113:			code := runWithEndpoints(tc.args, &out, &err, srv.URL+"/uptime", srv.URL+"/rest", srv.URL+"/sql", testHTTPClient())
+cmd/bs/main_test.go:170:					code := runWithEndpoints(tc.args, &out, &err, "http://127.0.0.1/uptime", "http://127.0.0.1/rest", "http://127.0.0.1/sql", &http.Client{Transport: transport})
+cmd/bs/main_test.go:193:			if _, ok := helpFor(args); ok {
+cmd/bs/main_test.go:198:			code := runWithEndpoints(args, &out, &err, "http://127.0.0.1/uptime", "http://127.0.0.1/rest", "http://127.0.0.1/sql", &http.Client{Transport: transport})
+cmd/bs/main_test.go:239:					code := runWithEndpoints(tc.args, &out, &err, "http://127.0.0.1/uptime", "http://127.0.0.1/rest", "http://127.0.0.1/sql", &http.Client{Transport: transport})
+cmd/bs/main_test.go:265:			code := runWithEndpoints(args, &out, &err, srv.URL, srv.URL, srv.URL, testHTTPClient())
+cmd/bs/main_test.go:284:		code := runWithEndpoints(args, &out, &err, srv.URL, srv.URL, srv.URL, testHTTPClient())
+cmd/bs/main_test.go:331:			code := runWithEndpoints(tc.args, &out, &err, uptime.URL, rest.URL, sql.URL, testHTTPClient())
+cmd/bs/main_test.go:377:			code := runWithEndpoints(tc.args, &out, &err, uptime.URL, rest.URL, sql.URL+"/query", testHTTPClient())
+cmd/bs/main_test.go:414:			code := runWithEndpoints(tc.args, &out, &err, srv.URL+"/uptime", srv.URL+"/rest", srv.URL+"/sql", testHTTPClient())
+cmd/bs/safety_test.go:16://     which includes newHTTPClient() and run/runWithAPI, plus the
+cmd/bs/logs_test.go:29:	sql, params, err := buildLogsSearchQuery([]string{"--table", "t1_fake", "--query", "fake & 'text'"}, time.Unix(3600, 0))
+cmd/bs/logs_test.go:44:			code := doLogsSQLRequest(sql, params, time.Second, &out, &diagnostic, "", client)
+cmd/bs/logs_test.go:89:	sql, params, err := buildLogsSearchQuery(args, time.Unix(3600, 0))
+cmd/bs/logs_test.go:98:	code := runWithEndpoints(append([]string{"logs", "search"}, args...), &out, &diagnostic, uptime.URL, rest.URL, sqlServer.URL+"/", client)
+cmd/bs/logs_test.go:134:			code := runWithEndpoints([]string{"logs", "search", "--table", "t1_fake"}, &out, &err, srv.URL, srv.URL, srv.URL, testHTTPClient())
+cmd/bs/logs_test.go:161:			code := runWithEndpoints(args, &out, &err, "http://127.0.0.1/uptime", "http://127.0.0.1/rest", "http://127.0.0.1/sql", &http.Client{Transport: transport})
+cmd/bs/logs_test.go:220:			code := doLogsSQLRequest("SELECT 1", nil, timeout, &out, &err, endpoint, client)
+cmd/bs/logs_test.go:250:			code := doLogsSQLRequest("SELECT dt, raw FROM remote(t1_fake_logs)", nil, time.Second, &out, &err, srv.URL, testHTTPClient())
+cmd/bs/logs_test.go:277:				code := runWithEndpoints(args, &out, &err, srv.URL, srv.URL, srv.URL, testHTTPClient())
+cmd/bs/logs_test.go:310:				code := doLogsSQLRequest("SELECT 1", nil, time.Second, &out, &err, srv.URL, testHTTPClient())
+cmd/bs/logs_test.go:351:			code := doLogsSQLRequest("SELECT 1", nil, time.Second, &out, &err, srv.URL, client)
+cmd/bs/logs_test.go:389:				code := doLogsSQLRequest("SELECT 1", nil, time.Second, &out, &err, srv.URL, testHTTPClient())
+cmd/bs/logs_test.go:401:		if code := doLogsSQLRequest("SELECT 1", nil, time.Second, &out, &err, srv.URL, testHTTPClient()); code != 1 || out.Len() != 0 || requests.Load() != 0 {
+cmd/bs/logs_test.go:409:		if code := doLogsSQLRequest("SELECT 1", nil, time.Second, &out, &err, srv.URL, testHTTPClient()); code != 1 || out.Len() != 0 || err.String() != "bs: invalid BETTERSTACK_TELEMETRY_SQL_URL\n" || requests.Load() != 0 {
+cmd/bs/logs_test.go:416:		if code := doLogsSQLRequest("SELECT 1", nil, time.Second, &out, &err, srv.URL, testHTTPClient()); code != 0 || out.String() != "ok" || err.Len() != 0 || requests.Load() != 1 {
+cmd/bs/logs_test.go:437:			endpoint, err := parseTelemetrySQLURL(tc.input)
+cmd/bs/logs_test.go:455:			endpoint, err := parseTelemetrySQLURL(input)
+cmd/bs/logs_test.go:555:			sql, params, err := buildLogsSearchQuery(append([]string{"--table", "t1_fake"}, tc.args...), time.Unix(3600, 0))
+cmd/bs/logs_test.go:570:			sql, params, err := buildLogsSearchQuery([]string{"--table", "t1_fake", "--query", text}, time.Unix(3600, 0))
+cmd/bs/logs_test.go:588:		sql, params, err := buildLogsSearchQuery([]string{"--table", "t1_fake", "--query", text}, time.Unix(3600, 0))
+cmd/bs/logs_test.go:601:		sql, _, err := buildLogsSearchQuery([]string{"--table", "t1_fake", "--timeout", tc.value}, time.Unix(3600, 0))
+cmd/bs/logs_test.go:611:		sql, params, err := buildLogsSearchQuery(args, time.Unix(3600, 0))
+cmd/bs/logs_test.go:639:			sql, params, err := buildLogsSearchQuery(append([]string{"--table", "t1_fake"}, tc.args...), time.Unix(7200, 123456789))
+cmd/bs/logs_test.go:655:	sql, params, err := buildLogsSearchQuery([]string{"--table", "t1_fake", "--to", "1970-01-01T01:59:00Z"}, time.Unix(7200, 123456789))
+cmd/bs/logs_test.go:677:		sql, params, err := buildLogsSearchQuery(append([]string{"--table", "t1_fake"}, tc.args...), time.Unix(7200, 123456789))
+cmd/bs/logs_test.go:695:			sql, params, err := buildLogsSearchQuery(args, time.Unix(3600, 0))
+cmd/bs/logs_test.go:714:	sql, params, err := buildLogsSearchQuery([]string{"--table", "t1_fake", "--cold"}, time.Unix(3600, 0))
+cmd/bs/incidents.go:47:// incidentsGet implements `bs incidents get <id-or-url> [--timeout <d>]`:
+cmd/bs/incidents.go:51:func incidentsGet(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
+cmd/bs/incidents.go:74:	return doMonitorsRequest(endpoint, token, timeout, stdout, stderr, client)
+cmd/bs/incidents.go:77:// incidentsTimeline implements `bs incidents timeline <id-or-url> [--timeout
+cmd/bs/incidents.go:83:func incidentsTimeline(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
+cmd/bs/incidents.go:106:	return doMonitorsRequest(endpoint, token, timeout, stdout, stderr, client)
+cmd/bs/incidents.go:187:// incidentsListArgs holds one parsed `bs incidents list` invocation. A nil
+cmd/bs/incidents.go:191:type incidentsListArgs struct {
+cmd/bs/incidents.go:220:func parseIncidentsListArgs(args []string) (incidentsListArgs, error) {
+cmd/bs/incidents.go:221:	parsed := incidentsListArgs{timeout: defaultTimeout}
+cmd/bs/incidents.go:227:				return incidentsListArgs{}, fmt.Errorf("%s needs a value", flag)
+cmd/bs/incidents.go:249:					return incidentsListArgs{}, fmt.Errorf("invalid --timeout value %q", value)
+cmd/bs/incidents.go:255:				return incidentsListArgs{}, fmt.Errorf("%s needs a value", flag)
+cmd/bs/incidents.go:260:				return incidentsListArgs{}, fmt.Errorf("invalid %s value %q; want true or false", flag, value)
+cmd/bs/incidents.go:270:				return incidentsListArgs{}, fmt.Errorf("invalid --resolved value %q; want true or false", value)
+cmd/bs/incidents.go:276:				return incidentsListArgs{}, fmt.Errorf("invalid --acknowledged value %q; want true or false", value)
+cmd/bs/incidents.go:281:				return incidentsListArgs{}, errors.New("--metadata needs a value")
+cmd/bs/incidents.go:286:				return incidentsListArgs{}, err
+cmd/bs/incidents.go:290:			return incidentsListArgs{}, fmt.Errorf("unknown option %q", flag)
+cmd/bs/incidents.go:292:			return incidentsListArgs{}, fmt.Errorf("unexpected argument %q", flag)
+cmd/bs/incidents.go:327:// incidentsList implements `bs incidents list [flags]`: argument validation and
+cmd/bs/incidents.go:333:func incidentsList(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
+cmd/bs/incidents.go:357:	return doMonitorsRequest(endpoint, token, parsed.timeout, stdout, stderr, client)
+cmd/bs/incidents.go:364:func (a incidentsListArgs) query() url.Values {
+cmd/bs/monitors.go:26:// monitorsGet implements `bs monitors get <id> [--timeout <duration>]`:
+cmd/bs/monitors.go:30:func monitorsGet(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
+cmd/bs/monitors.go:48:	return doMonitorsRequest(endpoint, token, timeout, stdout, stderr, client)
+cmd/bs/monitors.go:51:// monitorsList implements `bs monitors list [flags]`: exactly one
+cmd/bs/monitors.go:56:func monitorsList(args []string, stdout, stderr io.Writer, baseURL string, client *http.Client) int {
+cmd/bs/monitors.go:74:	return doMonitorsRequest(endpoint, token, parsed.timeout, stdout, stderr, client)
+cmd/bs/monitors.go:77:// doMonitorsRequest performs exactly one bearer-authenticated GET and applies
+cmd/bs/monitors.go:82:func doMonitorsRequest(endpoint, token string, timeout time.Duration, stdout, stderr io.Writer, client *http.Client) int {
+cmd/bs/monitors.go:160:// monitorsListArgs holds one parsed `bs monitors list` invocation. A nil
+cmd/bs/monitors.go:164:type monitorsListArgs struct {
+cmd/bs/monitors.go:177:func parseMonitorsListArgs(args []string) (monitorsListArgs, error) {
+cmd/bs/monitors.go:178:	parsed := monitorsListArgs{timeout: defaultTimeout}
+cmd/bs/monitors.go:184:				return monitorsListArgs{}, fmt.Errorf("%s needs a value", flag)
+cmd/bs/monitors.go:202:					return monitorsListArgs{}, fmt.Errorf("invalid --timeout value %q", value)
+cmd/bs/monitors.go:207:			return monitorsListArgs{}, fmt.Errorf("unknown option %q", flag)
+cmd/bs/monitors.go:209:			return monitorsListArgs{}, fmt.Errorf("unexpected argument %q", flag)
+cmd/bs/monitors.go:218:func (a monitorsListArgs) query() url.Values {
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: find .mem -name '*.md' ! -path '.mem/tmp/*' -exec wc -l {} +
+stdout:
+```text
+   26 .mem/practices.md
+    3 .mem/summary.md
+   50 .mem/telemetry/sources.md
+   66 .mem/telemetry/summary.md
+  101 .mem/telemetry/logs.md
+   22 .mem/mem-map.md
+   26 .mem/terminology.md
+   49 .mem/uptime/requests.md
+   53 .mem/uptime/commands.md
+   39 .mem/uptime/incidents.md
+   48 .mem/uptime/summary.md
+   41 .mem/uptime/testing.md
+  524 total
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: rg -n 'GOTOOLCHAIN|toolchain@|go1\.26' .mem
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 1 (expected 1)
+
+Command: ~/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master
+stdout:
+```text
+PASS: /home/jaron/dev/betterstack-cli/master: 98 Markdown files, 0 findings
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: git diff --check
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Command: test ! -e .agents/scripts/script-triage.py
+stdout:
+```text
+
+```
+stderr:
+```text
+
+```
+exit: 0 (expected 0)
+
+Files changed: .mem/telemetry/summary.md (new), .mem/summary.md (Telemetry link), .mem/mem-map.md (Telemetry summary entry). No Go symbol changed.
+Source review: main.go:13-103,106-190 verifies routing/help/usage. monitors.go:15-236 and incidents.go:16-397 verify Uptime parsing, targets, credentials, query translation, and raw responses. sources.go:14-151 verifies Telemetry REST parsing/auth. logs.go:18-272 and telemetry.go:13-33 verify SQL parsing/auth/redaction. main_test.go:26-421, sources_test.go:16-363, logs_test.go:25-781, safety_test.go:1-419, telemetry_test.go:10-123, monitors_test.go:568-685,1114-1170, and incidents_test.go:21-160,1667-1806,1946-2126 support documented behavior/test safety.
+Assumption: the current authorization supersedes planning-only commit restrictions. Only A1–C1 execute. V1 and the milestone checkbox remain unchecked.
+Ladder rung 1: existing Uptime/source/log records and terminology match the code, so they need no edits. No dependencies were added. The new summary reuses existing domain terms and links to detailed contracts rather than duplicating all flags.
+No symptom patch or new provenance rationale exists. LOG.md and log.d/ remain unchanged.
+make docs-check is unavailable because the repository has no Makefile. docs-lint is the configured replacement. make help exited 2 with "No rule to make target 'help'. Stop."
+Temporary verification scripts stay under /tmp/factory-007 as authorized, not the protected .agents/ tree.
+- HEAD commit SHA: `f50047ecfdfc962a101878fc086a255b5bccab9e`
+- Relevant work: `committed` — stash ref `none` (tracked files only; never applied)
+- `git status --porcelain` (before checkpoint/checkbox writes):
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Untracked file Git objects (stored with hash-object -w, never applied):
+
+```text
+e69de29bb2d1d6434b8b29ae775ad8c2e48c5391  ".agents/scripts/.gitkeep"
+2268d6d1b4dd6b23950ea8bcbce44e2cc4fd02a5  ".agents/scripts/telemetry-live-probe.sh"
+c3626f955decd6b7ffa341c26703f857462954b5  ".agents/skills/changelog/SKILL.md"
+656c156bf90f78f9ac3a85412fe9e91145a5bebb  ".agents/skills/mem/SKILL.md"
+44304443f37776ec688c34be9840378e243c6f2f  ".agents/skills/pr/SKILL.md"
+f788b79f289c9adfcdbb156d309261b925c403ba  ".agents/skills/provenance-log/SKILL.md"
+704342b5c4c16287177f2da9f4b656aa526fba5b  ".agents/skills/release/SKILL.md"
+e5ecdd11f8df24415ebff5fdf63f6113213bf7ec  ".wayfinder/MAP.md"
+d2521bd5eae2907dbcfadafe090456e6781b6e41  ".wayfinder/README.md"
+54113199fec1e082615bbf1bf5691e42201085b9  ".wayfinder/assets/01-api-contract-research.md"
+623ab01ed0b0385ce5fedd654d847a02d9c52fdb  ".wayfinder/assets/02-incident-url-identity-research.md"
+c4c4fe4107105fd614a8f3a94b46812cb06b3960  ".wayfinder/assets/06-go-toolchain-research.md"
+c6158f0916332d3e3a80e61a67a8ecc2de8a5b32  ".wayfinder/telemetry/MAP.md"
+f4e847e79b9fb7619c846148a592d14b88a367c7  ".wayfinder/telemetry/assets/03-sources-api-contract-research.md"
+247ee7bc692682bc7b1a32fb05f315fa938f36f6  ".wayfinder/telemetry/assets/04-sql-api-contract-research.md"
+0a18fb73e0093239f584809f479b542e99fc7f76  ".wayfinder/telemetry/assets/05-live-verification-results.md"
+5ebc264f975b3e46e337f17435443bc29535825e  ".wayfinder/telemetry/assets/06-cold-storage-timeout-research.md"
+2b71e98af8af64a9cd36bd3d5bd5e6e9b5cf818b  ".wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md"
+b7482d50e399cdae487b573ae35176f069362341  ".wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md"
+572c8f131bb6a497254d5a63b1bd30f2ce28502f  ".wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md"
+77b5c75dbaac7620d469a638c8d77335c6624e04  ".wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md"
+1323bb7b057a980e8b536c7162cccd9b7b26cc71  ".wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md"
+66a7fd3e74798761babbcd7fbec61d0aac59b704  ".wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md"
+cde68ecfe35ee426d1bcc07e817d52eced3d06b1  ".wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md"
+e180004c8a35821bec3e2cb2feab300f3046f71e  ".wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md"
+bf05f4602afcf7692f7dd66ed6af5a85be9566f1  ".wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md"
+9d010dd4260be2a86b212eeb6d11637bc1b22dbb  ".wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md"
+9677e361c7ff035c55b374943bad13b068a39a16  ".wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md"
+13a7970f556e13dad98340b3b700fd98da438aaa  ".wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md"
+5ad4771181950a65021b600d0765b6f79ad59dd5  ".wayfinder/tickets/02-incident-url-identity-resolution.md"
+53f3d379ecaf4eefb35f44de0596dcd8db5c76c1  ".wayfinder/tickets/03-command-naming-and-argument-conventions.md"
+1a67e294757e2a2558ec29f2247cc4fe6d1cb1b6  ".wayfinder/tickets/04-pagination-and-json-envelope.md"
+0a2031f1210b6008a0da9a8f7d217ecf1233f4bf  ".wayfinder/tickets/05-errors-timeouts-retries-token-safety.md"
+dc414d2e4181c232972f98528077e0e0650c47ec  ".wayfinder/tickets/06-installation-distribution-acceptance.md"
+aca24cb6a5e5e366b6216d692a002839547a1ef3  "AGENTS.md"
+d25d1c789e303a87fed9534f135c441b5cf4c9f5  "docs/plans/008_telemetry-logs-search_milestones.md"
+a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
+```
+
+- Next action: Implement A2
 
 ## Restart validation of milestone 006
 
