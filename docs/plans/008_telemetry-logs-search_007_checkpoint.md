@@ -32,7 +32,7 @@
 
 - Lane: `full` — D1 assigns the full lane because milestone 007 affects repository-wide records.
 - Current phase: `execute`
-- Current task: C1
+- Current task: Review gate 1 findings F1–F4
 - Task states — checklist checkboxes render from this list:
 - A1 align current memory behavior: `checked`
 - A2 index memory records: `checked`
@@ -41,9 +41,9 @@
 - C1 add repository-record changelog: `checked`
 - V1 verify records and Factory gate: `unchecked`
 - Milestone checkbox: `unchecked`
-- Next action: Phase 3: implement first task A1.
-- Next safe action: Review gate 1 for 007 (A1–C1), then V1
-- Last completed phase/task/gate and timestamp: C1 verification PASS, 2026-10-21T20:31:32.540871+00:00
+- Next action: Review gate 1 re-run for 007
+- Next safe action: Review gate 1 re-run for 007
+- Last completed phase/task/gate and timestamp: Review gate 1 FAIL at b15349b (F1 blocking); fixes committed, 2026-10-21T20:43:55.605522+00:00
 
 ## Gate evidence
 
@@ -2093,6 +2093,136 @@ a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
 ```
 
 - Next action: Review gate 1 for 007 (A1–C1), then V1
+
+### Review gate 1 FAIL at b15349b (F1 blocking); fixes committed
+
+- Gate: Review gate 1 FAIL at b15349b (F1 blocking); fixes committed
+- Commands/results:
+Review gate 1 failed at b15349b. F1 was blocking. This entry records the fixes, not a passing review.
+
+Reviewer findings and fixes:
+- F1: The terminology defined the whole bs command package as Uptime-only. It also described shared uptime anchors as Uptime-only. `.mem/terminology.md:3-5` now separates bs from the five Uptime CLI commands and the Uptime surface. It records that the unchanged `uptime:router` anchors route all eight commands. It also records that the unchanged `uptime:request-executor` anchor serves sourcesList and sourcesGet. Code evidence: `cmd/bs/main.go:1,29-67`, `cmd/bs/monitors.go:81-118`, and `cmd/bs/sources.go:34,51`.
+- F2: The Telemetry API token entry used contradictory source-only wording. `.mem/terminology.md:17` now says it authenticates source commands and log search uses it only to redact SQL error output. Code evidence: `cmd/bs/sources.go:19-52` and `cmd/bs/logs.go:92`.
+- F3: Telemetry summary citations had incorrect line ranges. `.mem/telemetry/summary.md:7,18,22,28,31,43,64` now uses verified code boundaries. The requested ranges are helpFor `cmd/bs/main.go:72-102`, knownAction `cmd/bs/main.go:177-188`, and TestBuildLogsSearchQueryHot `cmd/bs/logs_test.go:544-564`. I read every cited code region. I also corrected usage diagnostics, the shared request executor and redaction helper, source help, logsSearch, the builder, the SQL URL parser, timeout parsing, the recording transport, and the SQL routing test ranges.
+- F4: README included fragile line-number citations and a duplicate SQL executor link. `README.md:58-59` preserves the exact token sentence, retains both source-file links, and removes the citations and duplicate link.
+
+Changes committed: 6697c89bc3786da96c8fa4fc8ffdb251d411e561, subject `007: fix review findings F1 F2 F3 F4`.
+Commit scope: `.mem/terminology.md`, `.mem/telemetry/summary.md`, and `README.md`. The diff has 12 insertions and 13 deletions. No function or anchor changed.
+
+Assumptions: The orchestrator decisions are authoritative. V1 and the milestone remain unchecked until the required review re-run and later verification.
+Skips: Ladder rung 1 excludes Go changes, Go verification, anchor renames, new changelog fragments, and provenance fragments from this records-only repair. The existing 007 changelog fragment already records memory and README updates. The assigned scope permits only these records and the checkpoint. Ladder rung 4 reuses docs-lint and factory-checkpoint instead of creating scripts. No new dependency exists.
+Decisions: Keep established anchor identifiers and describe their shared callers instead of renaming anchors. Keep code-file links in README, but remove line numbers that drift. No symptom patch exists. The root causes were stale record definitions and citation ranges, and the records now match the code.
+
+Verification follows below with command outputs and exit codes.
+Command: ~/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master
+PASS: /home/jaron/dev/betterstack-cli/master: 99 Markdown files, 0 findings
+docs-lint exit: 0
+
+Command: mkdir -p /tmp/factory-007
+mkdir exit: 0
+Command: grep -nF -f /tmp/factory-007/readme-token-sentence.txt README.md
+58:The `BETTERSTACK_TELEMETRY_API_TOKEN` authenticates source commands, and log search uses it only to redact SQL error output.
+README exact-sentence exit: 0
+
+Command: grep -rnE 'GOTOOLCHAIN|toolchain@|go1\.26' .mem
+Memory toolchain search exit: 1 (expected 1, no matches)
+
+Command: find .mem -name '*.md' ! -path '.mem/tmp/*' -exec wc -l {} +
+   26 .mem/practices.md
+    3 .mem/summary.md
+   50 .mem/telemetry/sources.md
+   66 .mem/telemetry/summary.md
+  101 .mem/telemetry/logs.md
+   22 .mem/mem-map.md
+   27 .mem/terminology.md
+   49 .mem/uptime/requests.md
+   53 .mem/uptime/commands.md
+   39 .mem/uptime/incidents.md
+   48 .mem/uptime/summary.md
+   41 .mem/uptime/testing.md
+  525 total
+Memory line-count command exit: 0
+PASS: every memory file is at most 250 lines
+Memory line-limit assertion exit: 0
+
+Command: git diff --check
+git diff --check exit: 0 (no output)
+
+Command: test ! -e .agents/scripts/script-triage.py
+script-triage absent exit: 0
+
+Protected baseline fingerprint command: find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum
+a6747200c523c45aab759ca7b3e673f90828c888c3c8dbd0e1028bc4f14659a3  -
+Protected baseline assertion exit: 0
+
+Command: git diff --exit-code b15349b -- cmd/bs TAGS.md LOG.md log.d changelog.d
+Code, anchors, provenance, and changelog unchanged exit: 0 (no output)
+
+Checks not run: Go build, vet, test, and gofmt. This review-fix task changes records only and leaves V1 unchecked.
+Unavailable checks: make docs-check and make fragments-check. The repository has no Makefile or configured Markdown formatter. make help exited 2: No rule to make target help. docs-lint is the record-lint replacement.
+
+factory-checkpoint exit: 0. It recorded this gate at HEAD 6697c89bc3786da96c8fa4fc8ffdb251d411e561 with stash none.
+factory-checkpoint output: Checkboxes rendered by task/milestone ID. Titles were left unchanged.
+Post-checkpoint docs-lint output: PASS: /home/jaron/dev/betterstack-cli/master: 99 Markdown files, 0 findings. Exit 0.
+Post-checkpoint git diff --check: exit 0, no output.
+Post-checkpoint checklist hash check: docs/plans/008_telemetry-logs-search_007_implement.md: OK. Exit 0.
+Post-checkpoint protected fingerprint remains a6747200c523c45aab759ca7b3e673f90828c888c3c8dbd0e1028bc4f14659a3. Assertion exit 0.
+Post-checkpoint script-triage absence check: exit 0.
+- HEAD commit SHA: `6697c89bc3786da96c8fa4fc8ffdb251d411e561`
+- Relevant work: `committed` — stash ref `none` (tracked files only; never applied)
+- `git status --porcelain` (before checkpoint/checkbox writes):
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Untracked file Git objects (stored with hash-object -w, never applied):
+
+```text
+e69de29bb2d1d6434b8b29ae775ad8c2e48c5391  ".agents/scripts/.gitkeep"
+2268d6d1b4dd6b23950ea8bcbce44e2cc4fd02a5  ".agents/scripts/telemetry-live-probe.sh"
+c3626f955decd6b7ffa341c26703f857462954b5  ".agents/skills/changelog/SKILL.md"
+656c156bf90f78f9ac3a85412fe9e91145a5bebb  ".agents/skills/mem/SKILL.md"
+44304443f37776ec688c34be9840378e243c6f2f  ".agents/skills/pr/SKILL.md"
+f788b79f289c9adfcdbb156d309261b925c403ba  ".agents/skills/provenance-log/SKILL.md"
+704342b5c4c16287177f2da9f4b656aa526fba5b  ".agents/skills/release/SKILL.md"
+e5ecdd11f8df24415ebff5fdf63f6113213bf7ec  ".wayfinder/MAP.md"
+d2521bd5eae2907dbcfadafe090456e6781b6e41  ".wayfinder/README.md"
+54113199fec1e082615bbf1bf5691e42201085b9  ".wayfinder/assets/01-api-contract-research.md"
+623ab01ed0b0385ce5fedd654d847a02d9c52fdb  ".wayfinder/assets/02-incident-url-identity-research.md"
+c4c4fe4107105fd614a8f3a94b46812cb06b3960  ".wayfinder/assets/06-go-toolchain-research.md"
+c6158f0916332d3e3a80e61a67a8ecc2de8a5b32  ".wayfinder/telemetry/MAP.md"
+f4e847e79b9fb7619c846148a592d14b88a367c7  ".wayfinder/telemetry/assets/03-sources-api-contract-research.md"
+247ee7bc692682bc7b1a32fb05f315fa938f36f6  ".wayfinder/telemetry/assets/04-sql-api-contract-research.md"
+0a18fb73e0093239f584809f479b542e99fc7f76  ".wayfinder/telemetry/assets/05-live-verification-results.md"
+5ebc264f975b3e46e337f17435443bc29535825e  ".wayfinder/telemetry/assets/06-cold-storage-timeout-research.md"
+2b71e98af8af64a9cd36bd3d5bd5e6e9b5cf818b  ".wayfinder/telemetry/tickets/01-charting-decisions-destination-scope-and-command-surface.md"
+b7482d50e399cdae487b573ae35176f069362341  ".wayfinder/telemetry/tickets/02-technical-design-decisions-recorded-at-charting.md"
+572c8f131bb6a497254d5a63b1bd30f2ce28502f  ".wayfinder/telemetry/tickets/03-research-sources-api-contract-from-docs.md"
+77b5c75dbaac7620d469a638c8d77335c6624e04  ".wayfinder/telemetry/tickets/04-research-sql-api-contract-from-docs.md"
+1323bb7b057a980e8b536c7162cccd9b7b26cc71  ".wayfinder/telemetry/tickets/05-task-live-verification-sql-api-log-shape.md"
+66a7fd3e74798761babbcd7fbec61d0aac59b704  ".wayfinder/telemetry/tickets/06-research-cold-storage-timeout-default.md"
+cde68ecfe35ee426d1bcc07e817d52eced3d06b1  ".wayfinder/telemetry/tickets/07-grilling-sql-host-override-policy.md"
+e180004c8a35821bec3e2cb2feab300f3046f71e  ".wayfinder/telemetry/tickets/08-task-repo-record-gaps-mem-tags-log-changelog-makefile.md"
+bf05f4602afcf7692f7dd66ed6af5a85be9566f1  ".wayfinder/telemetry/tickets/09-grilling-table-name-format-and-source-token-output.md"
+9d010dd4260be2a86b212eeb6d11637bc1b22dbb  ".wayfinder/telemetry/tickets/10-technical-decisions-from-live-verification.md"
+9677e361c7ff035c55b374943bad13b068a39a16  ".wayfinder/telemetry/tickets/11-sql-api-errors-concurrency-time-bounds.md"
+13a7970f556e13dad98340b3b700fd98da438aaa  ".wayfinder/tickets/01-api-contracts-for-five-first-release-commands.md"
+5ad4771181950a65021b600d0765b6f79ad59dd5  ".wayfinder/tickets/02-incident-url-identity-resolution.md"
+53f3d379ecaf4eefb35f44de0596dcd8db5c76c1  ".wayfinder/tickets/03-command-naming-and-argument-conventions.md"
+1a67e294757e2a2558ec29f2247cc4fe6d1cb1b6  ".wayfinder/tickets/04-pagination-and-json-envelope.md"
+0a2031f1210b6008a0da9a8f7d217ecf1233f4bf  ".wayfinder/tickets/05-errors-timeouts-retries-token-safety.md"
+dc414d2e4181c232972f98528077e0e0650c47ec  ".wayfinder/tickets/06-installation-distribution-acceptance.md"
+aca24cb6a5e5e366b6216d692a002839547a1ef3  "AGENTS.md"
+d25d1c789e303a87fed9534f135c441b5cf4c9f5  "docs/plans/008_telemetry-logs-search_milestones.md"
+a578aa4a1e017c56243e9bb9edca94fd275bc18b  "verify-incident-id.sh"
+```
+
+- Next action: Review gate 1 re-run for 007
 
 ## Restart validation of milestone 006
 
