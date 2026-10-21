@@ -22,7 +22,7 @@ The checkpoint owns task state. Milestone 004 remains unchecked until review, V1
 - Protected baseline paths: `.agents/`, `.wayfinder/`, `AGENTS.md`, `docs/plans/008_telemetry-logs-search_milestones.md`, and `verify-incident-id.sh`. Never stage, edit, or delete these paths.
 - Baseline fingerprint command: `find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum`.
 - Baseline fingerprint: `0eb137ab6c83c23488e7785e0c25a9bdb33ebb32c23fddb1e4d83a4f08ed3fe5  -`.
-- Authorization: local commits on `master` for Phase 3 tasks A1, A2, B1, C1, D1, and E1. V1 is not authorized. No push, live API request, real credential use, deploy, or baseline path change is authorized. Stage only explicit task paths.
+- Authorization: local commits on `master` for Phase 3 tasks A1, A2, B1, C1, D1, E1, and V1. No push, live API request, real credential use, deploy, or baseline path change is authorized. Stage only explicit paths.
 
 ## Artifacts
 
@@ -33,13 +33,13 @@ The checkpoint owns task state. Milestone 004 remains unchecked until review, V1
 ## State
 
 - Lane: `full` — D1 requires the full lane for every milestone because the work affects external API contracts, security, or repository-wide records. S3 safely interpolates a validated SQL identifier and binds query/time values.
-- Current phase: Phase 3 (execution) — A1 through E1 passed. Review gate 1 failed at `c33935f`. F1 and F2 fixes are committed.
-- Current task: review gate 1 re-run pending. F1 and F2 fixes passed verification. V1 remains not started.
-- Next action: review gate 1 re-run.
-- Phase states: setup/restart validation `passed`; Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 `in progress`.
-- Task states: A1 `passed`; A2 `passed`; B1 `passed`; C1 `passed`; D1 `passed`; E1 `passed`; V1 `not started`. Review gate 1 `failed`. Review gate 1 re-run `pending`.
-- Milestone checkbox: `unchecked`.
-- Last completed task and gate: F1 and F2 fixes passed focused tests, scratch mutation checks, and required repository verification. Review and completion remain pending.
+- Current phase: complete. A1 through E1 passed. Review gate 1 re-run, V1, and the Factory completion gate passed.
+- Current task: none. No task remains pending.
+- Next action: none. Milestone 005 is the next sequential unchecked entry.
+- Phase states: setup/restart validation `passed`; Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 `passed`.
+- Task states: A1 `passed`; A2 `passed`; B1 `passed`; C1 `passed`; D1 `passed`; E1 `passed`; V1 `passed`. Review gate 1 re-run `passed`.
+- Milestone checkbox: `checked` after the completion gate passed.
+- Last completed task and gate: V1 and the Factory completion gate passed at `f3739d38b1944e37eaf0a842eaad046a9873d291`. The milestone render and final commit followed.
 
 ## Restart validation and setup evidence
 
@@ -347,7 +347,7 @@ exit 0
 - Assumption: the caller-supplied findings define review gate 1 at `c33935f`. The older handoff describes prior milestone state. This checkpoint retains V1 as not started and the milestone as unchecked.
 - Decision: the exact `--to` diagnostic uses a separate assertion before the existing table. This avoids changing unrelated flag-substring assertions or adding table fields.
 - Decision: each mutation runs independently against the same archived production source. Both original-test controls and restored-source controls prevent false mutation-kill claims.
-- Decision: local commits disable hooks with command-local `-c core.hooksPath=/dev/null`. The installed hook can run script triage and stage protected `.agents/` paths. Explicit-path commits preserve the authorized scope instead.
+- Decision: the earlier hook-risk wording overstated the hook behavior. `.bare/hooks/pre-commit` runs `.agents/scripts/script-triage.py` only when that file exists. It was absent at HEAD, so disabling hooks skipped no checks. Its comment mentions nonexistent `.githooks` (F5).
 - The existing `/tmp/factory-004/records-check.py` supplies direct record checks. The task checkpoint writer was not reused because it also writes the excluded implementation checklist. New scratch scripts stay under `/tmp` under D8.
 - Skips: production changes, F3 help text, `.mem/`, README, TAGS, changelog, LOG/log.d, and checklist edits remain outside this test-only scope (ladder rung 1). Runtime behavior, anchors, dependencies, and the existing changelog remain unchanged.
 - Dependencies: none. Existing tests, Git, and Python standard-library file operations suffice (ladder rung 2).
@@ -456,3 +456,106 @@ $ git status --porcelain
 - Validated HEAD: `2ff2c633ff41fd2d92f127d38d4ab19490798fe6`. The test fix is committed. No stash ref applies.
 - Checkpoint update: temporary-file write followed by atomic rename. Stage only this checkpoint and commit as `004: record review gate 1`.
 - Next action: review gate 1 re-run.
+## Review gate 1 re-run
+
+**Verdict: PASS at `f3739d38b1944e37eaf0a842eaad046a9873d291` (`f3739d3`) by the independent review subagent.** The re-run found no blocking issue after the F1 and F2 test fixes.
+
+- **F3 — informational, deferred to milestone 006 help text.** `--query --cold` treats `--cold` as query text. Milestone 006 must explain this behavior in help text.
+- **F4 — informational.** The earlier checkpoint overstated hook risk. `.bare/hooks/pre-commit` runs `.agents/scripts/script-triage.py` only when that file exists. It was absent at HEAD, so disabling hooks skipped no checks. The hook comment says to install `.githooks`, but that directory does not exist (F5).
+- **F5 — informational.** The pre-commit hook comment mentions the nonexistent `.githooks` directory. No hook file or hook configuration was changed.
+- Production `cmd/bs/logs.go` is unchanged from `c33935f` through the validated HEAD. F1 and F2 are covered by `cmd/bs/logs_test.go:114` and `cmd/bs/logs_test.go:201`.
+- Validated HEAD: `f3739d38b1944e37eaf0a842eaad046a9873d291`.
+- `git status --porcelain` at review gate:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+## V1 and Factory completion gate
+
+**Result: PASS.** All implementation checks passed. The milestone acceptance and every specification requirement have test evidence below. The available records check passed. The `make` targets are unavailable because this repository has no Makefile.
+
+### V1 command results
+
+The Go 1.26.9 local toolchain was selected for these commands only. The environment was not recorded in `.mem/`.
+
+```text
+$ env GOFLAGS=-o=/dev/null go build ./...
+exit 0
+$ go vet ./...
+exit 0
+$ go test -count=1 ./...
+ok   github.com/jrswab/betterstack-cli/cmd/bs  2.240s
+exit 0
+$ gofmt -l cmd/bs/*.go
+exit 0, no paths
+$ test ! -e ./bs
+exit 0
+$ go test -count=1 -run 'TestParseLogsSearchArgs|TestBuildLogsSearchQuery' ./cmd/bs
+ok   github.com/jrswab/betterstack-cli/cmd/bs  0.011s
+exit 0
+$ python3 /tmp/factory-004/records-check.py
+.mem/telemetry/logs.md: 54 lines, relative links exist
+.mem/mem-map.md: 21 lines, relative links exist
+.mem/summary.md: 3 lines, relative links exist
+.mem/terminology.md: 24 lines, relative links exist
+Builder example, Mermaid flow, memory index, summary, and changelog shape: PASS
+Builder-only code and tests, allowed comments, unchanged routing/help/dependencies/anchors/README/rationale: PASS
+TAGS.md: all 13 existing boundary anchors indexed, no helper anchor added
+exit 0
+$ make help
+make: *** No rule to make target 'help'. Stop.
+exit 2
+$ make docs-check
+make: *** No rule to make target 'docs-check'. Stop.
+exit 2
+$ make fragments-check
+make: *** No rule to make target 'fragments-check'. Stop.
+exit 2
+```
+
+Direct scope checks passed: `cmd/bs/logs.go` and `cmd/bs/logs_test.go` contain no HTTP request or credential access symbols, and `cmd/bs/main.go` and `cmd/bs/help.go` contain no logs-search route or help text. Existing `sources`, `monitors`, and `incidents` repeatable-flag tests passed in the full suite. No request was made and no real credential was read.
+
+### Requirement-to-evidence table
+
+| Requirement or decision | Test evidence |
+|---|---|
+| R1 — Validate the full table identifier before interpolation | `cmd/bs/logs_test.go:11` `TestParseLogsSearchArgsTable`; `cmd/bs/logs_test.go:156` `TestBuildLogsSearchQueryRejectsArguments` |
+| R2 — Default hot query, filters, order, limit, timeout, format | `cmd/bs/logs_test.go:92` `TestBuildLogsSearchQueryHot`; `cmd/bs/logs_test.go:260` `TestBuildLogsSearchQueryColdDefaults` verifies cold expressions are absent by default |
+| R3 — One optional cold union and row filter | `cmd/bs/logs_test.go:232` `TestBuildLogsSearchQueryCold`; `cmd/bs/logs_test.go:260` `TestBuildLogsSearchQueryColdDefaults` |
+| R4 — Bind query text and reject controls | `cmd/bs/logs_test.go:114` `TestBuildLogsSearchQueryText`; `cmd/bs/logs_test.go:133` `TestBuildLogsSearchQueryRejectsControls` |
+| R5 — Validate order and bounded limits | `cmd/bs/logs_test.go:269` `TestParseLogsSearchArgsDefaults`; `cmd/bs/logs_test.go:277` `TestParseLogsSearchArgsValues`; `cmd/bs/logs_test.go:311` `TestParseLogsSearchArgsRejectsValues` |
+| R6 — Resolve relative and explicit time bounds | `cmd/bs/logs_test.go:166` `TestBuildLogsSearchQueryTimeBounds`; `cmd/bs/logs_test.go:201` `TestBuildLogsSearchQueryRejectsTimeBounds`; `cmd/bs/logs_test.go:311` `TestParseLogsSearchArgsRejectsValues` |
+| R7 — Derive integer server execution time from timeout | `cmd/bs/logs_test.go:143` `TestBuildLogsSearchQueryTimeout`; `cmd/bs/logs_test.go:269` `TestParseLogsSearchArgsDefaults`; `cmd/bs/logs_test.go:311` `TestParseLogsSearchArgsRejectsValues` |
+| R8 — Reject duplicate value flags and preserve other commands | `cmd/bs/logs_test.go:56` `TestParseLogsSearchArgsDuplicates`; `cmd/bs/sources_test.go:101` `TestParseSourcesListArgs`; `cmd/bs/monitors_test.go:568` `TestParseMonitorsListArgs`; `cmd/bs/incidents_test.go:1946` `TestIncidentsListDuplicateMetadataKeyRejected` |
+| R9 — Builder-only behavior; no requests, route, or help | `cmd/bs/logs_test.go:92` `TestBuildLogsSearchQueryHot`; `cmd/bs/logs_test.go:156` `TestBuildLogsSearchQueryRejectsArguments`; direct scope checks and `/tmp/factory-004/records-check.py` passed |
+| D10 — Positive Go durations and `7d` rejection | `cmd/bs/logs_test.go:277` `TestParseLogsSearchArgsValues`; `cmd/bs/logs_test.go:311` `TestParseLogsSearchArgsRejectsValues`; fixed-clock results at `cmd/bs/logs_test.go:166` |
+| D11 — Limit range 1 through 1000 | `cmd/bs/logs_test.go:277` `TestParseLogsSearchArgsValues`; `cmd/bs/logs_test.go:311` `TestParseLogsSearchArgsRejectsValues` |
+| D12 — Reject duplicate single-value flags; accept repeated `--cold` | `cmd/bs/logs_test.go:56` `TestParseLogsSearchArgsDuplicates`; `cmd/bs/logs_test.go:78` `TestParseLogsSearchArgsColdAndQuery`; `cmd/bs/logs_test.go:232` `TestBuildLogsSearchQueryCold` |
+| D13 — Default descending order | `cmd/bs/logs_test.go:92` `TestBuildLogsSearchQueryHot`; `cmd/bs/logs_test.go:269` `TestParseLogsSearchArgsDefaults` |
+| Milestone 004 acceptance — validated hot/cold query construction, parameterized values, limits, timeout, and time rules without a request | `cmd/bs/logs_test.go:92` `TestBuildLogsSearchQueryHot`; `cmd/bs/logs_test.go:114` `TestBuildLogsSearchQueryText`; `cmd/bs/logs_test.go:143` `TestBuildLogsSearchQueryTimeout`; `cmd/bs/logs_test.go:166` `TestBuildLogsSearchQueryTimeBounds`; `cmd/bs/logs_test.go:201` `TestBuildLogsSearchQueryRejectsTimeBounds`; `cmd/bs/logs_test.go:232` `TestBuildLogsSearchQueryCold`; direct scope checks passed |
+
+### Completion gate evidence
+
+- The full test suite, available Go checks, formatting check, focused parser/builder tests, record check, scope checks, and root-binary check passed.
+- The requirement-to-evidence table covers R1–R9, D10–D13, and the milestone acceptance. The fixed review findings passed the independent re-run. F3 remains explicitly deferred to milestone 006 help text. F4 and F5 are informational and do not change behavior.
+- `make help`, `make docs-check`, and `make fragments-check` each exited 2 because no corresponding target exists. The direct record check passed.
+- Fingerprint before the milestone render: `0eb137ab6c83c23488e7785e0c25a9bdb33ebb32c23fddb1e4d83a4f08ed3fe5  -`.
+- Fingerprint after the milestone render: `41306493735a9bfeeae10d179385968acfd8af3d46e7a2cd897893aba32209fe  -`.
+- Validated HEAD: `f3739d38b1944e37eaf0a842eaad046a9873d291`.
+- `git status --porcelain` before the milestone render:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Relevant implementation and record changes were committed before this gate. The checkpoint and implementation checklist are the only paths authorized for this final commit. No stash ref applies.
+- Completion gate: passed. The milestone entry may now render checked. The render changes only the authorized checkbox character in the existing untracked milestone file.
