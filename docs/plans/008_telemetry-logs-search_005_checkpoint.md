@@ -32,12 +32,12 @@
 ## State
 
 - Lane: `full` — D1 assigns the full lane because this milestone changes an external SQL HTTP contract and handles credentials.
-- Current phase: `Phase 3 execution`.
-- Current task: `Independent review gate: dispatch separate review subagent, then V1/Factory completion only when authorized`.
-- Task states: Phase 1 and Phase 2 passed. Phase 3 tasks A1, A2, B1, B2, C1, C2, C3, D1, and E1 passed. Independent review and Factory completion remain pending.
+- Current phase: `Phase 3 — review gate 1 fixes complete, re-run pending`.
+- Current task: `review gate 1 re-run`.
+- Task states: Phase 1 and Phase 2 passed. Phase 3 tasks A1, A2, B1, B2, C1, C2, C3, D1, and E1 passed. Review gate 1 failed at `321630c`. F1–F4 fixes are committed. Review gate 1 re-run and Factory completion remain pending.
 - Milestone checkbox: `unchecked`.
-- Last completed phase and gate: E1 execution verification passed. The milestone remains unchecked.
-- Next action: `Independent review gate: dispatch separate review subagent, then V1/Factory completion only when authorized`.
+- Last completed execution gate: E1 verification passed. Review gate 1 failed, and its fixes passed local verification. The milestone remains unchecked.
+- Next action: `review gate 1 re-run`.
 
 ## Restart validation
 
@@ -451,4 +451,89 @@ b30e592 005: C2 redact only SQL error bodies
 41d04eb 005: B1 prove prepared SQL endpoint routing
 bcb94c4 005: A2 require separate SQL credentials
 471e5d1 005: A1 validate SQL URL forms
+```
+
+## Review gate 1
+
+- Result: **FAIL** at `321630c716d6c10401326e2fda1ac76e35d9eca9` (`321630c`).
+- Blocking findings: F1, F2, and F3. Non-blocking findings: F4, F5, and F6.
+- Fix commit: `169fc0b1cc804394423ab6d53576e800b278d563` — `005: fix review findings F1 F2 F3 F4`.
+- This record follows the supplied review findings. The fixer did not run an independent review or change the gate result to PASS.
+- Current authorization covers local explicit-path commits on `master` for tests, memory, and this checkpoint only. No push or external network is authorized.
+- Next action: `review gate 1 re-run`. V1, Factory completion, and milestone 006 remain pending.
+
+### Findings and disposition
+
+| Finding | Severity | Disposition |
+|---|---|---|
+| F1 — R1/R3/security | Blocking | `TestLogsSQLUsesConfiguredEndpoint` calls `doLogsSQLRequest` with an empty injected SQL URL. Four approved configured URL forms assert HTTPS, the configured host/port, path, and builder query parameters. Its recording transport never dials or delegates. |
+| F2 — R3 timeout | Blocking | `sqlDeadlineTransport.RoundTrip` now requires `p.timeout-100*time.Millisecond < remaining <= p.timeout`. The existing 1500ms routing test passes 20 consecutive runs. |
+| F3 — memory drift | Blocking | `.mem/uptime/testing.md` now names all six variables removed by `TestMain` and all six checked sentinels. The same topic now reflects prepared SQL execution and the new in-memory test. |
+| F4 — API token header leakage | Non-blocking | The new configured-endpoint test checks every value of every request header for the fake Telemetry API token. |
+| F5 — optional SQL input | Non-blocking | No change. The `runWithEndpoints` variadic `sqlRequest` seam is accepted as minimal, but noted as drift from the original seam. |
+| F6 — numeric hosts | Non-blocking | No change. The parser accepts numeric hosts such as `999.999.999.999`. This has no security impact because SQL hosts are intentionally user-configurable. |
+
+- Test diff: `cmd/bs/logs_test.go` has 38 added lines and one replaced deadline assertion. `.mem/uptime/testing.md` has three updated paragraphs.
+- No production behavior changed. `cmd/bs/logs.go` and `cmd/bs/main.go` match `321630c` byte-for-byte.
+- Decision: reuse `recordingRoundTripper` rather than add a new transport. The in-memory response tests production URL construction without network access.
+- Decision: allow 100ms scheduling slack before the transport probe. This accepts small local delays but rejects 1000ms and 750ms deadlines.
+- Assumption: the supplied findings define the review result and this task's scope. An empty parsed path stays empty at the in-memory request boundary.
+- Skips: production edits, F5/F6 changes, extra transport helpers, dependencies, and unrelated records are unnecessary or outside scope (ladder rung 1).
+- The existing milestone changelog remains unchanged because this assignment restricts the first commit to tests and memory. README and TAGS remain valid.
+- No symptom patch exists. The fixes address missing assertions and stale memory at their source.
+
+### Mutation-kill evidence
+
+- Scratch root: `/tmp/factory-005-fix/`. `git archive HEAD -o /tmp/factory-005-fix/baseline.tar` ran before the fix commit, at `321630c`.
+- `git diff HEAD -- cmd/bs/logs_test.go .mem/uptime/testing.md` supplied `fix.patch` from the reviewed worktree.
+- `python3 /tmp/factory-005-fix/check-mutations.py` extracted the archive separately for the control and each mutation, then applied `fix.patch`.
+- Each mutation changes only its own scratch `cmd/bs/logs.go`. No mutation touched the repository.
+- Focused command in each copy: `go test ./cmd/bs -run '^(TestLogsSQLUsesConfiguredEndpoint|TestRunWithEndpointsRoutesSQL)$' -count=1 -v`.
+- Full-suite command in each copy: `go test -count=1 ./...`.
+- The control passed both commands. All five mutations compiled and failed test assertions under both commands.
+
+| Copy | Isolated mutation | Assertion output | Focused / full exit |
+|---|---|---|---|
+| control | No mutation | Focused: `PASS`, `ok github.com/jrswab/betterstack-cli/cmd/bs 0.008s`. Full suite: `ok github.com/jrswab/betterstack-cli/cmd/bs 2.267s` | 0 / 0 |
+| m26 | Insert `endpoint.Host = "attacker.example"` before the injected URL branch | `request URL = https://attacker.example?param_from=0&param_query=fake+%26+%27text%27&param_to=3600000, want https://regional.sql.example?param_from=0&param_query=fake+%26+%27text%27&param_to=3600000` | 1 / 1, killed |
+| m27 | Insert `endpoint.Scheme = "http"` before the injected URL branch | `request URL = http://regional.sql.example?param_from=0&param_query=fake+%26+%27text%27&param_to=3600000, want https://regional.sql.example?param_from=0&param_query=fake+%26+%27text%27&param_to=3600000` | 1 / 1, killed |
+| m15 | Replace context timeout with `time.Second` | `code=0, stdout="SQL body", stderr="", deadline=false, attempts=1, SQL=1, Uptime=0, REST=0` | 1 / 1, killed |
+| m20 | Replace context timeout with `timeout/2` | `code=0, stdout="SQL body", stderr="", deadline=false, attempts=1, SQL=1, Uptime=0, REST=0` | 1 / 1, killed |
+| m24 | Add `req.Header.Add("X-Token", "Bearer "+os.Getenv(telemetryTokenEnvVar))` | `request header X-Token contains the fake Telemetry API token` | 1 / 1, killed |
+
+- Complete output files: `/tmp/factory-005-fix/{control,m26,m27,m15,m20,m24}.log` and `/tmp/factory-005-fix/{control,m26,m27,m15,m20,m24}-full.log`.
+- Mutation diffs: `/tmp/factory-005-fix/{m26,m27,m15,m20,m24}.diff`. Summary: `/tmp/factory-005-fix/mutation-results.txt`.
+- Stability command: `go test ./cmd/bs -run '^TestRunWithEndpointsRoutesSQL$' -count=20`.
+- Stability result: exit 0, `ok github.com/jrswab/betterstack-cli/cmd/bs 0.029s`. Output: `/tmp/factory-005-fix/count-20.log`.
+
+### Fix verification
+
+- All Go checks use the approved local environment: `PATH=$HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64/bin:$PATH GOTOOLCHAIN=local GOPROXY=off`.
+- Command output: `/tmp/factory-005-fix/verification.log`.
+- `GOFLAGS=-o=/dev/null go build ./...`: exit 0, no output.
+- `go vet ./...`: exit 0, no output.
+- `go test -count=1 ./...`: exit 0, `ok github.com/jrswab/betterstack-cli/cmd/bs 2.489s`.
+- `gofmt -l cmd/bs/*.go`: exit 0, no output.
+- `git diff --check` and `git diff --check 321630c..HEAD`: exit 0, no output.
+- `git diff --exit-code 321630c..HEAD -- cmd/bs/logs.go cmd/bs/main.go`: exit 0, no output.
+- `git diff --exit-code -- cmd/bs/logs.go cmd/bs/main.go`: exit 0, no output.
+- `test ! -e ./bs`: exit 0.
+- `python3 /tmp/factory-005/check-records.py`: exit 0. All seven checks passed, including memory links/limits and exact anchor indexing.
+- `/home/jaron/.agents/scripts/docs-lint /home/jaron/dev/betterstack-cli/master`: exit 0, 90 Markdown files, zero findings.
+- `/home/jaron/.agents/scripts/spec-lint --root . docs/plans/008_telemetry-logs-search_005_spec.md docs/plans/008_telemetry-logs-search_005_implement.md`: exit 0, both artifacts passed with zero findings.
+- `.mem/uptime/testing.md` has 41 lines, within the 250-line limit.
+- `make help` and `make docs-check`: exit 2, no corresponding target. The existing direct checks passed. No Makefile was added.
+- Limitations: the prior Go vulnerability-scan limitation remains open. This task did not repeat the vulnerability scan.
+- `.agents/scripts/script-triage.py` is absent. The normal pre-commit hook therefore exits without triage.
+- Baseline fingerprint before and after the fix: `41306493735a9bfeeae10d179385968acfd8af3d46e7a2cd897893aba32209fe  -`.
+- No push, external network, baseline change, repository binary, dependency, route activation, or help change occurred.
+- The checkpoint update uses a same-directory temporary file and `os.replace` for an atomic rename.
+- `git status --porcelain` after the fix commit:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
 ```
