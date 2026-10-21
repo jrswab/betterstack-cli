@@ -1,0 +1,112 @@
+# Milestone 005 Checkpoint — S4 SQL search executor
+
+## Identity
+
+- Milestone ID: `005` (S4).
+- Milestone source: `docs/plans/008_telemetry-logs-search_milestones.md` (protected baseline, untracked, do not modify).
+- Repository root: `/home/jaron/dev/betterstack-cli/master`.
+- Branch: `master`.
+- Validated starting HEAD: `e5cfc57a2e1de96da609b1836c7b685d59e79e90`.
+- Baseline / pre-existing changes: exactly these five protected untracked paths at setup:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Protected baseline paths: `.agents/`, `.wayfinder/`, `AGENTS.md`, `docs/plans/008_telemetry-logs-search_milestones.md`, and `verify-incident-id.sh`. Never stage, edit, or delete these paths. The only permitted future exception is an authorized milestone checkbox render; it is not authorized for this task.
+- Baseline fingerprint command: `find .agents .wayfinder AGENTS.md docs/plans/008_telemetry-logs-search_milestones.md verify-incident-id.sh -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum`.
+- Required baseline fingerprint: `41306493735a9bfeeae10d179385968acfd8af3d46e7a2cd897893aba32209fe  -`.
+- Observed fingerprint at setup and after both planning lint runs: `41306493735a9bfeeae10d179385968acfd8af3d46e7a2cd897893aba32209fe  -`.
+- Authorization: write only the three milestone 005 planning files. No code, live API request, credential use, baseline path change, staging, commit, push, or deploy is authorized by this task.
+
+## Artifacts
+
+- Spec: `docs/plans/008_telemetry-logs-search_005_spec.md`.
+- Implementation checklist: `docs/plans/008_telemetry-logs-search_005_implement.md`.
+- Checkpoint: `docs/plans/008_telemetry-logs-search_005_checkpoint.md`.
+
+## State
+
+- Lane: `full` — D1 assigns the full lane because this milestone changes an external SQL HTTP contract and handles credentials.
+- Current phase: `phases 1–2 passed`.
+- Current task: none in this planning-only authorization. Execution task A1 is the next checklist item.
+- Task states: Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 tasks `not started`.
+- Milestone checkbox: `unchecked`.
+- Last completed phase and gate: Phase 2 planning review passed at `2026-10-21T10:56:19-04:00`.
+- Next action: `Phase 3: implement first task`.
+
+## Restart validation
+
+- The repository root is `/home/jaron/dev/betterstack-cli/master` and branch is `master`.
+- `git rev-parse HEAD` returned `e5cfc57a2e1de96da609b1836c7b685d59e79e90`, matching the required HEAD.
+- The milestone document renders `- [x] 004:` and `- [ ] 005:`. The 004 checkpoint identifies milestone 004 as complete and names 005 as the next sequential unchecked milestone.
+- The 004 checkpoint, spec, and implementation checklist exist at their expected paths.
+- `git status --porcelain` before writing the 005 artifacts contained only the five baseline paths listed in Identity. After the planning artifacts were written, status contains those five paths plus the three authorized untracked 005 planning files.
+- The baseline fingerprint command returned the required value `41306493735a9bfeeae10d179385968acfd8af3d46e7a2cd897893aba32209fe  -`.
+- No prior 005 checkpoint or task states existed. The 005 milestone remains unchecked.
+
+## Phase 1 — Specification gate
+
+- Gate: Phase 1 specification criterion passed.
+- Evidence reviewed: milestone `005` and research section in `docs/plans/008_telemetry-logs-search_milestones.md`; handoff decisions D1–D9 in `/tmp/betterstack-cli-factory-008-handoff.md`; `.mem/mem-map.md` and linked `.mem/summary.md`, `.mem/practices.md`, `.mem/terminology.md`, `.mem/telemetry/sources.md`, and `.mem/telemetry/logs.md`; `TAGS.md`; `LOG.md`; every file in `log.d/`; repo `AGENTS.md`; repo-local mem/changelog skills; tickets 02, 04, 05, 07, 10, and 11; `.wayfinder/telemetry/MAP.md`; the SQL research and live verification assets; and current `cmd/bs/main.go`, `monitors.go`, `sources.go`, `logs.go`, `telemetry.go`, and related tests.
+- Requirement coverage: the spec defines R1–R8 with observable acceptance, in-scope request and response behavior, URL and credential failures, timeout and redirect behavior, no retries, injection proof, and the boundary excluding command dispatch/help.
+- Product questions: none remained unresolved in the supplied ticket set or current repository evidence. The spec records the technical assumption that both SQL Basic-auth values must be non-empty before sending a request.
+- Planning review command: `~/.agents/scripts/spec-lint --root /home/jaron/dev/betterstack-cli/master docs/plans/008_telemetry-logs-search_005_spec.md`.
+- Planning review result: exit 0. `PASS`, zero findings.
+- Validated HEAD: `e5cfc57a2e1de96da609b1836c7b685d59e79e90`.
+- `git status --porcelain` at the gate:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_005_spec.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Relevant work: uncommitted planning artifact. `git stash create` does not include untracked files, so no stash ref applies.
+
+## Phase 2 — Implementation checklist gate
+
+- Gate: Phase 2 implementation checklist criterion passed.
+- Checklist mapping: tasks A1–A2 cover URL parsing and separate credentials; B1–B2 cover the one POST, SQL endpoint injection, timeout, redirects, and retries; C1–C3 cover success bytes, non-2xx redaction, and local errors; D1 covers README, changelog, memory, and anchor records; E1 covers final verification and requirement evidence.
+- Caller audit: no existing production signature change is required. The checklist lists current `runWithEndpoints`, `buildLogsSearchQuery`, and `redactSecrets` callers and assigns the executor's first production call of `redactSecrets` to C2. Any signature change requires a new repository-wide caller search before implementation.
+- Boundary probes: the checklist records approved/rejected SQL URL examples, empty credential cases, dummy API tokens without SQL credentials, builder parameters, three distinct injected endpoints, 2xx/non-2xx bodies, redirects, timeouts, and read/transport failures, with expected outcomes.
+- Planning review command: `~/.agents/scripts/spec-lint --root /home/jaron/dev/betterstack-cli/master docs/plans/008_telemetry-logs-search_005_implement.md`.
+- Planning review result: exit 0. `PASS`, zero findings.
+- Combined review command: `~/.agents/scripts/spec-lint --root /home/jaron/dev/betterstack-cli/master docs/plans/008_telemetry-logs-search_005_spec.md docs/plans/008_telemetry-logs-search_005_implement.md`.
+- Combined review result: exit 0. Both artifacts passed with zero findings.
+- Validated HEAD: `e5cfc57a2e1de96da609b1836c7b685d59e79e90`.
+- `git status --porcelain` at the gate:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_005_implement.md
+?? docs/plans/008_telemetry-logs-search_005_spec.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+
+- Relevant work: uncommitted spec and checklist. `git stash create` does not include untracked files, so no stash ref applies.
+
+## Verification and limitations
+
+- Restart validation commands: `git rev-parse HEAD`, `git branch --show-current`, `git status --porcelain`, milestone/checkpoint `rg` inspections, and the Identity baseline fingerprint command. Required repository-state prerequisites passed.
+- `~/.agents/scripts/go-toolchain-check .` was first invoked from the repository and reported no `go.mod` for its `govulncheck` step. This was an invocation-path error, not a repository prerequisite failure.
+- Corrected command: `~/.agents/scripts/go-toolchain-check /home/jaron/dev/betterstack-cli/master`. The default repository toolchain check failed because Go attempted to download unavailable `go1.26`.
+- Corrected toolchain environment command: `PATH=$HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.9.linux-amd64/bin:$PATH GOTOOLCHAIN=local GOPROXY=off ~/.agents/scripts/go-toolchain-check /home/jaron/dev/betterstack-cli/master`. Toolchain and read-only module-load checks passed with Go 1.26.9. `govulncheck ./...` exited 3 and reported `GO-2026-6809` in standard-library `crypto/x509@go1.26.9`, fixed in Go 1.26.10. Record this warning as an environmental limitation for execution. No toolchain workaround is written to `.mem/`.
+- No Go implementation checks ran because this task is limited to planning documents and Phase 3 is not authorized.
+- No live request, credentials, code change, staging, commit, push, or baseline path modification occurred.
+- Limitations: the configured Go 1.26.9 toolchain has a `govulncheck` finding for `GO-2026-6809`; default `go` cannot obtain its requested `go1.26` toolchain in this environment. No repository-state prerequisite failed.
+- Blockers: none for Phases 1–2. The toolchain vulnerability is recorded as an execution limitation, not a product blocker.
+
+## Checkpoint updates
+
+Write this checkpoint through a temporary file in the same directory, then atomically rename it over the checkpoint. Update it on phase transitions and after task gates. Preserve the baseline fingerprint and protected paths. Do not stage the milestone source or use `git add -A`.
