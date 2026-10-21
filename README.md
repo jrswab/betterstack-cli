@@ -2,9 +2,48 @@
 
 `bs` is a read-only CLI for Better Stack Uptime and Telemetry APIs.
 
+## Telemetry log search
+
+`bs logs search` validates search flags, builds parameterized SQL, and sends one request through the SQL executor.
+
+```sh
+bs logs search --table t1_example
+bs logs search --table t1_example --since 30m --query error --limit 50
+bs logs search --table t1_example --from 2026-01-01T00:00:00Z --to 2026-01-02T00:00:00Z --order asc
+bs logs search --table t1_example --cold --query --cold --timeout 60s
+bs logs --help
+bs logs search --help
+```
+
+| Flag | Behavior and default |
+|---|---|
+| `--table <table_name>` | Required full identifier `t<team_id>_<table_name>`, matching `^t[0-9]+_[a-z0-9_]+$`. |
+| `--since <duration>` | Positive Go duration. Default `1h`. Cannot combine with `--from` or `--to`. |
+| `--from <time>` | Inclusive lower bound in RFC3339Nano. Must precede the upper bound. |
+| `--to <time>` | Exclusive upper bound in RFC3339Nano. Requires `--from`. Default: now. |
+| `--query <text>` | Case-insensitive substring of `raw`. Default: no text filter. |
+| `--order <asc\|desc>` | Timestamp order. Default `desc`. |
+| `--limit <integer>` | ASCII decimal integer from 1 through 1000. Default `100`. |
+| `--timeout <duration>` | Positive Go duration. Default `30s`. |
+| `--cold` | Include cold storage with hot storage. Default: hot storage only. |
+
+`bs sources get <id>` shows both parts of the full table identifier. Its `table_name` omits the team prefix.
+A source ID or an unprefixed `table_name` is not a valid `--table` value. The command accepts no positional target or raw SQL.
+
+The default window ends now and starts one hour earlier. Explicit bounds must satisfy `from < to`.
+Times use millisecond parameters. Values use space-separated flags. Value-bearing flags reject duplicates. `--cold` may repeat.
+
+`--query` consumes the next argument as text, even option-shaped text. `--query --cold` searches for the literal `--cold` without enabling cold storage.
+Use `--cold --query --cold` to enable cold storage while searching for that text. Search text remains parameter data. Control characters are rejected.
+
+HTTP 500 `CLUSTER_DOESNT_EXIST` means the source has no hot table. Try rerunning with `--cold`.
+The command preserves the SQL error response policy and does not guarantee that cold storage succeeds.
+
+Exact root, resource, and command help requires no credentials and sends no request. Invalid search arguments fail before SQL configuration or HTTP access.
+
 ## Telemetry SQL configuration
 
-The SQL executor uses these separate environment variables. The command route is not available yet.
+The SQL executor uses these separate environment variables.
 
 | Variable | Role |
 |---|---|
