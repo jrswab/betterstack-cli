@@ -34,10 +34,10 @@ The checkpoint owns task state. Milestone 004 remains unchecked until a later im
 
 - Lane: `full` — D1 requires the full lane for every milestone because the work affects external API contracts, security, or repository-wide records. S3 safely interpolates a validated SQL identifier and binds query/time values.
 - Current phase: Phase 3 (execution) — the orchestrator authorized tasks A1 through E1 after Phases 1 and 2 passed at `79e2931`.
-- Current task: A1.
-- Next action: implement A1.
+- Current task: A2.
+- Next action: implement A2.
 - Phase states: setup/restart validation `passed`; Phase 1 specification `passed`; Phase 2 implementation checklist `passed`; Phase 3 `in progress`.
-- Task states: A1 `not started`; A2 `not started`; B1 `not started`; C1 `not started`; D1 `not started`; E1 `not started`; V1 `not started`.
+- Task states: A1 `passed`; A2 `not started`; B1 `not started`; C1 `not started`; D1 `not started`; E1 `not started`; V1 `not started`.
 - Milestone checkbox: `unchecked`.
 - Last completed phase and gate: Phase 2 artifact criterion passed on 2026-10-26. No implementation, review, or completion gate ran.
 
@@ -145,4 +145,29 @@ Boundary probes and outputs are in the implementation checklist. The current par
 
 - Limitations: `make help` is unavailable because no Makefile target exists. V1 review and completion gates remain outside this invocation.
 - Blockers: none at restart.
-- Next action: implement A1.
+- Next action: implement A2.
+
+## Task A1 evidence
+
+- Tier: design-bearing because validation guards identifier interpolation. D9 assigns one separate milestone review to V1, which this invocation excludes. No independent review is claimed.
+- Files and symbols: added `cmd/bs/logs.go` (`logsSearchArgs`, `logsTablePattern`, `parseLogsSearchArgs`) and `cmd/bs/logs_test.go`. Added `.mem/telemetry/logs.md`, linked it from `.mem/mem-map.md`, defined two terms in `.mem/terminology.md`, and started `changelog.d/008-telemetry-logs-search-004.md` before the behavior commit. E1 will finalize these records.
+- Test names: `TestParseLogsSearchArgsTable`, `TestParseLogsSearchArgsSyntax`, `TestParseLogsSearchArgsDuplicates`, `TestParseLogsSearchArgsColdAndQuery`.
+- Red command: `go test -run 'TestParseLogsSearchArgs' ./cmd/bs` exited 1 with `undefined: parseLogsSearchArgs` and `FAIL ... [build failed]` before implementation.
+- Green command: the same focused test exited 0 and printed `ok github.com/jrswab/betterstack-cli/cmd/bs 0.007s`.
+- `gofmt -w cmd/bs/logs.go cmd/bs/logs_test.go`, `GOFLAGS=-o=/dev/null go build ./cmd/bs`, `go vet ./cmd/bs`, `gofmt -l cmd/bs/logs.go cmd/bs/logs_test.go`, `git diff --check`, and `git diff --cached --check` exited 0 without output.
+- `make help`, `make fragments-check`, and `make docs-check` each exited 2 with `No rule to make target`. No Makefile or configured formatter/linter target exists.
+- Decisions: the parser collects unique values before later semantic validation, so even a missing repeated value reports the duplicate first. A query pointer preserves empty versus omitted text. Helpers receive no anchors. README stays unchanged because no command route exists.
+- Dependencies: none. Standard-library parsing and regular expressions suffice (ladder rung 2).
+- Scope deviations and symptom patches: none. The scratch checkpoint writer stays under `/tmp/factory-004/` under D8. No protected baseline script path is modified.
+
+- Validated HEAD: `b91c3dd2de6a5124db39617d8f9800625ba63a97`. Relevant task work is committed. No stash ref applies.
+- `git status --porcelain` at the task gate:
+
+```text
+?? .agents/
+?? .wayfinder/
+?? AGENTS.md
+?? docs/plans/008_telemetry-logs-search_milestones.md
+?? verify-incident-id.sh
+```
+- Task A1 focused checks passed. The checkpoint renders its task checkbox after this record.
