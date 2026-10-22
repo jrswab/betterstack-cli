@@ -2,6 +2,64 @@
 
 `bs` is a read-only CLI for Better Stack Uptime and Telemetry APIs.
 
+## Install the CLI
+
+Use Go 1.26 or newer, as required by [go.mod](go.mod).
+This repository is private. Configure authenticated Git access before installation, using a credential helper or an authenticated SSH configuration.
+`GOPRIVATE` selects private-module handling. It does not provide authentication.
+
+Include `github.com/jrswab/betterstack-cli` in `GOPRIVATE`, preserving existing comma-separated patterns, then install the command package:
+
+```sh
+export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/jrswab/betterstack-cli"
+go install github.com/jrswab/betterstack-cli/cmd/bs@latest
+```
+
+With no existing patterns, this sets `GOPRIVATE=github.com/jrswab/betterstack-cli`.
+Go installs the executable into `GOBIN`, or `GOPATH/bin` when `GOBIN` is unset. Add that directory to `PATH`.
+See Go's [installation reference](https://go.dev/ref/mod#go-install) and [private-module guidance](https://go.dev/ref/mod#private-modules).
+
+## Install the agent skill
+
+[skills/bs/SKILL.md](skills/bs/SKILL.md) teaches agents to use `bs`, including command flags, credentials, output handling, and workflows.
+Install the CLI first with the steps above.
+
+From this repository's root, copy the skill into `~/.agents/skills` or your agent's skills directory.
+The initial installation leaves an existing destination unchanged, including a broken symlink:
+
+```sh
+if [ -e ~/.agents/skills/bs ] || [ -L ~/.agents/skills/bs ]; then
+    printf 'The skill destination already exists. Choose an update method below.\n' >&2
+else
+    mkdir -p ~/.agents/skills && cp -R skills/bs ~/.agents/skills/bs
+fi
+```
+
+Review existing files before updating. The copy update replaces files with matching names but keeps other files.
+Update only a real directory, not a symlink:
+
+```sh
+if [ -d ~/.agents/skills/bs ] && [ ! -L ~/.agents/skills/bs ]; then
+    cp -R skills/bs/. ~/.agents/skills/bs/
+else
+    printf 'The skill destination is not a real directory.\n' >&2
+fi
+```
+
+Review an existing symlink before replacing it. The symlink update changes its target.
+For automatic updates from this checkout, use a symlink instead of the copy.
+This command refuses existing files and real directories:
+
+```sh
+if [ -e ~/.agents/skills/bs ] && [ ! -L ~/.agents/skills/bs ]; then
+    printf 'The skill destination exists and is not a symlink.\n' >&2
+else
+    mkdir -p ~/.agents/skills && ln -sfn "$PWD/skills/bs" ~/.agents/skills/bs
+fi
+```
+
+Keep this checkout available when you use a symlink.
+
 ## Telemetry log search
 
 `bs logs search` validates search flags, builds parameterized SQL, and sends one request through the SQL executor.

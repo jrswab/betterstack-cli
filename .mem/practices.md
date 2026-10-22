@@ -21,6 +21,25 @@ Tests use dummy tokens and loopback `httptest` servers. `TestMain` clears inheri
 
 ## Repository records
 
+### Agent skill
+
+[skills/bs/SKILL.md](../skills/bs/SKILL.md) is the self-contained agent skill for using all eight `bs` commands.
+It covers installation, credentials, flags, raw output, pagination, workflows, and safety.
+[README.md](../README.md#install-the-agent-skill) documents copying or symlinking `skills/bs` into the agent's skills directory.
+
+Keep the skill current when commands, flags, defaults, environment variables, or output contracts change.
+Verify it against [command sources](../cmd/bs/main.go), [help](../cmd/bs/help.go), [Uptime](uptime/commands.md), and [Telemetry](telemetry/summary.md).
+Build the current binary with the Go 1.26 toolchain or newer and capture exact help without credentials.
+Remove the output path first and require a successful build before execution so a stale binary cannot be reused.
+Every verification invocation uses `env -i PATH="$PATH" HOME="$HOME"` to exclude inherited credentials and SQL configuration:
+
+```sh
+rm -f /tmp/bs-fix && GOPROXY=off GOTOOLCHAIN=go1.26.10 go build -o /tmp/bs-fix ./cmd/bs &&
+    test -x /tmp/bs-fix && env -i PATH="$PATH" HOME="$HOME" /tmp/bs-fix logs search --help
+```
+
+### Record conventions
+
 `AGENTS.md` defines repository conventions. Memory records present behavior and links back to source. Changelog fragments use a category heading and factual bullets with repository paths. Historical plans are not the source of current runtime behavior.
 
 Related: [memory map](mem-map.md), [terminology](terminology.md), and [commands](uptime/commands.md).
