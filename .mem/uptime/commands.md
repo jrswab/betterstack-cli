@@ -22,7 +22,15 @@ Later resources must extend the resource gate in `usageError` and the action inv
 
 List commands take no positional target. Get and timeline commands take exactly one nonempty target. `--timeout <duration>` accepts a positive `time.ParseDuration` value, defaults to `30s`, and can occur before or after a get/timeline target. Repeated timeouts use the last value. The equals form `--timeout=60s` is not accepted.
 
-Monitor help describes a bare ID. The current monitor parser treats the target as opaque and escapes it without a numeric or URL-format check. Incident get/timeline apply the separate [incident target rules](incidents.md).
+Monitor get accepts one nonempty bare ID with no numeric restriction and escapes it as one API path segment.
+The parser rejects targets containing `/` or starting with an RFC 3986 scheme prefix, including `https:` and `mailto:`.
+This rejection returns 1 with empty stdout before the missing-token check or any request. It writes this diagnostic to stderr:
+
+```text
+bs: expected a bare monitor ID, not a URL or path; run 'bs monitors get --help' for usage.
+```
+
+Incident get/timeline apply the separate [incident target rules](incidents.md).
 
 ## List flags
 

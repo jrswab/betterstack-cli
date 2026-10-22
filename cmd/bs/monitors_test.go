@@ -26,6 +26,105 @@ func invokeAPI(baseURL string, client *http.Client, args ...string) (code int, s
 	return code, out.String(), err.String()
 }
 
+// TestParseMonitorsGetArgs verifies bare IDs, rejected URL/path targets, and argument ordering.
+func TestParseMonitorsGetArgs(t *testing.T) {
+	cases := []struct {
+		name    string
+		args    []string
+		id      string
+		timeout time.Duration
+		err     string
+	}{
+		{"numeric ID", []string{"789"}, "789", defaultTimeout, ""},
+		{"opaque ID", []string{"monitor-id"}, "monitor-id", defaultTimeout, ""},
+		{"space in ID", []string{"a b"}, "a b", defaultTimeout, ""},
+		{"opaque delimiters", []string{"a b%?x#y"}, "a b%?x#y", defaultTimeout, ""},
+		{"encoded slash stays literal", []string{"%2F"}, "%2F", defaultTimeout, ""},
+		{"non-scheme colon", []string{"123:abc"}, "123:abc", defaultTimeout, ""},
+		{"timeout before ID", []string{"--timeout", "1m", "789"}, "789", time.Minute, ""},
+		{"timeout after ID", []string{"789", "--timeout", "250ms"}, "789", 250 * time.Millisecond, ""},
+		{"repeated timeout", []string{"--timeout", "1m", "789", "--timeout", "250ms"}, "789", 250 * time.Millisecond, ""},
+		{"https URL", []string{"https://example.com/x"}, "", 0, "expected a bare monitor ID, not a URL or path"},
+		{"uppercase scheme", []string{"HTTPS://example.com"}, "", 0, "expected a bare monitor ID, not a URL or path"},
+		{"opaque URL", []string{"mailto:user@example.com"}, "", 0, "expected a bare monitor ID, not a URL or path"},
+		{"scheme punctuation", []string{"a+1.-:789"}, "", 0, "expected a bare monitor ID, not a URL or path"},
+		{"malformed URL", []string{"https:%zz"}, "", 0, "expected a bare monitor ID, not a URL or path"},
+		{"relative path", []string{"monitors/789"}, "", 0, "expected a bare monitor ID, not a URL or path"},
+		{"absolute path", []string{"/789"}, "", 0, "expected a bare monitor ID, not a URL or path"},
+		{"protocol-relative URL", []string{"//example.com"}, "", 0, "expected a bare monitor ID, not a URL or path"},
+		{"embedded separator", []string{"1://example.com"}, "", 0, "expected a bare monitor ID, not a URL or path"},
+		{"missing ID", nil, "", 0, "missing <id>"},
+		{"empty ID", []string{""}, "", 0, "missing <id>"},
+		{"empty then ID", []string{"", "789"}, "", 0, "too many arguments"},
+		{"ID then empty", []string{"789", ""}, "", 0, "too many arguments"},
+		{"extra ID", []string{"789", "123"}, "", 0, "too many arguments"},
+		{"option-shaped ID", []string{"-id"}, "", 0, `unknown option "-id"`},
+		{"unknown option before target validation", []string{"https://example.com/x", "--bogus"}, "", 0, `unknown option "--bogus"`},
+		{"missing timeout before target validation", []string{"monitors/789", "--timeout"}, "", 0, "--timeout needs a duration value"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			id, timeout, err := parseMonitorsGetArgs(tc.args)
+			if tc.err != "" {
+				if err == nil || err.Error() != tc.err {
+					t.Fatalf("error = %v, want %q", err, tc.err)
+				}
+			} else if err != nil {
+				t.Fatalf("parse error: %v", err)
+			}
+			if id != tc.id || timeout != tc.timeout {
+				t.Errorf("id = %q, timeout = %s, want %q, %s", id, timeout, tc.id, tc.timeout)
+			}
+		})
+	}
+}
+
+// TestMonitorsGetInvalidTargetsBeforeCredentials verifies local rejection with no requests or token leaks.
+func TestMonitorsGetInvalidTargetsBeforeCredentials(t *testing.T) {
+	var requests atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+	}))
+	defer srv.Close()
+	cases := []struct {
+		name   string
+		target string
+	}{
+		{"https URL", "https://example.com/x"},
+		{"path", "monitors/789"},
+		{"opaque URL", "mailto:user@example.com"},
+		{"protocol-relative URL", "//example.com"},
+		{"token in URL", "https://example.com/" + testToken},
+	}
+	for _, tokenCase := range []struct {
+		name  string
+		token string
+	}{{"missing token", ""}, {"dummy token", testToken}} {
+		t.Run(tokenCase.name, func(t *testing.T) {
+			t.Setenv(tokenEnvVar, tokenCase.token)
+			for _, tc := range cases {
+				t.Run(tc.name, func(t *testing.T) {
+					code, stdout, stderr := invokeAPI(srv.URL, testHTTPClient(), "monitors", "get", tc.target)
+					if code != 1 {
+						t.Fatalf("exit code = %d, want 1", code)
+					}
+					if stdout != "" {
+						t.Errorf("stdout = %q, want empty", stdout)
+					}
+					want := "bs: expected a bare monitor ID, not a URL or path; run 'bs monitors get --help' for usage.\n"
+					if stderr != want {
+						t.Errorf("stderr = %q, want %q", stderr, want)
+					}
+					assertNoToken(t, stdout, stderr)
+				})
+			}
+		})
+	}
+	if got := requests.Load(); got != 0 {
+		t.Errorf("server requests = %d, want 0", got)
+	}
+}
+
 // TestMonitorsGetReachesInjectedServer covers A1 (spec R9): the seam routes a
 // `monitors get` invocation to the injected base URL through the injected
 // client, and exactly one GET request arrives at the mock server.

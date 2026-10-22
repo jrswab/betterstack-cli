@@ -129,6 +129,7 @@ func redactToken(s, token string) string {
 
 func parseMonitorsGetArgs(args []string) (string, time.Duration, error) {
 	var target string
+	hasTarget := false
 	timeout := defaultTimeout
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
@@ -145,14 +146,18 @@ func parseMonitorsGetArgs(args []string) (string, time.Duration, error) {
 			timeout = d
 		case strings.HasPrefix(arg, "-"):
 			return "", 0, fmt.Errorf("unknown option %q", arg)
-		case target == "":
-			target = arg
-		default:
+		case hasTarget:
 			return "", 0, errors.New("too many arguments")
+		default:
+			target = arg
+			hasTarget = true
 		}
 	}
 	if target == "" {
 		return "", 0, errors.New("missing <id>")
+	}
+	if _, hasScheme := leadingScheme(target); hasScheme || strings.Contains(target, "/") {
+		return "", 0, errors.New("expected a bare monitor ID, not a URL or path")
 	}
 	return target, timeout, nil
 }

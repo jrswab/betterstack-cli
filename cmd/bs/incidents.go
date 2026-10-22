@@ -164,8 +164,6 @@ func asciiDigits(s string) bool {
 }
 
 // leadingScheme reports whether target starts with an RFC 3986 scheme prefix.
-// It is used only when url.Parse has already failed, so the scheme cannot be
-// read from a parsed URL.
 func leadingScheme(target string) (string, bool) {
 	for i := 0; i < len(target); i++ {
 		c := target[i]
